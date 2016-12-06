@@ -1,0 +1,16 @@
+Heap.hpp					- 	A binary heap implementation with support for efficient update of non top elements.
+HierarchicalClustering_main.cmdline.c		-	Automatically generated from ggo file by gengetopt program
+HierarchicalClustering_main.cmdline.h		-	Automatically generated from ggo file by gengetopt program
+HierarchicalClustering_main.cpp			-	Driver for clustering, which selects the M minimal edges before running (partial) clustering.
+HierarchicalClustering_main.ggo			-	Input for gengetopt, with command line spec.
+HierarchicalClustering_with_unknown_edges.cpp	-	Implementation of memory constrained hierarchical 
+							clustering algorithm, providing a part of the overall 
+							correct solution, when some of the edges are unknown due to 
+							a memory constraint.
+HierarchicalClustering_with_unknown_edges.hpp	- 	Interface and template functions for memory 
+							constrained hierarchical clustering algorithm
+test_heap.cmdline.c				-	Automatically generated from ggo file by gengetopt program
+test_heap.cmdline.h				-	Automatically generated from ggo file by gengetopt program
+test_heap.cpp					- 	Driver for testing the heap
+test_heap.ggo					-	Input for gengetopt, with command line spec.
+

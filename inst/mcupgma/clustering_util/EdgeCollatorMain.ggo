@@ -1,0 +1,46 @@
+#########################################################################
+#									 #
+# MC-UPGMA  - Accurate huge scale clustering by Memory Constrained UPGMA #
+#             Loewenstein et al. Bioinformatics. 2008 Jul 1;24(13):i41-9.#
+#									 #
+# Copyright (C) Yaniv Loewenstein				 	 #
+#               School of Computer Science And Engineering		 #
+#               Hebrew University of Jerusalem				 #
+#									 #
+#     All Rights Reserved						 #
+#									 #
+#     This source code is distributed under the terms of the		 #
+#     GNU General Public License. See the file LICENSE			 #
+#     for details.							 #
+#									 #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# 									 #
+#  file: HashingMergerMain.ggo                                           #
+#         								 #
+#  Yaniv Loewenstein, 2007						 #
+# 									 #
+#  Options spec formatted for use with gengetopt, for the executable	 #
+#  specified by EdgeCollatorMain					 #
+# 									 #
+#########################################################################
+
+# Name of your program
+package "edge_collator" # don't use package if you're using automake
+
+# Version of your program
+version "1.0"   # don't use version if you're using automake
+
+purpose "Collate all edges between clusters into one thick edge averaging all possible thin edges.
+An input edge in the format `I J dist W` per input line, where I J are valid cluster IDs (i.e. after the last round of clustering), dist is the distance (dissimilarity) between children clusters I' and J' of I and J respectively (possibly I, J themselves), and W which is the weight (integer) of the edge between I' and J'. W :=  size(I') * size(J'), where size are the cluster sizes."
+
+args " "
+option "sizes-file" s "Output file for sizes computed from tree" string no
+#option "max-cluster-id" N "Maximum cluster ID in the data, faster when given externally" int  no
+option "tree-file" t "Filename containing the tree" string no typestr="filename"
+option "missing-val" x "The defualt weight for missing edges" float default="100" no typestr="distance"
+text "This is the value used when computing the distances from a new "
+text "born cluster when one of the averaged edges is missing."
+
+#is sort output
+#is inplace  
+#is input sorted

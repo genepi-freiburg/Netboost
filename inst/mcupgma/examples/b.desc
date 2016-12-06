@@ -1,0 +1,20 @@
+This example includes eucleadean distances (using matlab's pdist) between 100 random vectors in R^10, drawn from 
+three normal distibutions (25, 25 and 50 samples) using the following commands :
+
+from matlab: 
+>> a = [1.1 * (randn(25,10) + 0.2); 1.2 * (randn(25,10) + 0.1);  1.0 * (randn(50,10) + 0)];
+>> sim2ije(squareform(pdist(a),'tomatrix'),'%10.10e','b');    % saves edges in format: 'clusterID1 clusterID2 distance'
+>> tree = linkage((pdist(a)),'average');                      % UPGMA solution by matlab
+>> save_linkage_tree(tree,'%1.5f','b.matlab_upgma_solution'); % save the tree solution to an ASCII formatted file
+
+from a csh shell: 
+% cat b | awk '{if ($1 < $2) print}' | gzip -f >! b.edges.gz	
+% # the following command will create some files in the present working directory, adjust the path to your own, to 
+	re-cluster this example. In practical large inputs, you would need different values for these parameters. 
+% ~/mc_upgma_distribution/distribution/scripts/cluster.pl b.edges.gz -x 100 -M 1000 -H 3 -K 2 -j 2 -r 0 -log b.clustering_log -sleep 1 -tree b.mcupgma_tree
+
+
+Now you can diff the two solutions, (ignoring some floating point formatting issues)
+% diff -ybi b.mcupgma_tree b.matlab_upgma_solution
+
+

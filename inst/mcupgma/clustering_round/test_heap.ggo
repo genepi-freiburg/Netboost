@@ -1,0 +1,9 @@
+package "test_heap"
+version "1.0"
+
+
+option "rand-seed" s "random number generator seed" int no
+option "break-at" b "iteration at which to break and dump" int no
+option "init-num-numbers" n "size of initial population" int default="1000" no
+option "range" r "upper bound on the initial random numbers" int default="100" no
+option "reentry" p "chance of pushing a number after poping the smallest" float default="0.5" no

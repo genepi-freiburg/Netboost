@@ -1,0 +1,13 @@
+clustering_iteration.mk		- The makefile to run the actual partial clustering per round.
+clustering.mk			- Main clustering makefile, which includes and runs other makefiles. 
+cluster.pl			- Clustering program, which manages the make processes.
+count_edges.csh			- count the number of edges remaining per iteration in *.edges.gz files.
+definitions.mk			- Global definitions for clustering makefiles
+file_k_split.pl*		- Split a file into evenly sized K output files, line N goes to file (N)mod(K).
+install_path.mk			- Contains the paths to installed clustering programs. Used from makefiles.
+list_tree_thresholds.csh	- Printout of where each iteration stopped relative to the overall tree.
+merger.mk			- The makefile in charge of "external merging" - pre-processing edges.
+				  (*.edges.gz files) for next round.
+seq.pl				- Emulates UNIX seq. used from makefiles.
+smart_cat			- Emulates cat or zcat, based on the filename extension. Used from makefiles.
+validate_input_edges.pl		- Checks that a moderately sized input obeys assumptions on input.

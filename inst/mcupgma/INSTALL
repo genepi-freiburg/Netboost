@@ -1,0 +1,12 @@
+==================================================
+===== Installation                 ===============
+==================================================
+
+to install the package use:
+% make install
+% make configure
+% make test
+
+(after you have uncompressed the distribution tarball).
+
+run scripts/cluster.pl -help for more help, and read the README.

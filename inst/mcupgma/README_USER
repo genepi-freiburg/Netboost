@@ -1,0 +1,325 @@
+============================================================================================
+=========    User guide for the multi-round MC-UPGMA clustering package          ===========
+=========                                                                        ===========
+=========         Yaniv Loewenstein,  Copyright (C), September 2008              ===========
+=========                                                                        ===========
+============================================================================================
+
+This package is supplied on an as is basis. This guide assumes that you are familiar with hierarchical clustering, 
+and have good knowledge of Unix based systems. You can look at the the MC-UPGMA paper to get a broad idea of the 
+memory constrained concept, the multi-round scheme, and what are M, psi and other parameters. However, you by no 
+means need to know all the nitty gritty clustering details.
+
+
+
+==================================================
+===== Installation                 ===============
+==================================================
+
+to install the package use: (after you have uncompressed the distribution tarball)
+% make install
+% make configure
+% make test
+
+==================================================
+===== Clustering                 =================
+==================================================
+Use the cluster.pl script in the scripts directory to run the clustering process. Run it with the -help option to 
+see how to specify parameters. The options specification is also given in this manual for reference.
+
+==================================================
+===== Input format                 ===============
+==================================================
+
+1. Your input edges should appear in gzipped input files, where the filenames have the extension edges.gz.
+
+2. Input format: three fields per input line, white-space delimited in the format: 'cluster_id1 cluster_id2 distance',
+   where cluster_id1 and cluster_id2 are positive integers identifying clusters (initially, your clustered 
+   data-items are the singleton clusters) and distances are given in double precision (typically, non-negative 
+   numbers). Note that cluster IDs must be > 0 (strictly positive).
+
+3. Lower dissimilarities mean closer items, i.e. "i j 1e-20" will be clustered before "k l 0.005"
+
+3. If you are using the parallelization capabilities of clustering package, it is recommended that break the input 
+into several files (e.g. part1.edges.gz .. part10.edges.gz), since each could be processed in parallel to the 
+others. 
+
+	==================
+	== IMPORTANT ! ===
+	==================
+
+	Assumptions on input:
+
+	A. Self edges are not allowed, i.e cluster_id1 == cluster_id2 is illegal. These self similarities are 
+	   irrelevant for clustering purposes. 
+	B. It is illegal to include both edges i<->j and j<->i and it will lead to unexpected clustering failures. 
+	   The similarities between cluster pairs are direction-less (or symmetric), thus it is sufficient to 
+	   include only one direction, e.g. requiring that cluster_id1 < cluster_id2 for all edges. 
+	C. It is illegal to include edges >= psi, your max_distance command line argument by psi's definition.  It 
+	   will lead the clustering process to exit with an error code, since it may not be able to cluster these 
+	   edges, thus failing to normally complete the process. 
+	D. All cluster IDs are > 0 integers.
+	E. Missing edges are allowed, and are assumed to be equal psi when computing averages across clusters.
+
+	For instance, the input:
+	
+	1	1	0.0
+	1	2	1e-20
+	1	3	20
+	2	1	1e-20
+	2	4	110
+	
+	is illegal, due to the self edge 1<->1, and the appearance of both 1<->2 and 2<->1. Note that the edge 3<->4 
+	is legally missing in this case of sparse input graph (i.e. some pairwise similarities are missing).
+
+==================================================
+===== Output format                 ==============
+==================================================
+
+The output tree is given in 4 fields per line format:'cluster_id1 cluster_id2  distance cluster_id3'. Each line 
+defines one merge of two clusters in the binary clustering tree. cluster_id1 and cluster_id2 identify the pair of 
+merged clusters, while cluster_id3 is an identifier for a new cluster - their union. cluster_id3 will appear later 
+on as one of the two first fields when it is merged as well. This format resembles the output format of the matlab 
+command 'linkage', with an additional 4th field to ease up its parsing. Note that sparse inputs containing more than 
+one connected component in the input similarity graph, will yield a forest (several disjoint trees) by definition, 
+rather than a strict tree. Note that if you are using the non-dendrogram output option, the given merge scores are 
+not exact any more.
+
+
+==================================================
+====== Special notes                    ==========
+==================================================
+
+1. You will need write permissions into the present working directory (pwd). 
+	The per round data, will be written into newly created per round directories in the pwd, while the overall 
+        tree is built cumulatively by concatenating tree parts from consecutive rounds. 
+
+2. You will need ample disk space to hold intermediate files needed by the multi-round clustering process in the pwd. 
+	Surviving edges are passed from round to round, requiring significant disk space per round, and some 
+	intermediate files are temporarily held uncompressed. If you by no means can afford enough disk space, and 
+	you do understand the mechanism of the multi-round clustering process you can try and shortcut the process, 
+	to eliminate some of this overhead, e.g. by concatenating several tree parts into one "virtual" larger round etc.
+
+3. If the clustering process fails midway for some reason, you can re-run the clustering program, and it will 
+	automatically continue from the round it stopped at. 
+	This capability is achieved by leveraging the makefile mechanism to manage dependencies between 
+	per-round input and output files, and correct parallel execution based on temporal dependencies. 
+	Hence, modifying the timestamps of these files (e.g. by moving individual files etc.) 
+	** is prohibited **, since it may temper with correct order of file modification times, hence invalidating 
+	the correct dependencies and breaking the whole process.
+
+==================================================
+===== Troubleshooting                 ============
+==================================================
+
+1. Run through the clustering log produced by the clustering script.
+	- Search for errors and warnings. 
+	- Make sure that the required programs are up and running.
+	- Make sure that you have required software and programs (e.g. Perl interpreter is in /usr/bin/perl etc.)
+2. Check your file-system settings.
+	- Check that you have read-write permissions.
+	- Check that you are not out of disk space.
+3. Double and triple check your input.
+	- Make absolutely sure that you have no self-edges, repeated edges i<->j and j<->i, zero indices, or edges >= psi.
+4. Read the error messages and warnings and try to understand what went wrong. Reproduce the error for a minimal example. 
+ 	- Find the error source using the log. The exact command that led to the error, also appears in the log 
+	output. You can use it in order to reproduce the error from an individual program. Narrow down the input, to 
+	a minimal example which produces the error. Check that your input is legal. Try to reproduce the error on 
+	another system, i.e. a different architecture, OS, disk etc. If you have done all this, and have a minimal 
+	example for which you are sure you can reproduce the bug, e-mail it to me, and I will try to help. However, 
+	note that THIS PACKAGE IS GIVEN ON AN AS-IS BASIS, thus I can not assure that I will be able to assist you.
+
+===================================================
+====== Portability                 ================
+===================================================
+
+This package should be compatible to any Unix system which supports GNU make, Perl and POSIX C/C++. 
+I have tested the clustering process on Linux 32bit/64bit, FreeBSD, and Mac-Darwin architectures. 
+
+===================================================
+====== Clustering speed and choice of       =======
+======	parameters - some rules of thumb.   =======
+===================================================
+
+==================================
+== Data-dependent speed: =========  
+==================================
+In the paper we show how more "civilized" similarities (metric, or close to being 
+metric), produce better clustering progress requiring far less rounds of clustering. Thus do not expect speedy 
+clustering of completely random data. The clustering algorithm and code are specifically optimized for sparse inputs. However the correct solution is guaranteed for non-sparse inputs as well. You might want to use some pre-processing transformation to your dissimilarity data, as the clustering is most efficient when the data is exponentially distributed (i.e. dissimilarities appear in multiple scales of magnitude, as in BLAST E-values).
+
+==================================
+=== Choices affecting speed:    == 
+==================================
+
+Your choice of parameter values affects the overall required time. You can 
+control the maximum number of parallel jobs, and allow more efficient processing by breaking the input into smaller 
+chunks that can be processed in parallel. There is a tradeoff however, breaking the process into too many pieces 
+takes its toll in increased overhead for processing each and every part separately. 
+
+By default, the clusterer code currently demands that the merged minimal edge interval is exact. This allows to output 
+each cluster-merge height, i.e. the merge score, to construct a full dendrogram. In many cases however, the tree 
+topology is sufficient, and the user is not interested in the actual underlying merge scores. In these cases, it is 
+possible to demand a less stringent stop-criterion allowing further clustering per round, thus speeding up the 
+whole process. Once, the tree is given, it is rather easy to compute the exact merge scores in retrospect using a 
+linear space (in the number of clustered objects) algorithm [1]. To speed up the process, you can also allow non 
+dendrogram output (which does not require knowledge of the exact merge score) to allow further clustering per round 
+(use `cluster.pl -help` for more info).
+
+Make sure you specify a value for the -max_singleton option of cluster.pl. Otherwise, the script will 
+determine it using another pass on the whole huge data, thus slowing down the initialization of the clustering 
+considerably, when the data is very large. To improve memory performance, use dense indices, i.e. a tight 
+-max_singleton value, and preferably consecutive indices for your input singleton clusters.
+
+Good values for the MC-UPGMA parameters are as follows:
+
+	- For the -jobs option (maximum number of parallel jobs) you should specify the number 
+	of available CPUs. Too large values will clog your system with more concurrent processes that it can 
+	efficiently serve. Smaller values will leave some of your processors idle. If you are using grid computing, 
+	choose a value that will not swamp your grid with too many processes. 
+
+	- For the -k option which allows splitting of edges files, choose a value similar to the number of 
+  	concurrent jobs, larger values will lead to over-fragmentation of the files which could not be processed in 
+	parallel to begin with. 
+
+	- Selection of the value of H, the number of merging processes (or hashing buckets) is more delicate, since 
+	the memory constraint is not explicitly coded into the merging processes. Choosing too large values of H, 
+	with huge data which is orders of magnitude larger than the amount of available physical RAM, will lead to the 
+	merging processes exiting abnormally with out of memory errors. Hence, make sure that you select a value 
+	of H, such that your data-size (after some clustering) divided by H, should roughly fit into memory. Also 
+	note that if you are running many process in parallel, sharing the same physical memory, you will have less 
+	memory available per process. 
+	If you 	have selected too small values, you will get noticeable out of memory errors in your clustering log. Too 
+	large values will again lead to a slow down due over fragmentation. For 1.5G edges after pre-processing 
+	(unique, non self edges where i<j), amounting to about 7GB of gzipped data, values of H of around 
+	20-40 were just fine. Values around 10 produced too large chunks to fit into memory, using 4 parallel 
+	process sharing the same 4GB RAM 32bit Linux machine.
+
+	- Memory constraint M - Use your system monitoring capabilities (e.g. top or ps on Unix) to find just
+	how many edges can be held effectively on your architecture (you can run the clustering executable 
+	directly to do that, if you wish). The higher the value of M, the less rounds are required to complete the 
+	clustering. This is since (1) further clustering progress is possible per round, and (2) the whole remaining 
+	data will fit into memory earlier (when this happens, the clustering is completed in the same instant 
+	round).
+	The value of M ranges from a few million edges on a small RAM machine, to several hundred million edges on 
+	state of the art 64bit architectures with several GB of physical RAM. In my experiments, about 40M edges  
+	can be held on 4 GB RAM 32bit Linux machine, or 100M with 8 GB RAM 64bit Linux machine. 
+	Do not rely on virtual memory (swap space) to choose higher value of M, paging algorithms (that manage 
+	virtual memory) do not perform well for the clustering due to its non sequential nature. 
+
+	- psi (the max distance argument) - use a tight bound on your maximal distances. Tighter bounds lead to less
+	  intervals collisions allowing further clustering per round.
+
+==================================================
+=====     License                  ===============
+==================================================
+This source code is distributed under the terms of the GNU General Public License. See the file LICENSE for details.  
+All rights reserved. 
+
+===================================================
+=====    Reference                      ===========
+===================================================
+
+If you find this code useful, please cite:
+
+Loewenstein Y, Portugaly E, Fromer M, Linial M.
+Efficient algorithms for accurate hierarchical clustering of huge datasets: tackling the entire protein space.
+Bioinformatics. 2008 Jul 1;24(13):i41-9.
+
+
+
+===================================================
+=== cluster.pl options (see `cluster.pl -help`)  ==
+===================================================
+cluster.pl [-help] [-log_file <FILE>] [-verbose|-noverbose]   *.edges.gz
+Runs MC-UPGMA multi-round clustering makefiles.
+
+The clustering is done in iterations. In each iteration the minimal M edges are loaded,
+and clustering is done to the point where correctness (i.e. as in O(|E|) memory regular UPGMA)
+can no longer be guaranteed.
+
+Input edges filenames must be have the extension .edges.gz and be gzipped.
+
+Self edges, and duplicate edges (the edges i,j and j,i are also regarded duplicates) are not allowed as input, and
+will lead to undefined behavior (crashes) . It is the user's responsibility to eliminate these cases.
+
+The multi-round clustering process, is based on the makefile mechanism which evaluates dependencies
+between input and output files, and on their modification timestamps. Therefor, modifying file
+timestamps externally (by the user, not by this program) may invalidate the process, and is not
+recommended.
+
+Use dense cluster IDs to improve performance.
+
+Configurable Parameters:
+
+
+   -max_distance|x|psi <FLOAT> - Upper bound on all distance in input, used as missing edge's distance. Specification of
+                                this option is mandatory.
+
+   -max_singleton <UINT> - maximum cluster ID in input (>0). Can be any number N s.t. N > n for any input singleton ID n.
+                          N+1 is the first merger ID. Dense
+
+   -iterations <UINT>     - maximum number of clustering iterations.
+
+   -M|heap_size  <UINT>   - maximum number of edges to load in a clustering iteration (dictated by hardware limits)
+                            the larger M, the less clustering iterations needed.
+
+                         ** NOTE: **  order of the input files specification is important when this option is used.
+
+   -H|num_hash_buckets <UINT>  - how many output files of "thin" edges per input
+
+   -jobs <UINT>          - run make with -j for parallelization (default: none). The value of this parameter is passed to
+                          make's '-j' option. This option allows a considerable speed-up by parallelization of the
+                          'external merging' procedures on a multi-processor machine.
+
+   -retries <UINT>       - if make returns with an an error code, retry this number of times (default: 0)
+
+   -otree|output_tree_file <FILE>         - output tree filename (default: cluster_tree)
+
+   -split_unmodified_edges|k <INT>  - When this option is set, the file containing the unmodified cluster edges
+                                     passed from round to round is split into k parts, each part can then be
+                                     be processed in parallel to speed-up the process on a multi-processor machine.
+                                     This is useful when this file contains the vast majority of the data and
+                                     becomes the bottleneck, e.g. when very little clustering is done per round. An
+                                     optimal value for k would be the number of concurrent jobs passed to the -jobs
+                                     option.
+Advanced options:
+
+   -allow_non_dendrogram -  Allows merging of provably minimal edge intervals, even if the exact merge score
+                            (cluster height in dendrogram) is not known at merge time due to partial knowledge
+                            implied by the memory constraint. This option allows further clustering per round,
+                            thus speeding up the whole clustering process considerably, by posing a less strict
+                            requirement on the output - now the cluster heights are no longer required to be exact.
+                            Note that this renders the cluster heights (merge scores) in the output tree
+                            meaningless. It does preserve the correct tree topolgy of the clustering solution
+                            however, and provides a useful speedup if don't need the dendrogram.
+
+   -[no]sorted          - Assume input is sorted, uses unix's `head -M` to prevent reading all files by clustering
+                          code, currently only applies to first iteration, since output of merging is not resorted.
+
+   -mosix               - Run external parallel merging code under mosix (currently, only the native processes are
+                          mosrun'ed. not the zcat). This capability is still half-baked, since most IO is done
+                          through pipes, which are inefficeinet using mosix. We need to use mospipe in the *.mk
+                          files to make the whole multi-round process efficient under mosix.
+
+   -scriptsdir <DIR> - Use this directory for auxiliary scripts and makefiles, instead of using the same directory as this script's
+                       location (i.e. scripts/)
+
+   -[no]filesizes    - Print the filesizes (in bytes) of input edge files per round (default: toggled) . This may slow
+                       down the round post-processing. It is useful for monitoring the rate in which the cluster similarity
+                       graph shrinks, or for identifying situations in which little or no clustering is done per round (e.g. when debugging).
+
+   -start|t|T <INT>     - jump start from iteration T (don't run make for iterations < T).  Useful when debugging.
+
+Dependencies:
+  clustering.mk - clustering Makefile (which uses other makefiles as well).
+  wc            - standard unix word count
+  smart_cat     - perl script choosing zcat if filename ends with .gz, cat otherwise.
+  seq           - unix executable
+
+
+
+
+------------------------------------------------------------------------------------------
+
+[1] - You can do this by mapping input edges to specific merges-clusters which are the least common ancestor (LCA) in the clustering tree, for each pair of leafs in the input edges. Holding a constant number of sufficient statistics per cluster, allows to calcuate merge scores (e.g. arithmetic averages, maximum etc.) in retrospect.

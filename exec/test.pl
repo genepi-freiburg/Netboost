@@ -1,3 +1,3 @@
 #!/usr/bin/env perl
-print "Okay, exec called.\n";
+print "Okay, Perl script from 'exec' dir called.\n";
 

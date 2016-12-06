@@ -1,0 +1,44 @@
+#########################################################################
+#									 #
+# MC-UPGMA  - Accurate huge scale clustering by Memory Constrained UPGMA #
+#             Loewenstein et al. Bioinformatics. 2008 Jul 1;24(13):i41-9.#
+#									 #
+# Copyright (C) Yaniv Loewenstein				 	 #
+#               School of Computer Science And Engineering		 #
+#               Hebrew University of Jerusalem				 #
+#									 #
+#     All Rights Reserved						 #
+#									 #
+#     This source code is distributed under the terms of the		 #
+#     GNU General Public License. See the file LICENSE			 #
+#     for details.							 #
+#									 #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+#									 #
+#  file: HashingMergerMain.ggo						 #
+# 									 #		
+#  Yaniv Loewenstein, 2007						 #
+# 	 								 #
+#  Options spec formatted for use with gengetopt, for the executable	 #
+#  specified by HashingMergerMain.cpp					 #
+#									 #
+#########################################################################
+
+
+# Name of your program
+package "edges2valid_clusters" # don't use package if you're using automake
+# Version of your program
+version "1.0"   # don't use version if you're using automake
+
+purpose "Fast sorting and updating of cluster indices for input edges. Output edges are split into two (unchanged and changed), or multiple (unchanged, and multiple changed based on hashing) files, while maintaining the original order for valid edges.  Input edges are read from stdin."
+args " "
+option "existing-edges-file" e "Output file for unchanged edges, order maintained" string yes
+option "new-edges-file" w "Output file for newly born thick edges, not necessarily sorted" string yes
+option "sizes-file" s "Output file for sizes computed from tree" string no
+#option "max-cluster-id" N "Maximum cluster ID in the data, faster when given externally" int  no
+option "tree-file" t "Filename containing the tree" string yes typestr="filename"
+option "missing-val" x "The defualt weight for missing edges" float default="100" no typestr="distance"
+text "This is the value used when computing the distances from a new "
+text "born cluster when one of the averaged edges is missing."
+option "num-splits" n "split the new edges file into this number of files" int no
+text "This option splits the output file of modified edges into several files, and guarantees that all edges with the same cluster IDs will appear in the same single output file, by using a hash function on the up-to-date cluster IDs." 

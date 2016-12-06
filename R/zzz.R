@@ -1,5 +1,5 @@
 # Package internal variables (as environment).
-.netboostInternal <- new.env()
+.netboostInternal <- new.env(parent = emptyenv())
 
 #' Package startup: used to fetch installation path of the own package,
 #' as required for executing binary programs delivered with it.
@@ -17,22 +17,33 @@
                         appendLF = TRUE)
 
   ## Path to "exec"-folder in installed package
-  prg <- file.path(libname, pkgname, "exec")
+  pPath <- file.path(libname, pkgname)
 
-  ## Store path in package variables
-  assign("exec", prg, envir = .netboostInternal)
+  ## Store exec and general path in package variables
+  assign("exec_path", file.path(pPath, "exec"), envir = .netboostInternal)
+  assign("pkg_path", pPath, envir = .netboostInternal)
 }
 
-#' Call external program delivered in the package
+#' Returns the absolute path to "exec" folder in the package.
 #'
-#' @return STDOUT from called program
-#' @export
-call_external <- function() {
-  if (exists("exec", envir = .netboostInternal)) {
-    prg <- file.path(get("exec", envir = .netboostInternal), "test.pl")
-    return(system(command = prg, inter = TRUE))
+#' @return Absolute path for "exec" folder
+netboostExecPath <- function() {
+  if (exists("exec_path", envir = .netboostInternal)) {
+    return(get("exec_path", envir = .netboostInternal))
   }
   else {
-    stop("exec not given (key exec missing in envir)")
+    stop("Executable path not existing (key exec_path missing in envir)")
+  }
+}
+
+#' Returns the absolute path to "exec" folder in the package.
+#'
+#' @return Absolute path of installed package
+netboostPackagePath <- function() {
+  if (exists("pkg_path", envir = .netboostInternal)) {
+    return(get("pkg_path", envir = .netboostInternal))
+  }
+  else {
+    stop("Package path not existing (key pkg_path missing in envir)")
   }
 }

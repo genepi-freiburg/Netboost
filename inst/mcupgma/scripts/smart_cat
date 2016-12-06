@@ -1,0 +1,62 @@
+#!/usr/bin/perl
+
+##########################################################################
+# MC-UPGMA  - Accurate huge scale clustering by Memory Constrained UPGMA #
+#             Loewenstein et al. Bioinformatics. 2008 Jul 1;24(13):i41-9.#
+#                                                                        #
+#  usage: emulates mixed cat and zcat command by filename extension	 #
+#									 #		
+#    exec's to zcat if all extensions are .gz, cat if all or not.        #
+#    Otherwise (a mixture of .gz files and non gzipped), each input file #
+#    is piped to stdout using cat or zcat - this is slower		 #
+#									 #		
+# Copyright (C) 2007, Yaniv Loewenstein                                  #
+#                School of Computer Science And Engineering              #
+#                Hebrew University of Jerusalem                          #
+#                                                                        #
+#      All Rights Reserved                                               #
+#                                                                        #
+#      This source code is distributed under the terms of the            #
+#      GNU General Public License. See the file LICENSE                  #
+#      for details.                                                      #
+#                                                                        #
+##########################################################################
+
+
+
+#die("no filenames given - note that $0 does not read from stdin") unless scalar(@ARGV);
+
+if ( (scalar(@ARGV)==0) || ((scalar(@ARGV)==1) && ($ARGV[0] eq '-')) ) {
+#	warn("no filenames given - reading from stdin with cat");
+	exec('cat -');
+	die('exec `cat -` failed');
+}
+	
+foreach $file (@ARGV){
+	if ($file =~ /\.gz$/){
+		$gz++;
+	} else {
+		$non_gz++;
+	}
+}
+
+if ($non_gz && !$gz){
+	## all inputs are not gzipped ==> exec cat
+	exec("cat @ARGV");
+} 
+elsif (!$non_gz && $gz){
+	## all inputs are gzipped  ==> exec zcat
+	exec("zcat @ARGV");
+} else {
+	## input files contain some gz some not - pipe each one using cat or zcat - slower
+	warn('mixed gz and non gz inputs');
+	while($filename = shift){
+	        if ($filename =~ /\.gz$/) {
+        	        open(A,"zcat $filename |") or die("can't open `zcat $filename|`:$!");
+	        }   else {
+        	        open(A,"< $filename") or die("can't open $filename:$!");
+	        }
+	        print while(<A>);
+	        close(A) or warn($!);
+	}
+}

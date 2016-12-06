@@ -1,0 +1,48 @@
+cluster.pl:finding the maximum singleton ID by reading all edges - this might take a while (you can supply it externally)
+cluster.pl: maximum singleton ID in input edges:100
+output cluster tree file: b.mcupgma_tree (removing file, and building it from scratch)
+
+===================================================================================
+=====================  Round    1  ================================================
+===================================================================================
+total size in bytes of the 1 input files is 44557 (gzipped)
+cluster.pl: one cluster in  (`wc -l` said:'undefined') but edges file are not empty - continue clustering
+cluster.pl:executing : `make -I /cs/phd/lonshy/mc_upgma_distribution//distribution/scripts/ --warn-undefined-variables   -j 2 'PSI = 100'  'H = 3' 't = 1' 'M = 1000' 'SCRIPTS_DIR = /cs/phd/lonshy/mc_upgma_distribution//distribution/scripts/' 'TREE = b.mcupgma_tree' 'K = 2'  'INPUT_EDGES_FILES =  b.edges.gz' 'FIRST_MERGE_ID = 100' -f /cs/phd/lonshy/mc_upgma_distribution//distribution/scripts//clustering.mk  2>&1 `
+make:inputs to clustering process are: b.edges.gz
+make:cat iteration_1/tree_part1 >> b.mcupgma_tree && touch -r iteration_1/tree_part1 b.mcupgma_tree
+finished executing
+cluster.pl:returned 0 - looks like success!
+cluster.pl:inputs to next stage = iteration_1/1.thick.edges.gz iteration_1/2.thick.edges.gz iteration_1/3.thick.edges.gz iteration_1/existing.1.edges.gz iteration_1/existing.2.edges.gz
+
+===================================================================================
+=====================  Round    2  ================================================
+===================================================================================
+total size in bytes of the 5 input files is 13345 (gzipped)
+checking the number of alive clusters - `wc -l` says:'23 iteration_1/cluster_sizes'
+cluster.pl: one cluster in iteration_1/cluster_sizes (`wc -l` said:'23') but edges file are not empty - continue clustering
+cluster.pl:executing : `make -I /cs/phd/lonshy/mc_upgma_distribution//distribution/scripts/ --warn-undefined-variables   -j 2 'PSI = 100'  'H = 3' 't = 2' 'M = 1000' 'SCRIPTS_DIR = /cs/phd/lonshy/mc_upgma_distribution//distribution/scripts/' 'TREE = b.mcupgma_tree' 'K = 2'  'INPUT_EDGES_FILES =  iteration_1/1.thick.edges.gz iteration_1/2.thick.edges.gz iteration_1/3.thick.edges.gz iteration_1/existing.1.edges.gz iteration_1/existing.2.edges.gz' 'ISIZES_FILE = iteration_1/cluster_sizes' -f /cs/phd/lonshy/mc_upgma_distribution//distribution/scripts//clustering.mk  2>&1 `
+make:inputs to clustering process are: iteration_1/1.thick.edges.gz iteration_1/2.thick.edges.gz iteration_1/3.thick.edges.gz iteration_1/existing.1.edges.gz iteration_1/existing.2.edges.gz
+make:cat iteration_2/tree_part2 >> b.mcupgma_tree && touch -r iteration_2/tree_part2 b.mcupgma_tree
+finished executing
+cluster.pl:returned 0 - looks like success!
+cluster.pl:inputs to next stage = iteration_2/1.thick.edges.gz iteration_2/2.thick.edges.gz iteration_2/3.thick.edges.gz iteration_2/existing.1.edges.gz iteration_2/existing.2.edges.gz
+
+===================================================================================
+=====================  Round    3  ================================================
+===================================================================================
+total size in bytes of the 5 input files is 1689 (gzipped)
+checking the number of alive clusters - `wc -l` says:'15 iteration_2/cluster_sizes'
+cluster.pl: one cluster in iteration_2/cluster_sizes (`wc -l` said:'15') but edges file are not empty - continue clustering
+cluster.pl:executing : `make -I /cs/phd/lonshy/mc_upgma_distribution//distribution/scripts/ --warn-undefined-variables   -j 2 'PSI = 100'  'H = 3' 't = 3' 'M = 1000' 'SCRIPTS_DIR = /cs/phd/lonshy/mc_upgma_distribution//distribution/scripts/' 'TREE = b.mcupgma_tree' 'K = 2'  'INPUT_EDGES_FILES =  iteration_2/1.thick.edges.gz iteration_2/2.thick.edges.gz iteration_2/3.thick.edges.gz iteration_2/existing.1.edges.gz iteration_2/existing.2.edges.gz' 'ISIZES_FILE = iteration_2/cluster_sizes' -f /cs/phd/lonshy/mc_upgma_distribution//distribution/scripts//clustering.mk  2>&1 `
+make:inputs to clustering process are: iteration_2/1.thick.edges.gz iteration_2/2.thick.edges.gz iteration_2/3.thick.edges.gz iteration_2/existing.1.edges.gz iteration_2/existing.2.edges.gz
+make:cat iteration_3/tree_part3 >> b.mcupgma_tree && touch -r iteration_3/tree_part3 b.mcupgma_tree
+finished executing
+cluster.pl:returned 0 - looks like success!
+cluster.pl:inputs to next stage = iteration_3/1.thick.edges.gz iteration_3/2.thick.edges.gz iteration_3/3.thick.edges.gz iteration_3/existing.1.edges.gz iteration_3/existing.2.edges.gz
+
+===================================================================================
+=====================  Round    4  ================================================
+===================================================================================
+total size in bytes of the 5 input files is 100 (gzipped)
+checking the number of alive clusters - `wc -l` says:'1 iteration_3/cluster_sizes'
+cluster.pl: one cluster in iteration_3/cluster_sizes and edges files seem empty - finished clustering successfully!

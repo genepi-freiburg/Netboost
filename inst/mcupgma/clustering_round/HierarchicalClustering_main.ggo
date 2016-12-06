@@ -1,0 +1,40 @@
+# *****************************************************************************
+# * MC-UPGMA  - Accurate huge scale clustering by Memory Constrained UPGMA    *
+# *             Loewenstein et al. Bioinformatics. 2008 Jul 1;24(13):i41-9.   *
+# *                                                                           *
+# *                                                                           *
+# * Copyright (C), 2007  Elon Portugaly, Yaniv Loewenstein                    *
+# *                School of Computer Science And Engineering                 *
+# *                Hebrew University of Jerusalem                             *
+# *                                                                           *
+# *      All Rights Reserved                                                  *
+# *                                                                           *
+# *      This source code is distributed under the terms of the               *
+# *      GNU General Public License. See the file LICENSE                     *
+# *      for details.                                                         *
+# *                                                                           *
+# *****************************************************************************/
+
+package "hierarchical_clustering (MC-UPGMA)"
+version "2.0"
+purpose "MC-UPGMA - Accurate huge scale clustering by Memory Constrained UPGMA. Provide part of the complete accurate hierarchical clustering solution (tree), by reading only part of the edges into memory as dictated by an explicit memory constraint M. The input is a sparse graph of non-negative cluster distances, or dissimilarities, as scores are allowed to be non-metric. In the first run, dissimilarities between single data items (singleton clusters) are given. Missing edges in the sparse graph are assumed to be equal \\psi (the max-distance command line argument) for the purpose of computing average cluster distances. Average cluster dissimilarities are required as input to continue clustering, and are computed by external programs to this program.
+
+If you find this code useful, please cite:
+Loewenstein Y, Portugaly E, Fromer M, Linial M.
+Efficient algorithms for accurate hierarchical clustering of huge datasets: tackling the entire protein space.
+Bioinformatics. 2008 Jul 1;24(13):i41-9.
+"
+
+option "max-distance" d "Max possible distance between two singletons (\\psi). Used for missing edges when averaging across clusters. " float yes
+option "max-cluster-index" n "Index of the last singleton (may be more than that)" int yes
+option "number-of-input-edges" M "Memory constraint - maximum number of edges to load from input" int yes
+
+option "average-type" a "{arithmetic, geometric, minimum, maximum} - the clustering objective (e.g. average-linkage, complete-linkage etc.)." string default="arithmetic" no
+
+
+option "input-cluster-edges-file" i "Cluster (or singleton) edges (format: cluster1 cluster2 distance)" string default = "-" no
+option "output-merges-file-name" o "Output merges file" string default="-" no
+option "input-cluster-sizes-file-name" - "Initial size of each input cluster (singleton size)" string no
+option "output-cluster-sizes-file-name" - "End size of each output cluster (cluster size)" string no
+
+option "allow-non-dendrogram" - "Allows merging of provably minimal edge intervals, even if the exact merge score (cluster height in dendrogram) is not known at merge time due to partial knowledge implied by the memory constraint. This option allows further clustering per round, thus speeding up the wholse clustering process considerably, by posing a less strict requirement on the output - now the cluster heights are no longer required to be exact. Currently, an upper bound on the merge score is output in this case." flag off
