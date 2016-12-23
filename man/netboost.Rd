@@ -2,7 +2,7 @@
 % Please edit documentation in R/netboost.R
 \name{netboost}
 \alias{netboost}
-\title{Skeleton.}
+\title{Skeleton (Test)}
 \usage{
 netboost()
 }
@@ -10,6 +10,6 @@ netboost()
 Nix
 }
 \description{
-Skeleton.
+Skeleton (Test)
 }
 

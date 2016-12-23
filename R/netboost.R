@@ -1,4 +1,4 @@
-#' Skeleton.
+#' Skeleton (Test)
 #'
 #' @return Nix
 #' @export
@@ -16,12 +16,16 @@ netboost <- function() {
 
 #' Calculate distance
 #' (external wrapper for internal C++ function)
+#' Parallelisation inside C++ program with RcppParallel.
 #' 
 #' @param filter Filter-Matrix
 #' @param adjacency Adjacency-Vector
+#' @param Integer. Amount of CPU cores used (<=1 : sequential)
 #' @return Vector with distances (same length as adjacency)
 #' @export
-dist_tom <- function(filter=NULL, adjacency=NULL) {
+dist_tom <- function(filter=NULL,
+                     adjacency=NULL,
+                     cores=getOption("mc.cores", 2L)) {
   if (is.null(filter) || is.null(adjacency))
     stop("Both filter and adjacency must be provided")
 
@@ -31,5 +35,27 @@ dist_tom <- function(filter=NULL, adjacency=NULL) {
   if (!(is.vector(adjacency) && (length(adjacency) > 0)))
     stop("adjacency is required a vector with length > 0")
 
-  return(netboost:::rcpp_dist_tom(filter, adjacency))
+  cores <- max(cores, 1)
+
+  ## RcppParallel amount of threads started  
+  setThreadOptions(numThreads=cores)
+
+  return(netboost:::cpp_dist_tom(filter, adjacency))
+}
+
+#' Tree search
+#' (external wrapper for internal C++ function)
+#'
+#' @param forest Matrix
+#' @return List
+#' @export
+tree_search <- function(forest=NULL) {
+  # Check for integer values cannot be done here, as either the user must
+  # have set up all values with as.integer() or R delivers default numeric
+  # (double). In that case, Rcpp converts the matrix.
+  # (Alternative: convert manually "matrix(as.integer(forest), nrow=nrow(forest))")
+  if (is.null(forest) || !is.matrix(forest))
+    stop("forest must be provided (as integer matrix)")
+
+  return(netboost:::cpp_tree_search(forest))
 }
