@@ -8,14 +8,14 @@ library(parallel)
 #' @param datan     Dataset
 #' @param stepno    Integer amount of boosting steps
 #' @param until     Stop at index/column (if 0: iterate through all columns)
-#' @param progress  Integer. If > 0, print progress after X steps (mind: parallel!)
+#' @param progress  Integer. If > 0, print progress after every X steps (mind: parallel!)
 #' @param cores     Integer. Amount of CPU cores used (<=1 : sequential)
 #' @param mode      Integer. Mode (0: x86, 1: FMA, 2: AVX). Features are only available
 #'                  if compiled accordingly and available on the hardware.
-#' @return List (for each column vector with items received by boosting)
+#' @return matrix n times 2 matrix with the indicies of the n unique entrees of the filter
 #' @export
 nb_filter_boosting <- function(datan, stepno=20, until=0,
-                               progress=100,
+                               progress=1000,
                                cores=getOption("mc.cores", 2L),
                                mode=2) {
   if (until == 0)
@@ -41,7 +41,7 @@ nb_filter_boosting <- function(datan, stepno=20, until=0,
   } else {   ## Sequential function for debugging.
     print(paste("Sequential version"))
     
-    ret <- lapply(seq(1, until),
+    boosting_filter <- lapply(seq(1, until),
                   function(x) {
                     if (progress && (((x-1) %% progress) == 0)) {
                       print(timestamp(quiet=TRUE))
@@ -55,5 +55,14 @@ nb_filter_boosting <- function(datan, stepno=20, until=0,
   ## Important!: stop (free memory, else suitable memory is still blocked)
   netboost:::cpp_filter_end();
   
-  return(ret)
+  filter <- do.call("rbind",lapply(1:length(boosting_filter), function(x) {
+    return(as.data.frame(cbind(as.integer(boosting_filter[[x]]),
+                               as.integer(rep(x,length(boosting_filter[[x]]))))))
+  }))
+  
+  filter <- unique(t(apply(filter,1,sort)))
+  colnames(filter) <- c("cluster_id1","cluster_id2")
+  rownames(filter) <- 1:nrow(filter)
+  
+  return(filter)
 }
