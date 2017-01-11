@@ -5,7 +5,7 @@ library(parallel)
 #'
 #' Parallelisation via multicore (via 'parallel'-package). So *nix only atm.
 #'
-#' @param datan     Dataset
+#' @param datan     Data frame were rows correspond to samples and columns to features.
 #' @param stepno    Integer amount of boosting steps
 #' @param until     Stop at index/column (if 0: iterate through all columns)
 #' @param progress  Integer. If > 0, print progress after every X steps (mind: parallel!)
@@ -14,10 +14,22 @@ library(parallel)
 #'                  if compiled accordingly and available on the hardware.
 #' @return matrix n times 2 matrix with the indicies of the n unique entrees of the filter
 #' @export
-nb_filter_boosting <- function(datan, stepno=20, until=0,
+nb_filter_boosting <- function(datan, stepno=20L, until=0,
                                progress=1000,
                                cores=getOption("mc.cores", 2L),
                                mode=2) {
+  if (is.null(datan))
+    stop("datan must be provided")
+  
+  if (!(is.data.frame(datan) && (nrow(datan) > 0) && (ncol(datan) > 0)))
+    stop("datan must be a data frame with dim() > (0,0).")
+  
+  if (!(is.integer(stepno) && (stepno > 0)))
+    stop("stepno must be an integer > 0.")
+  
+  if (!(is.integer(until) && (until >= 0)))
+    stop("until must be an integer >= 0.")
+  
   if (until == 0)
     until = ncol(datan);
   

@@ -33,6 +33,9 @@ calculate_adjacency <- function(filter=NULL,softPower=1) {
 #' (external wrapper for internal C++ function)
 #' Parallelisation inside C++ program with RcppParallel.
 #' 
+#' - eins
+#' - zwei
+#' 
 #' @param filter Filter-Matrix
 #' @param adjacency Adjacency-Vector
 #' @param Integer. Amount of CPU cores used (<=1 : sequential)
