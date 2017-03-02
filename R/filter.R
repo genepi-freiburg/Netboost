@@ -18,7 +18,7 @@ nb_filter_boosting <- function(datan, stepno=20L, until=0,
                                progress=1000,
                                cores=getOption("mc.cores", 2L),
                                mode=2) {
-  if (is.null(datan))
+  if (!exists("datan"))
     stop("datan must be provided")
   
   if (!(is.data.frame(datan) && (nrow(datan) > 0) && (ncol(datan) > 0)))
@@ -33,15 +33,20 @@ nb_filter_boosting <- function(datan, stepno=20L, until=0,
   if (until == 0)
     until = ncol(datan);
   
+  # check mode
+  if(!(mode %in% c(0,1,2))){
+    stop("mode must be 0 (x86), 1 (FMA) or 2 (AVX).")
+  }
+  
+  
   ## Initialize data structures for optimized boosting (once)
   netboost:::cpp_filter_base(datan, stepno, mode=mode);
   
-  ## Parallelization "conventional" via mclapply. Not really accountable overhead,
-  ## as single calls take ~10 seconds.
+  ## Parallelization "conventional" via mclapply.
   if (cores > 1) {
     print(paste("Parallel version:", cores, "cores"))
     
-    ret <- mclapply(seq(1, until),
+    boosting_filter <- mclapply(seq(1, until),
                     function(x) {
                       if ((progress > 0) && (((x-1) %% progress) == 0)) {
                         print(sprintf("idx: %d (%.1f%%) - %s", x, x * 100 / until, date()))

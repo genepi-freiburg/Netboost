@@ -25,9 +25,8 @@ netboost <- function() {
 #' @return Vector with adjacencies for the filter
 #' @export
 calculate_adjacency <- function(filter=NULL,softPower=1) {
-  adjacency <- sapply(1:nrow(filter),function(i){abs(cor(datan[,filter[i,1]],datan[,filter[i,2]]))^softPower})
-  return(adjacency)
-}
+  return(sapply(1:nrow(filter),function(i){abs(cor(datan[,filter[i,1]],datan[,filter[i,2]]))^softPower}))
+ }
 
 #' Calculate distance
 #' (external wrapper for internal C++ function)
@@ -74,3 +73,15 @@ tree_search <- function(forest=NULL) {
 
   return(netboost:::cpp_tree_search(forest))
 }
+
+#' TCGA RNA and methylation measurement on chromosome 18 for 180 AML patients.
+#'
+#' @format A data frame with 180 rows and 5283 variables:
+#' @source \url{http://www.tcga.com/}
+"tcga_aml_meth_rna_chr18"
+
+#' TCGA covariates for 180 AML patients.
+#'
+#' @format A data frame with 188 rows and 78 variables:
+#' @source \url{http://www.tcga.com/}
+"tcga_aml_covariates"
