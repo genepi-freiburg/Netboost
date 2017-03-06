@@ -24,7 +24,7 @@ netboost <- function() {
 #' @param softPower Integer. Exponent of the transformation
 #' @return Vector with adjacencies for the filter
 #' @export
-calculate_adjacency <- function(filter=NULL,softPower=1) {
+calculate_adjacency <- function(datan=NULL,filter=NULL,softPower=2) {
   return(sapply(1:nrow(filter),function(i){abs(cor(datan[,filter[i,1]],datan[,filter[i,2]]))^softPower}))
  }
 
@@ -73,6 +73,34 @@ tree_search <- function(forest=NULL) {
 
   return(netboost:::cpp_tree_search(forest))
 }
+
+
+
+
+
+#' Run mcupgma
+#' 
+#' @param filter    Filter-Matrix
+#' @param dist      Filter-Matrix
+#' @param max_singleton     The maximal singleton in the clustering. Usually equals the number of features.
+#' @return Dendrogram
+#' @export
+nb_mcupgma <- function(filter=NULL,dist=NULL,max_singleton=dim(datan)[2],cores=getOption("mc.cores", 2L)) {
+  dir.create(path="clustering",recursive=TRUE)
+  system(paste0("rm -rf clustering/*"))
+  system(paste0("rm -r iteration_*/"))
+  
+  write.table(file="clustering/dist.edges",cbind(format(filter,scientific=FALSE,trim=TRUE),format(dist,scientific=FALSE,trim=TRUE)),row.names=FALSE,col.names=FALSE,sep="\t",quote=FALSE)
+  system("gzip -f clustering/dist.edges")
+  cluster <- file.path(netboost:::netboostPackagePath(), "mcupgma", "scripts", "cluster.pl")
+  system(paste0(cluster," -max_distance ",1," -max_singleton ",max_singleton," -iterations 1000 -heap_size 10000000 -num_hash_buckets 40 -jobs ",cores," -retries 1 -output_tree_file clustering/dist.mcupgma_tree -split_unmodified_edges ",cores," clustering/dist.edges.gz")) 
+  
+  return(read.table(file="clustering/dist.mcupgma_tree",row.names=NULL,col.names=c("cluster_id1","cluster_id2","distance","cluster_id3")))
+}
+
+
+
+
 
 #' TCGA RNA and methylation measurement on chromosome 18 for 180 AML patients.
 #'

@@ -47,7 +47,7 @@ nb_filter_boosting <- function(datan, stepno=20L, until=0,
     
     boosting_filter <- mclapply(seq(1, until),
                     function(x) {
-                      if ((progress > 0) && (((x-1) %% progress) == 0)) {
+                      if ((((x-1) %% progress) == 0)) {
                         print(sprintf("idx: %d (%.1f%%) - %s", x, x * 100 / until, date()))
                       }
                       
@@ -59,9 +59,8 @@ nb_filter_boosting <- function(datan, stepno=20L, until=0,
     
     boosting_filter <- lapply(seq(1, until),
                   function(x) {
-                    if (progress && (((x-1) %% progress) == 0)) {
-                      print(timestamp(quiet=TRUE))
-                      print(sprintf("idx: %d (%.1f%%)", x, x * 100 / until))
+                    if ((((x-1) %% progress) == 0)) {
+                       print(sprintf("idx: %d (%.1f%%) - %s", x, x * 100 / until, date()))
                     }
                     
                     netboost:::cpp_filter_step(x)
