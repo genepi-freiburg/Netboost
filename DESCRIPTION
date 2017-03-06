@@ -1,8 +1,8 @@
 Package: netboost
 Type: Package
 Title: Netboost...
-Version: 1.018
-Date: 2016-12-23
+Version: 1.019
+Date: 2017-03-06
 Author: Pascal Schlosser <schlosser@imbi.uni-freiburg.de>, with contributions from Jochen Knaus <jo@imbi.uni-freiburg.de>
 Maintainer: Pascal Schlosser <schlosser@imbi.uni-freiburg.de>
 Description: Multiline comment Multiline comment Multiline comment Multiline comment

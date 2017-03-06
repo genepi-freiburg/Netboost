@@ -37,10 +37,9 @@ nb_filter_boosting <- function(datan, stepno=20L, until=0,
   if(!(mode %in% c(0,1,2))){
     stop("mode must be 0 (x86), 1 (FMA) or 2 (AVX).")
   }
-  
-  
+
   ## Initialize data structures for optimized boosting (once)
-  netboost:::cpp_filter_base(datan, stepno, mode=mode);
+  netboost:::cpp_filter_base(as.matrix(datan), stepno, mode=mode);
   
   ## Parallelization "conventional" via mclapply.
   if (cores > 1) {

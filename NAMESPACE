@@ -3,6 +3,7 @@
 export(calculate_adjacency)
 export(cpp_dist_tom)
 export(dist_tom)
+export(exampleNB)
 export(nb_filter_boosting)
 export(netboost)
 export(tree_search)
