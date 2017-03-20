@@ -30,7 +30,18 @@ exampleNB <- function() {
   adjacencies <- calculate_adjacency(datan=tcga_aml_meth_rna_chr18, filter=filter,softPower=6)
   dist <- dist_tom(filter=filter, adjacency=adjacencies, cores=20L)
   forest <- nb_mcupgma(filter=filter,dist=dist,max_singleton=dim(tcga_aml_meth_rna_chr18)[2],cores=20L)
-  trees <- tree_search(forest);
+  trees <- tree_search(forest)
+  pdf(file="results_individual_trees.pdf")
   results <- cut_trees(trees=trees,datan=tcga_aml_meth_rna_chr18, forest=forest, minClusterSize = 10L, MEDissThres = 0.25)
-   
+  dev.off()
+  pdf(file="results_netboost.pdf",width = 42)
+  sum_res <- nb_summary(results)
+  dev.off()
+  
+  system(paste0("rm -rf clustering/*"))
+  system(paste0("rm -r clustering/"))
+  system(paste0("rm -r iteration_*/"))
+  
+  
+  
 }

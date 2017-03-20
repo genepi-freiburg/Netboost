@@ -103,11 +103,6 @@ tree_search <- function(forest=NULL) {
 }
 
 
-
-
-
-
-
 #' Calculate dendrogram for an individual tree from a forest
 #'
 #' @param tree A list with two elements. ids, which is an integer vector of feature identifiers and rows, which is an integer vector of selected rows in the corresponding forest
@@ -157,7 +152,7 @@ tree_dendro <- function(tree=NULL, datan=NULL, forest=NULL) {
 #' @param MEDissThres Module Eigengene Dissimilarity Threshold for merging close modules.
 #' @return Object of class hclust
 #' @export
-cut_dendro <- function(tree_dendro=NULL, minClusterSize= 10L, datan=NULL, MEDissThres = NULL) {
+cut_dendro <- function(tree_dendro=NULL, minClusterSize= 10L, datan=NULL, MEDissThres = NULL, name_of_tree="") {
   dynamicMods <- cutreeDynamic(dendro = tree_dendro$dendro, method="tree", deepSplit = TRUE, minClusterSize = minClusterSize)
   ### Merging of Dynamic Modules ###
   # Calculate eigengenes
@@ -168,7 +163,7 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 10L, datan=NULL, MEDiss
   # Cluster module eigengenes
   if(length(MEDiss) > 1){
     METree <- hclust(as.dist(MEDiss), method = "average");
-    plot(METree, main = "Netboost: Clustering of module eigengenes",
+    plot(METree, main = paste0(name_of_tree,"Clustering of module eigengenes"),
          xlab = "", sub = "")
     abline(h=MEDissThres, col = "red")
     
@@ -179,16 +174,15 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 10L, datan=NULL, MEDiss
     MEs <- MEList$eigengenes
     MEDiss <- 1-cor(MEs);
     METree <- hclust(as.dist(MEDiss), method = "average");
-    plot(METree, main = "Netboost: Clustering of merged module eigengenes",
+    plot(METree, main =paste0(name_of_tree,"Clustering of merged module eigengenes"),
          xlab = "", sub = "")
-  }else{
-    cat("\nOnly one module in this tree.\n")
+    plotDendroAndColors(dendro=tree_dendro$dendro, colors=mergedColors,"Merged Dynamic", dendroLabels = FALSE, hang = 0.01, addGuide = TRUE, guideHang = 0.05, main=paste0(name_of_tree,"Cluster Dendrogram"))
+    }else{
+    cat("\nOnly one module in ",name_of_tree,".\n")
     mergedColors <- dynamicMods
+    plot(tree_dendro$dendro, main=paste0(name_of_tree,"Cluster Dendrogram (Tree maximaly consists out of one module.)"))
   }
-
-  plotDendroAndColors(dendro=tree_dendro$dendro, colors=mergedColors,"Merged Dynamic", dendroLabels = FALSE, hang = 0.01, addGuide = TRUE, guideHang = 0.05, main="Cluster Dendrogram Netboost")
-  cat("\nNetboost extracted",length(table(mergedColors)[-1]),"modules with an average size of",mean(table(mergedColors)[-1])," from this tree.\n")
-  
+  cat("\nNetboost extracted",length(table(mergedColors)[-1]),"modules with an average size of",mean(table(mergedColors)[-1])," from ",name_of_tree,".\n")
   return(list(colors=mergedColors,MEs=MEs))
 }
 
@@ -201,13 +195,12 @@ cut_trees <- function(trees=NULL, datan=NULL, forest=NULL, minClusterSize= 10L, 
   res <- list()
   i <- 1L
   for(tree in trees){
-    pdf(file=paste0("tree_",i,".pdf"))
     tree_dendro <- tree_dendro(tree=tree,datan=datan,forest=forest)
     res[[i]] <- list()
     res[[i]][["dendro"]] <- tree_dendro$dendro
     res[[i]][["data"]] <- tree_dendro$data
     res[[i]][["names"]] <- tree_dendro$names
-    cut_dendro <- cut_dendro(tree_dendro=tree_dendro, minClusterSize = minClusterSize, datan=datan, MEDissThres = MEDissThres)
+    cut_dendro <- cut_dendro(tree_dendro=tree_dendro, minClusterSize = minClusterSize, datan=datan, MEDissThres = MEDissThres,name_of_tree = paste0("Tree ",i,":"))
     res[[i]][["colors"]] <- cut_dendro$colors
     res[[i]][["MEs"]] <- cut_dendro$MEs
     i <- i+1
@@ -217,14 +210,88 @@ cut_trees <- function(trees=NULL, datan=NULL, forest=NULL, minClusterSize= 10L, 
 }
 
 
-#' Plot trees together
+#' Summarize results from a forest. Plot trees together.
 #'
 #' @param clust_res Clustering results from cut_trees call.
 #' @return List
 #' @export
-plot_trees <- function(clust_res=NULL){
-  # plotDendroAndColors(dendro=tree_dendro$dendro, colors=mergedColors,"Merged Dynamic", dendroLabels = FALSE, hang = 0.01, addGuide = TRUE, guideHang = 0.05, main="Cluster Dendrogram Netboost")
+nb_summary <- function(clust_res = NULL) {
+  res <- list(
+    dendros = list(),
+    names = c(),
+    colors = c(),
+    MEs = data.frame(row.names = rownames(clust_res[[1]]$data))
+  )
+  n_MEs <- 0
+  n_MEs_background <- 0
+  for (tree in 1:length(clust_res)) {
+    res$dendros[[tree]] <- clust_res[[tree]]$dendro
+    res$names <- c(res$names, clust_res[[tree]]$names)
+    tmp.col <- clust_res[[tree]]$colors
+    tmp.col.new <- tmp.col
+    j <- 1
+    for (col in unique(tmp.col)) {
+      if (col != 0 | length(unique(tmp.col)) == 1) {
+        tmp.col.new[tmp.col == col] <- n_MEs + j
+        j <- j + 1
+      }
+    }
+    
+    res$colors <- c(res$colors, tmp.col.new)
+    if (ncol(clust_res[[tree]]$MEs) > 1) {
+      tmp <- clust_res[[tree]]$MEs
+      for (j in 1:ncol(tmp)) {
+        if (colnames(tmp)[j] == "ME0") {
+          colnames(tmp)[j] <- paste0("ME0_", n_MEs_background + 1)
+        } else{
+          colnames(tmp)[j] <- paste0("ME", (n_MEs + j))
+        }
+      }
+      n_MEs <- n_MEs + ncol(tmp) - 1
+      n_MEs_background <- n_MEs_background + 1
+      res$MEs <- cbind(res$MEs, tmp)
+    } else{
+      tmp <- clust_res[[tree]]$MEs
+      colnames(tmp)[1] <- paste0("ME", (n_MEs + 1))
+      res$MEs <- cbind(res$MEs, tmp)
+      n_MEs <- n_MEs + 1
+    }
+  }
+  
+  cat("Netboost detected ",
+      n_MEs,
+      " modules in ",
+      length(clust_res),
+      " trees.\n")
+  cat("Average size of the modules was ", mean(table(res$colors[!(res$colors ==
+                                                                    0)])), ".\n")
+  cat(
+    sum(res$colors == 0),
+    " of ",
+    length(res$colors),
+    " features (",
+    (sum(res$colors == 0) * 100 / length(res$colors)),
+    "%) were not assigned to modules.\n"
+  )
+  
+  colorHeight = 0.2
+  layout(matrix(c(1:(
+    2 * length(clust_res)
+  )), nrow = 2), heights = c(1 - colorHeight, colorHeight))
+  par(mar = c(0, 4, 4, 4))
+  
+  last_col <- 0
+  for (tree in 1:length(res$dendros)) {
+    plot(res$dendro[[tree]],labels=FALSE)
+    par(mar = c(4, 4, 0, 4))
+    first_col <- last_col + 1
+    last_col <- last_col + length(res$dendro[[tree]]$labels)
+    plotColorUnderTree(res$dendro[[tree]], c(gray(level=0.7),rainbow(n = (length(unique(res$colors))-1)))[res$colors[first_col:last_col]+1])
+  }
+  
+  return(res)
 }
+
 #' TCGA RNA and methylation measurement on chromosome 18 for 180 AML patients.
 #'
 #' @format A data frame with 180 rows and 5283 variables:

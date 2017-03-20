@@ -1,7 +1,7 @@
 Package: netboost
 Type: Package
 Title: Netboost: Network supported boosting
-Version: 1.019
+Version: 1.020
 Date: 2017-03-06
 Author: Pascal Schlosser <schlosser@imbi.uni-freiburg.de>, with contributions from Jochen Knaus <jo@imbi.uni-freiburg.de>
 Maintainer: Pascal Schlosser <schlosser@imbi.uni-freiburg.de>
