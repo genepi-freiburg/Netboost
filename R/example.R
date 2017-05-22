@@ -4,7 +4,7 @@
 exampleNB <- function() {
   # load data
   # methylation and RNA data
-  data(tcga_aml_meth_rna_chr18)
+  data(tcga_aml_meth_rna_chr18) # 180 patients x 5283 features
   data(tcga_aml_covariates)
 
   filter <- nb_filter_boosting(datan=tcga_aml_meth_rna_chr18, stepno=20L, until=0L, progress=500L, cores=2L, mode=2L)
@@ -24,6 +24,7 @@ exampleNB <- function() {
  
   
   ### compute cluster settings
+  # library(netboost)
   data(tcga_aml_meth_rna_chr18)
   data(tcga_aml_covariates)
   filter <- nb_filter_boosting(datan=tcga_aml_meth_rna_chr18, stepno=20L, until=0L, progress=500L, cores=20L, mode=2L)
@@ -32,11 +33,12 @@ exampleNB <- function() {
   forest <- nb_mcupgma(filter=filter,dist=dist,max_singleton=dim(tcga_aml_meth_rna_chr18)[2],cores=20L)
   trees <- tree_search(forest)
   pdf(file="results_individual_trees.pdf")
-  results <- cut_trees(trees=trees,datan=tcga_aml_meth_rna_chr18, forest=forest, minClusterSize = 10L, MEDissThres = 0.25)
+  results <- cut_trees(trees=trees,datan=tcga_aml_meth_rna_chr18, forest=forest, minClusterSize = 20L, MEDissThres = 0.25)
   dev.off()
-  pdf(file="results_netboost.pdf",width = 42)
-  sum_res <- nb_summary(results)
+  pdf(file="results_netboost.pdf",width = 30)
+  sum_res <- nb_summary(results, MEDissThres = 0.25)
   dev.off()
+  
   
   system(paste0("rm -rf clustering/*"))
   system(paste0("rm -r clustering/"))

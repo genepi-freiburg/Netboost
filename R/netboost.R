@@ -182,7 +182,7 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 10L, datan=NULL, MEDiss
     mergedColors <- dynamicMods
     plot(tree_dendro$dendro, main=paste0(name_of_tree,"Cluster Dendrogram (Tree maximaly consists out of one module.)"))
   }
-  cat("\nNetboost extracted",length(table(mergedColors)[-1]),"modules with an average size of",mean(table(mergedColors)[-1])," from ",name_of_tree,".\n")
+  cat("\nNetboost extracted",length(table(mergedColors)),"modules (including background) with an average size of",mean(table(mergedColors)[-1])," (excluding background) from ",substr(name_of_tree,start=1,stop=(nchar(name_of_tree)-1)),".\n")
   return(list(colors=mergedColors,MEs=MEs))
 }
 
@@ -204,7 +204,6 @@ cut_trees <- function(trees=NULL, datan=NULL, forest=NULL, minClusterSize= 10L, 
     res[[i]][["colors"]] <- cut_dendro$colors
     res[[i]][["MEs"]] <- cut_dendro$MEs
     i <- i+1
-    dev.off()
   }
   return(res)
 }
@@ -215,7 +214,7 @@ cut_trees <- function(trees=NULL, datan=NULL, forest=NULL, minClusterSize= 10L, 
 #' @param clust_res Clustering results from cut_trees call.
 #' @return List
 #' @export
-nb_summary <- function(clust_res = NULL) {
+nb_summary <- function(clust_res = NULL, MEDissThres = NULL) {
   res <- list(
     dendros = list(),
     names = c(),
@@ -260,7 +259,9 @@ nb_summary <- function(clust_res = NULL) {
   
   cat("Netboost detected ",
       n_MEs,
-      " modules in ",
+      " modules and ",
+      n_MEs_background,
+      " background modules in ",
       length(clust_res),
       " trees.\n")
   cat("Average size of the modules was ", mean(table(res$colors[!(res$colors ==
@@ -278,15 +279,15 @@ nb_summary <- function(clust_res = NULL) {
   layout(matrix(c(1:(
     2 * length(clust_res)
   )), nrow = 2), heights = c(1 - colorHeight, colorHeight))
-  par(mar = c(0, 4, 4, 4))
   
   last_col <- 0
   for (tree in 1:length(res$dendros)) {
+    par(mar = c(0, 4, 8, 4))
     plot(res$dendro[[tree]],labels=FALSE)
     par(mar = c(4, 4, 0, 4))
     first_col <- last_col + 1
     last_col <- last_col + length(res$dendro[[tree]]$labels)
-    plotColorUnderTree(res$dendro[[tree]], c(gray(level=0.7),rainbow(n = (length(unique(res$colors))-1)))[res$colors[first_col:last_col]+1])
+    plotColorUnderTree(res$dendro[[tree]], c(gray(level=0.7),rainbow(n = (length(unique(res$colors))-n_MEs_background)))[res$colors[first_col:last_col]+1])
   }
   
   return(res)
