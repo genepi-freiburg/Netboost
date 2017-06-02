@@ -241,13 +241,13 @@ nb_summary <- function(clust_res = NULL, MEDissThres = NULL) {
       tmp <- clust_res[[tree]]$MEs
       for (j in 1:ncol(tmp)) {
         if (colnames(tmp)[j] == "ME0") {
-          colnames(tmp)[j] <- paste0("ME0_", n_MEs_background + 1)
+          n_MEs_background <- n_MEs_background + 1
+          colnames(tmp)[j] <- paste0("ME0_", n_MEs_background)
         } else{
-          colnames(tmp)[j] <- paste0("ME", (n_MEs + j))
+          n_MEs <- n_MEs +1
+          colnames(tmp)[j] <- paste0("ME", (n_MEs))
         }
       }
-      n_MEs <- n_MEs + ncol(tmp) - 1
-      n_MEs_background <- n_MEs_background + 1
       res$MEs <- cbind(res$MEs, tmp)
     } else{
       tmp <- clust_res[[tree]]$MEs
