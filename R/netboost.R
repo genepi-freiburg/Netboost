@@ -235,40 +235,41 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
     res$names <- c(res$names, clust_res[[tree]]$names)
     tmp.col <- clust_res[[tree]]$colors
     tmp.col.new <- tmp.col
-    j <- 1
-    k <- -1
+    tmp_MEs <- clust_res[[tree]]$MEs
+    tmp_MEs_new <- tmp_MEs
     for (col in unique(tmp.col)) {
       if (col != 0 | length(unique(tmp.col)) == 1) {
-        tmp.col.new[tmp.col == col] <- n_MEs + j
-        j <- j + 1
+        n_MEs <- n_MEs +1
+        tmp.col.new[tmp.col == col] <- n_MEs
+        colnames(tmp_MEs_new)[colnames(tmp_MEs)==paste0("ME",col)] <- paste0("ME", (n_MEs))
       }
       if (col == 0 & length(unique(tmp.col)) != 1) {
-        tmp.col.new[tmp.col == col] <- -n_MEs_background + k
-        k <- k - 1
+        n_MEs_background <- n_MEs_background + 1
+        tmp.col.new[tmp.col == col] <- -n_MEs_background
+        colnames(tmp_MEs_new)[colnames(tmp_MEs)=="ME0"] <- paste0("ME0_", n_MEs_background)
       }
     }
+
     
     res$colors <- c(res$colors, tmp.col.new)
-    if (ncol(clust_res[[tree]]$MEs) > 1) {
-      tmp <- clust_res[[tree]]$MEs
-      for (j in 1:ncol(tmp)) {
-        if (colnames(tmp)[j] == "ME0") {
-          n_MEs_background <- n_MEs_background + 1
-          colnames(tmp)[j] <- paste0("ME0_", n_MEs_background)
-        } else{
-          n_MEs <- n_MEs +1
-          colnames(tmp)[j] <- paste0("ME", (n_MEs))
-        }
-      }
-      (dim(res$MEs))
-      (dim(tmp))
-      res$MEs <- cbind(res$MEs, tmp)
-    } else{
-      tmp <- clust_res[[tree]]$MEs
-      colnames(tmp)[1] <- paste0("ME", (n_MEs + 1))
-      res$MEs <- cbind(res$MEs, tmp)
-      n_MEs <- n_MEs + 1
-    }
+    # if (ncol(clust_res[[tree]]$MEs) > 1) {
+    #   tmp <- clust_res[[tree]]$MEs
+    #   for (j in 1:ncol(tmp)) {
+    #     if (colnames(tmp)[j] == "ME0") {
+    #       n_MEs_background <- n_MEs_background + 1
+    #       colnames(tmp)[j] <- paste0("ME0_", n_MEs_background)
+    #     } else{
+    #       n_MEs <- n_MEs +1
+    #       colnames(tmp)[j] <- paste0("ME", (n_MEs))
+    #     }
+    #   }
+      res$MEs <- cbind(res[[4]], tmp_MEs_new)
+    # } else{
+    #   tmp <- clust_res[[tree]]$MEs
+    #   colnames(tmp)[1] <- paste0("ME", (n_MEs + 1))
+    #   res$MEs <- cbind(res[[4]], tmp)
+    #   n_MEs <- n_MEs + 1
+    # }
   }
   
   cat("Netboost detected ",
@@ -297,7 +298,7 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
   
     last_col <- 0
     plot_colors <- res$colors
-    plot_colors[plots_colors <= 0] <- 0
+    plot_colors[plot_colors <= 0] <- 0
     for (tree in 1:length(res$dendros)) {
       par(mar = c(0, 4, 8, 4))
       plot(res$dendro[[tree]],labels=FALSE)
@@ -329,20 +330,16 @@ nb_transfer <- function(nb_summary = NULL, new_data = NULL){
     stop("The number of features in new_data must correspond to the number in nb_summary.")
   }
   
-  if(sort(nb_summary$names) != sort(colnames(new_data))){
+  if(!identical(sort(nb_summary$names), sort(colnames(new_data)))){
     stop("The features in new_data (colnames) must correspond to the features in nb_summary (nb_summary$names).")
   }
   
   new_data <- new_data[,nb_summary$names]
-  # MEs <- data.frame(row.names = rownames(new_data), col.names = colnames(nb_summary$MEs))
-  # # for(ME in colnames(nb_summary$MEs)){
-  #   col <- if(strsplit(x = ME,split = "_")[1] == "ME0"){-strsplit(x = ME,split = "_")[2]}else{substring(x=ME, first = 3)}
-  #   # MEs[,ME] <- new_data[,nb_summary$colors == col]
-  #   
-  # }
-  background_MEs <- sum(unique(nb_summary$colors) <= 0)
-  MEs <- moduleEigengenes(new_data, colors = nb_summary$colors+background_MEs)
-  
+  MEs <- moduleEigengenes(new_data, colors = nb_summary$colors)$eigengenes
+
+  colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"),FUN = length) > 1] <- paste0("ME0_",substring(text = colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"),FUN = length) > 1], first = 4))
+  MEs <- MEs[,colnames(sum_res$MEs)]
+  rownames(MEs) <- rownames(new_data)
   return(MEs)
 }
 
