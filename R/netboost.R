@@ -106,7 +106,7 @@ tree_search <- function(forest=NULL) {
 #' Calculate dendrogram for an individual tree from a forest
 #'
 #' @param tree A list with two elements. ids, which is an integer vector of feature identifiers and rows, which is an integer vector of selected rows in the corresponding forest
-#' @param datan     Dataset
+#' @param datan Dataset
 #' @param forest Matrix
 #' @return List of tree specific objects including dendrogram, tree data and features.
 #' @export
@@ -147,7 +147,7 @@ tree_dendro <- function(tree=NULL, datan=NULL, forest=NULL) {
 #' Module detection for a single tree
 #'
 #' @param tree_dendro List of tree specific objects including dendrogram, tree data and features originating from the tree_dendro function.
-#' @param datan     Dataset
+#' @param datan Dataset
 #' @param forest Matrix
 #' @param MEDissThres Module Eigengene Dissimilarity Threshold for merging close modules.
 #' @return Object of class hclust
@@ -220,13 +220,14 @@ cut_trees <- function(trees=NULL, datan=NULL, forest=NULL, minClusterSize= 10L, 
 #' @param clust_res Clustering results from cut_trees call.
 #' @return List
 #' @export
-nb_summary <- function(clust_res = NULL, MEDissThres = NULL, plot = TRUE) {
+nb_summary <- function(clust_res = NULL, plot = TRUE) {
   res <- list(
-    dendros = list(),
-    names = c(),
-    colors = c(),
-    MEs = data.frame(row.names = rownames(clust_res[[1]]$data))
+    dendros <- list(),
+    names <- c(),
+    colors <- c(),
+    MEs <- data.frame(row.names = rownames(clust_res[[1]]$data))
   )
+  
   n_MEs <- 0
   n_MEs_background <- 0
   for (tree in 1:length(clust_res)) {
@@ -235,10 +236,15 @@ nb_summary <- function(clust_res = NULL, MEDissThres = NULL, plot = TRUE) {
     tmp.col <- clust_res[[tree]]$colors
     tmp.col.new <- tmp.col
     j <- 1
+    k <- -1
     for (col in unique(tmp.col)) {
       if (col != 0 | length(unique(tmp.col)) == 1) {
         tmp.col.new[tmp.col == col] <- n_MEs + j
         j <- j + 1
+      }
+      if (col == 0 & length(unique(tmp.col)) != 1) {
+        tmp.col.new[tmp.col == col] <- -n_MEs_background + k
+        k <- k - 1
       }
     }
     
@@ -254,6 +260,8 @@ nb_summary <- function(clust_res = NULL, MEDissThres = NULL, plot = TRUE) {
           colnames(tmp)[j] <- paste0("ME", (n_MEs))
         }
       }
+      (dim(res$MEs))
+      (dim(tmp))
       res$MEs <- cbind(res$MEs, tmp)
     } else{
       tmp <- clust_res[[tree]]$MEs
@@ -270,14 +278,14 @@ nb_summary <- function(clust_res = NULL, MEDissThres = NULL, plot = TRUE) {
       " background modules in ",
       length(clust_res),
       " trees.\n")
-  cat("Average size of the modules was ", mean(table(res$colors[!(res$colors ==
+  cat("Average size of the modules was ", mean(table(res$colors[!(res$colors <=
                                                                     0)])), ".\n")
   cat(
-    sum(res$colors == 0),
+    sum(res$colors <= 0),
     " of ",
     length(res$colors),
     " features (",
-    (sum(res$colors == 0) * 100 / length(res$colors)),
+    (sum(res$colors <= 0) * 100 / length(res$colors)),
     "%) were not assigned to modules.\n"
   )
   
@@ -288,17 +296,54 @@ nb_summary <- function(clust_res = NULL, MEDissThres = NULL, plot = TRUE) {
     )), nrow = 2), heights = c(1 - colorHeight, colorHeight))
   
     last_col <- 0
+    plot_colors <- res$colors
+    plot_colors[plots_colors <= 0] <- 0
     for (tree in 1:length(res$dendros)) {
       par(mar = c(0, 4, 8, 4))
       plot(res$dendro[[tree]],labels=FALSE)
       par(mar = c(4, 4, 0, 4))
       first_col <- last_col + 1
       last_col <- last_col + length(res$dendro[[tree]]$labels)
-      plotColorUnderTree(res$dendro[[tree]], c(gray(level=0.7),rainbow(n = (length(unique(res$colors))-n_MEs_background)))[res$colors[first_col:last_col]+1])
+      plotColorUnderTree(res$dendro[[tree]], c(gray(level=0.7),rainbow(n = (length(unique(plot_colors))-1)))[plot_colors[first_col:last_col]+1])
     }
   }
   
   return(res)
+}
+
+
+#' Transfer of Netboost results to new data.
+#' 
+#' @param nb_summary Netboost results from nb_summary call.
+#' @param new_data Data frame were rows correspond to samples and columns to features.
+#' @return List
+#' @export
+nb_transfer <- function(nb_summary = NULL, new_data = NULL){
+  if (!exists("new_data"))
+    stop("datan must be provided")
+  
+  if (!(is.data.frame(new_data) && (nrow(new_data) > 0) && (ncol(new_data) > 0)))
+    stop("new_data must be a data frame with dim() > (0,0).")
+  
+  if(length(nb_summary$colors) != ncol(new_data)){
+    stop("The number of features in new_data must correspond to the number in nb_summary.")
+  }
+  
+  if(sort(nb_summary$names) != sort(colnames(new_data))){
+    stop("The features in new_data (colnames) must correspond to the features in nb_summary (nb_summary$names).")
+  }
+  
+  new_data <- new_data[,nb_summary$names]
+  # MEs <- data.frame(row.names = rownames(new_data), col.names = colnames(nb_summary$MEs))
+  # # for(ME in colnames(nb_summary$MEs)){
+  #   col <- if(strsplit(x = ME,split = "_")[1] == "ME0"){-strsplit(x = ME,split = "_")[2]}else{substring(x=ME, first = 3)}
+  #   # MEs[,ME] <- new_data[,nb_summary$colors == col]
+  #   
+  # }
+  background_MEs <- sum(unique(nb_summary$colors) <= 0)
+  MEs <- moduleEigengenes(new_data, colors = nb_summary$colors+background_MEs)
+  
+  return(MEs)
 }
 
 #' TCGA RNA and methylation measurement on chromosome 18 for 180 AML patients.

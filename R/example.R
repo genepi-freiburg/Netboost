@@ -36,7 +36,7 @@ exampleNB <- function() {
   results <- cut_trees(trees=trees,datan=tcga_aml_meth_rna_chr18, forest=forest, minClusterSize = 10L, MEDissThres = 0.25)
   dev.off()
   pdf(file="results_netboost.pdf",width = 30)
-  sum_res <- nb_summary(results, MEDissThres = 0.25)
+  sum_res <- nb_summary(clust_res = results)
   dev.off()
   
   
