@@ -7,13 +7,15 @@ exampleNB <- function() {
   data(tcga_aml_meth_rna_chr18) # 180 patients x 5283 features
   data(tcga_aml_covariates)
 
-  filter <- nb_filter_boosting(datan=tcga_aml_meth_rna_chr18, stepno=20L, until=0L, progress=500L, cores=2L, mode=2L)
+  options("mc.cores"=10L)
+  
+  filter <- nb_filter_boosting(datan=tcga_aml_meth_rna_chr18, stepno=20L, until=0L, progress=500L, mode=2L)
 
   adjacencies <- calculate_adjacency(datan=tcga_aml_meth_rna_chr18, filter=filter,softPower=6)
 
-  dist <- dist_tom(filter=filter, adjacency=adjacencies, cores=2L)
+  dist <- dist_tom(filter=filter, adjacency=adjacencies)
 
-  forest <- nb_mcupgma(filter=filter,dist=dist,max_singleton=dim(tcga_aml_meth_rna_chr18)[2],cores=2L)
+  forest <- nb_mcupgma(filter=filter,dist=dist,max_singleton=dim(tcga_aml_meth_rna_chr18)[2])
  
   trees <- tree_search(forest);
 
@@ -25,12 +27,14 @@ exampleNB <- function() {
   
   ### compute cluster settings
   # library(netboost)
+  options("mc.cores"=10L)
   data(tcga_aml_meth_rna_chr18)
   data(tcga_aml_covariates)
-  filter <- nb_filter_boosting(datan=tcga_aml_meth_rna_chr18, stepno=20L, until=0L, progress=500L, cores=12L, mode=2L)
+
+  filter <- nb_filter_boosting(datan=tcga_aml_meth_rna_chr18, stepno=20L, until=0L, progress=500L, mode=2L)
   adjacencies <- calculate_adjacency(datan=tcga_aml_meth_rna_chr18, filter=filter,softPower=6)
-  dist <- dist_tom(filter=filter, adjacency=adjacencies, cores=12L)
-  forest <- nb_mcupgma(filter=filter,dist=dist,max_singleton=dim(tcga_aml_meth_rna_chr18)[2],cores=12L)
+  dist <- dist_tom(filter=filter, adjacency=adjacencies)
+  forest <- nb_mcupgma(filter=filter,dist=dist,max_singleton=dim(tcga_aml_meth_rna_chr18)[2])
   trees <- tree_search(forest)
   pdf(file="results_individual_trees.pdf")
   results <- cut_trees(trees=trees,datan=tcga_aml_meth_rna_chr18, forest=forest, minClusterSize = 10L, MEDissThres = 0.25)
