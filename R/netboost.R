@@ -189,7 +189,7 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 10L, datan=NULL, MEDiss
     }
   }
   cat("\nNetboost extracted",length(table(mergedColors)),"modules (including background) with an average size of",mean(table(mergedColors)[-1])," (excluding background) from ",substr(name_of_tree,start=1,stop=(nchar(name_of_tree)-1)),".\n")
-  return(list(colors=mergedColors,MEs=MEs))
+  return(list(colors=mergedColors,MEs=MEs,varExplained=MEList$varExplained))
 }
 
 #' Cut trees
@@ -209,6 +209,7 @@ cut_trees <- function(trees=NULL, datan=NULL, forest=NULL, minClusterSize= 10L, 
     cut_dendro <- cut_dendro(tree_dendro=tree_dendro, minClusterSize = minClusterSize, datan=datan, MEDissThres = MEDissThres,name_of_tree = paste0("Tree ",i,":"), plot = plot)
     res[[i]][["colors"]] <- cut_dendro$colors
     res[[i]][["MEs"]] <- cut_dendro$MEs
+    res[[i]][["varExplained"]] <- cut_dendro$varExplained
     i <- i+1
   }
   return(res)
@@ -225,7 +226,8 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
     dendros <- list(),
     names <- c(),
     colors <- c(),
-    MEs <- data.frame(row.names = rownames(clust_res[[1]]$data))
+    MEs <- data.frame(row.names = rownames(clust_res[[1]]$data)),
+    varExplained <- c()
   )
   
   n_MEs <- 0
@@ -264,6 +266,7 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
     #     }
     #   }
       res$MEs <- cbind(res[[4]], tmp_MEs_new)
+      res$varExplained <- cbind(res[[5]], clust_res[[tree]]$varExplained)
     # } else{
     #   tmp <- clust_res[[tree]]$MEs
     #   colnames(tmp)[1] <- paste0("ME", (n_MEs + 1))
