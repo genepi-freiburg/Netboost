@@ -266,7 +266,7 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
     #     }
     #   }
       res$MEs <- cbind(res[[4]], tmp_MEs_new)
-      res$varExplained <- cbind(res[[5]], clust_res[[tree]]$varExplained)
+      res$varExplained <- c(res[[5]], clust_res[[tree]]$varExplained)
     # } else{
     #   tmp <- clust_res[[tree]]$MEs
     #   colnames(tmp)[1] <- paste0("ME", (n_MEs + 1))
