@@ -26,17 +26,7 @@ netboost <- function(datan=NULL,stepno=20L, until=0L,
                      minClusterSize = 2L,
                      MEDissThres = 0.25,
                      cores=getOption("mc.cores", 2L)) {
-  # print("Netboost. Yeah")
-  
-  # prg <- file.path(netboostExecPath(), "test.pl")
-
-  # system(prg)
-  # 
-  # prg <- file.path(netboostPackagePath(), "mcupgma", "scripts", "cluster.pl")
-  # 
-  # system(prg)
-  # 
-  print("Netboost: Initialising filter step.")
+    print("Netboost: Initialising filter step.")
   filter <- nb_filter(datan=datan, stepno=stepno, until=until, progress=progress, cores=cores,mode=mode)
   print("Netboost: Finished filter step.")
   print("Netboost: Initialising distance calculation.")

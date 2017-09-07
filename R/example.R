@@ -27,7 +27,6 @@ nb_example <- function() {
   ### compute cluster settings
   # install.packages("/data/bin/netboost_1.023.tar.gz", repos = NULL, type="source")
   # install.packages("~/git/netboost_1.023.tar.gz", repos = NULL, type="source")
-  # install.packages("~/git/netboost_1.023.tgz", repos = NULL, type="source")
   
   # library(netboost)
 

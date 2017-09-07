@@ -7,13 +7,13 @@
 #' @param stepno Amount of steps
 #' @param mode Accelerator mode (0: x86, 1: FMA, 2: AVX)
 cpp_filter_base <- function(data, stepno = 20L, mode_ = 2L) {
-    invisible(.Call('netboost_filter_base', PACKAGE = 'netboost', data, stepno, mode_))
+    invisible(.Call('_netboost_filter_base', PACKAGE = 'netboost', data, stepno, mode_))
 }
 
 #' @title Boosting cleanup (required to free memory)
 #' 
 cpp_filter_end <- function() {
-    invisible(.Call('netboost_filter_end', PACKAGE = 'netboost'))
+    invisible(.Call('_netboost_filter_end', PACKAGE = 'netboost'))
 }
 
 #' @title Single boosting step
@@ -22,7 +22,7 @@ cpp_filter_end <- function() {
 #' 
 #' @param col_y Row in data matrix
 cpp_filter_step <- function(col_y) {
-    .Call('netboost_rcpp_filter_step', PACKAGE = 'netboost', col_y)
+    .Call('_netboost_rcpp_filter_step', PACKAGE = 'netboost', col_y)
 }
 
 #' @title Function to calcutate distance
@@ -37,7 +37,7 @@ cpp_filter_step <- function(col_y) {
 #' @param filter Filter matrix
 #' @param adjacency Vector
 cpp_dist_tom <- function(filter, adjacency) {
-    .Call('netboost_dist_tom', PACKAGE = 'netboost', filter, adjacency)
+    .Call('_netboost_dist_tom', PACKAGE = 'netboost', filter, adjacency)
 }
 
 #' @title Tree search.
@@ -47,6 +47,6 @@ cpp_dist_tom <- function(filter, adjacency) {
 #'  export  (NO export here, wrapper in R required)
 #'
 cpp_tree_search <- function(netboost_forest) {
-    .Call('netboost_tree_search', PACKAGE = 'netboost', netboost_forest)
+    .Call('_netboost_tree_search', PACKAGE = 'netboost', netboost_forest)
 }
 
