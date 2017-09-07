@@ -2,14 +2,39 @@
 % Please edit documentation in R/netboost.R
 \name{netboost}
 \alias{netboost}
-\title{Skeleton (Test)}
+\title{Netboost clustering.}
 \usage{
-netboost()
+netboost(datan = NULL, stepno = 20L, until = 0L, progress = 1000L,
+  mode = 2L, softPower = 2L, max_singleton = dim(datan)[2], plot = TRUE,
+  minClusterSize = 2L, MEDissThres = 0.25, cores = getOption("mc.cores",
+  2L))
+}
+\arguments{
+\item{datan}{Data frame were rows correspond to samples and columns to features.}
+
+\item{stepno}{Integer amount of boosting steps applied in the filtering step}
+
+\item{until}{Stop at index/column (if 0: iterate through all columns)}
+
+\item{progress}{Integer. If > 0, print progress after every X steps (mind: parallel!)}
+
+\item{mode}{Integer. Mode (0: x86, 1: FMA, 2: AVX). Features are only available
+if compiled accordingly and available on the hardware.}
+
+\item{softPower}{Integer. Exponent of the transformation}
+
+\item{max_singleton}{Integer. The maximal singleton in the clustering. Usually equals the number of features.}
+
+\item{minClusterSize}{Integer. The minimum number of features in one module.}
+
+\item{MEDissThres}{Numeric. Module Eigengene Dissimilarity Threshold for merging close modules.}
+
+\item{cores}{Integer. Amount of CPU cores used (<=1 : sequential)}
 }
 \value{
-Nix
+List
 }
 \description{
-Skeleton (Test)
+The Netboost clustering is performed in three subsequent steps. First, a filter of important edges in the network is calculated. Next, pairwise distances are calculated. Last, clustering is performed. For details see Schlosser et al. doi...
 }
 

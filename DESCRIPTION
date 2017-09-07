@@ -1,7 +1,7 @@
 Package: netboost
 Type: Package
-Title: Netboost: Network supported boosting
-Version: 1.022
+Title: Netboost: Network analysis supported by boosting
+Version: 1.023
 Date: 2017-09-07
 Author: Pascal Schlosser <schlosser@imbi.uni-freiburg.de>, with contributions from Jochen Knaus <jo@imbi.uni-freiburg.de>
 Maintainer: Pascal Schlosser <schlosser@imbi.uni-freiburg.de>

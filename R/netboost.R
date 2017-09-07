@@ -1,22 +1,53 @@
 library(WGCNA)
 
-#' Skeleton (Test)
+#' Netboost clustering.
+#' 
+#' The Netboost clustering is performed in three subsequent steps. First, a filter of important edges in the network is calculated. Next, pairwise distances are calculated. Last, clustering is performed. For details see Schlosser et al. doi...
 #'
-#' @return Nix
+#' @param softPower Integer. Exponent of the transformation
+#' @param cores Integer. Amount of CPU cores used (<=1 : sequential)
+#' @param datan     Data frame were rows correspond to samples and columns to features.
+#' @param stepno    Integer amount of boosting steps applied in the filtering step
+#' @param until     Stop at index/column (if 0: iterate through all columns)
+#' @param progress  Integer. If > 0, print progress after every X steps (mind: parallel!)
+#' @param mode      Integer. Mode (0: x86, 1: FMA, 2: AVX). Features are only available
+#'                  if compiled accordingly and available on the hardware.
+#' @param max_singleton   Integer. The maximal singleton in the clustering. Usually equals the number of features.
+#' @param minClusterSize  Integer. The minimum number of features in one module.
+#' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for merging close modules.
+#' @return List
 #' @export
-netboost <- function() {
-  print("Netboost. Yeah")
+netboost <- function(datan=NULL,stepno=20L, until=0L,
+                     progress=1000L,
+                     mode=2L,
+                     softPower=2L,
+                     max_singleton=dim(datan)[2],
+                     plot=TRUE,
+                     minClusterSize = 2L,
+                     MEDissThres = 0.25,
+                     cores=getOption("mc.cores", 2L)) {
+  # print("Netboost. Yeah")
   
-  prg <- file.path(netboostExecPath(), "test.pl")
+  # prg <- file.path(netboostExecPath(), "test.pl")
 
-  system(prg)
-  
-  prg <- file.path(netboostPackagePath(), "mcupgma", "scripts", "cluster.pl")
-  
-  system(prg)
-  
-  
-}
+  # system(prg)
+  # 
+  # prg <- file.path(netboostPackagePath(), "mcupgma", "scripts", "cluster.pl")
+  # 
+  # system(prg)
+  # 
+  print("Netboost: Initialising filter step.")
+  filter <- nb_filter(datan=datan, stepno=stepno, until=until, progress=progress, cores=cores,mode=mode)
+  print("Netboost: Finished filter step.")
+  print("Netboost: Initialising distance calculation.")
+  dist <- nb_dist(datan=datan, filter=filter, softPower=softPower, cores=cores)
+  print("Netboost: Finished distance calculation.")
+  print("Netboost: Initialising clustering step.")
+  results <- nb_clust(datan=datan, filter=filter, dist=dist, minClusterSize = minClusterSize, MEDissThres = MEDissThres,
+                      max_singleton=max_singleton, cores=cores, plot = plot)
+  print("Netboost: Finished clustering step.")
+  print("\nNetboost: Finished Netboost.")
+ }
 
 
 #' Calculate network adjacencies for filter
@@ -25,7 +56,6 @@ netboost <- function() {
 #' @param filter    Filter-Matrix
 #' @param softPower Integer. Exponent of the transformation
 #' @return Vector with adjacencies for the filter
-#' @export
 calculate_adjacency <- function(datan=NULL,filter=NULL,softPower=2) {
   return(sapply(1:nrow(filter),function(i){abs(cor(datan[,filter[i,1]],datan[,filter[i,2]]))^softPower}))
  }
@@ -37,11 +67,10 @@ calculate_adjacency <- function(datan=NULL,filter=NULL,softPower=2) {
 #' @param filter Filter-Matrix
 #' @param datan     Dataset
 #' @param softPower Integer. Exponent of the transformation
-#' @param Integer. Amount of CPU cores used (<=1 : sequential)
+#' @param cores Integer. Amount of CPU cores used (<=1 : sequential)
 #' @return Vector with distances (same length as adjacency)
 #' @export
 nb_dist <- function(filter=NULL,
-                     adjacency=NULL,
                      datan=NULL,
                      softPower=2,
                      cores=getOption("mc.cores", 2L)) {
@@ -63,13 +92,13 @@ nb_dist <- function(filter=NULL,
 
 
 
-#' Run mcupgma
+#' Calculate dendrogram for a sparse distance matrix
+#' (external wrapper MC-UPGMA clustering package Loewenstein et al.
 #' 
 #' @param filter    Filter-Matrix
 #' @param dist      Filter-Matrix
 #' @param max_singleton     The maximal singleton in the clustering. Usually equals the number of features.
 #' @return Dendrogram
-#' @export
 nb_mcupgma <- function(filter=NULL,dist=NULL,max_singleton=NULL,cores=getOption("mc.cores", 2L)) {
   dir.create(path="clustering",recursive=TRUE)
   system(paste0("rm -rf clustering/*"))
@@ -83,14 +112,11 @@ nb_mcupgma <- function(filter=NULL,dist=NULL,max_singleton=NULL,cores=getOption(
   return(as.matrix(read.table(file="clustering/dist.mcupgma_tree",row.names=NULL,col.names=c("cluster_id1","cluster_id2","distance","cluster_id3"))))
 }
 
-
-
-#' Tree search
+#' Extracts independent trees from nb_mcupgma results
 #' (external wrapper for internal C++ function)
 #'
 #' @param forest Matrix
 #' @return List
-#' @export
 tree_search <- function(forest=NULL) {
   # Check for integer values cannot be done here, as either the user must
   # have set up all values with as.integer() or R delivers default numeric
@@ -105,13 +131,12 @@ tree_search <- function(forest=NULL) {
 }
 
 
-#' Calculate dendrogram for an individual tree from a forest
+#' Calculate the dendrogram for an individual tree
 #'
 #' @param tree A list with two elements. ids, which is an integer vector of feature identifiers and rows, which is an integer vector of selected rows in the corresponding forest
 #' @param datan Dataset
 #' @param forest Matrix
 #' @return List of tree specific objects including dendrogram, tree data and features.
-#' @export
 tree_dendro <- function(tree=NULL, datan=NULL, forest=NULL) {
   index.features <- tree$ids[tree$ids <= dim(datan)[2]]
   data_tree <- datan[,index.features]
@@ -146,14 +171,13 @@ tree_dendro <- function(tree=NULL, datan=NULL, forest=NULL) {
   return(list(dendro=dendro,data=data_tree,names=feature_names)) 
 }  
   
-#' Module detection for a single tree
+#' Module detection for an individual tree
 #'
 #' @param tree_dendro List of tree specific objects including dendrogram, tree data and features originating from the tree_dendro function.
 #' @param datan Dataset
 #' @param forest Matrix
 #' @param MEDissThres Module Eigengene Dissimilarity Threshold for merging close modules.
 #' @return Object of class hclust
-#' @export
 cut_dendro <- function(tree_dendro=NULL, minClusterSize= 10L, datan=NULL, MEDissThres = NULL, name_of_tree="", plot = TRUE) {
   dynamicMods <- cutreeDynamic(dendro = tree_dendro$dendro, method="tree", deepSplit = TRUE, minClusterSize = minClusterSize)
   ### Merging of Dynamic Modules ###
@@ -194,11 +218,10 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 10L, datan=NULL, MEDiss
   return(list(colors=mergedColors,MEs=MEs,varExplained=MEList$varExplained))
 }
 
-#' Cut trees
+#' Module detection for the results from a nb_mcupgma call
 #'
 #' @param trees List of trees, where one tree is a list of ids and rows
 #' @return List
-#' @export
 cut_trees <- function(trees=NULL, datan=NULL, forest=NULL, minClusterSize= 10L, MEDissThres = NULL, plot = TRUE) {
   res <- list()
   i <- 1L
@@ -219,7 +242,7 @@ cut_trees <- function(trees=NULL, datan=NULL, forest=NULL, minClusterSize= 10L, 
 
 
 
-#' Generate clustering
+#' Netboost clustering step
 #'
 #' @param filter    Filter-Matrix as returned by nb_filter.
 #' @param dist      Distance matrix as returned by nb_dist.
@@ -235,9 +258,8 @@ nb_clust <- function(filter=NULL,dist=NULL,datan=NULL,max_singleton=dim(datan)[2
   trees <- tree_search(forest)
   results <- cut_trees(trees=trees,datan=datan, forest=forest, minClusterSize = minClusterSize, MEDissThres = MEDissThres, plot = plot)
   sum_res <- nb_summary(clust_res = results, plot = plot)
-  
   return(sum_res)
-  }
+}
 
 
 
@@ -246,7 +268,6 @@ nb_clust <- function(filter=NULL,dist=NULL,datan=NULL,max_singleton=dim(datan)[2
 #'
 #' @param clust_res Clustering results from cut_trees call.
 #' @return List
-#' @export
 nb_summary <- function(clust_res = NULL, plot = TRUE) {
   res <- vector("list")
   n_MEs <- 0
@@ -342,7 +363,7 @@ nb_transfer <- function(nb_summary = NULL, new_data = NULL){
   MEs <- moduleEigengenes(new_data, colors = nb_summary$colors)$eigengenes
 
   colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"),FUN = length) > 1] <- paste0("ME0_",substring(text = colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"),FUN = length) > 1], first = 4))
-  MEs <- MEs[,colnames(sum_res$MEs)]
+  MEs <- MEs[,colnames(nb_summary$MEs)]
   rownames(MEs) <- rownames(new_data)
   return(MEs)
 }

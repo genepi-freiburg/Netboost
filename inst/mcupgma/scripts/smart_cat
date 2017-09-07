@@ -46,13 +46,13 @@ if ($non_gz && !$gz){
 } 
 elsif (!$non_gz && $gz){
 	## all inputs are gzipped  ==> exec zcat
-	exec("zcat @ARGV");
+	exec("zcat < @ARGV");
 } else {
 	## input files contain some gz some not - pipe each one using cat or zcat - slower
 	warn('mixed gz and non gz inputs');
 	while($filename = shift){
 	        if ($filename =~ /\.gz$/) {
-        	        open(A,"zcat $filename |") or die("can't open `zcat $filename|`:$!");
+        	        open(A,"zcat < $filename |") or die("can't open `zcat $filename|`:$!");
 	        }   else {
         	        open(A,"< $filename") or die("can't open $filename:$!");
 	        }
