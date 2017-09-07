@@ -35,28 +35,30 @@ calculate_adjacency <- function(datan=NULL,filter=NULL,softPower=2) {
 #' Parallelisation inside C++ program with RcppParallel.
 #' 
 #' @param filter Filter-Matrix
-#' @param adjacency Adjacency-Vector
+#' @param datan     Dataset
+#' @param softPower Integer. Exponent of the transformation
 #' @param Integer. Amount of CPU cores used (<=1 : sequential)
 #' @return Vector with distances (same length as adjacency)
 #' @export
-dist_tom <- function(filter=NULL,
+nb_dist <- function(filter=NULL,
                      adjacency=NULL,
+                     datan=NULL,
+                     softPower=2,
                      cores=getOption("mc.cores", 2L)) {
-  if (is.null(filter) || is.null(adjacency))
-    stop("Both filter and adjacency must be provided")
+  # if (is.null(filter) || is.null(adjacency))
+  #   stop("Both filter and adjacency must be provided")
 
   if (!(is.matrix(filter) && (nrow(filter) > 0) && (ncol(filter) > 0)))
     stop("filter must be matrix with dim() > (0,0)")
 
-  if (!(is.vector(adjacency) && (length(adjacency) > 0)))
-    stop("adjacency is required a vector with length > 0")
-
+  # if (!(is.vector(adjacency) && (length(adjacency) > 0)))
+  #   stop("adjacency is required a vector with length > 0")
   cores <- max(cores, 1)
 
   ## RcppParallel amount of threads started  
   setThreadOptions(numThreads=cores)
 
-  return(netboost:::cpp_dist_tom(filter, adjacency))
+  return(netboost:::cpp_dist_tom(filter, calculate_adjacency(datan=datan, filter=filter,softPower=softPower)))
 }
 
 
@@ -216,21 +218,37 @@ cut_trees <- function(trees=NULL, datan=NULL, forest=NULL, minClusterSize= 10L, 
 }
 
 
+
+#' Generate clustering
+#'
+#' @param filter    Filter-Matrix as returned by nb_filter.
+#' @param dist      Distance matrix as returned by nb_dist.
+#' @param datan Dataset
+#' @param max_singleton   Integer. The maximal singleton in the clustering. Usually equals the number of features.
+#' @param minClusterSize  Integer. The minimum number of features in one module.
+#' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for merging close modules.
+#' @param cores Integer. Amount of CPU cores used (<=1 : sequential)
+#' @return List
+#' @export
+nb_clust <- function(filter=NULL,dist=NULL,datan=NULL,max_singleton=dim(datan)[2], minClusterSize = 10L, MEDissThres = 0.25, cores=getOption("mc.cores", 2L), plot = TRUE) {
+  forest <- nb_mcupgma(filter=filter,dist=dist,max_singleton=max_singleton,cores=cores)
+  trees <- tree_search(forest)
+  results <- cut_trees(trees=trees,datan=datan, forest=forest, minClusterSize = minClusterSize, MEDissThres = MEDissThres, plot = plot)
+  sum_res <- nb_summary(clust_res = results, plot = plot)
+  
+  return(sum_res)
+  }
+
+
+
+
 #' Summarize results from a forest. Plot trees together.
 #'
 #' @param clust_res Clustering results from cut_trees call.
 #' @return List
 #' @export
 nb_summary <- function(clust_res = NULL, plot = TRUE) {
-  # res <- list(
-  #   dendros <- list(),
-  #   names <- c(),
-  #   colors <- c(),
-  #   MEs <- data.frame(row.names = rownames(clust_res[[1]]$data)),
-  #   varExplained <- c()
-  # )
   res <- vector("list")
-  
   n_MEs <- 0
   n_MEs_background <- 0
   for (tree in 1:length(clust_res)) {

@@ -14,10 +14,10 @@ library(parallel)
 #'                  if compiled accordingly and available on the hardware.
 #' @return matrix n times 2 matrix with the indicies of the n unique entrees of the filter
 #' @export
-nb_filter_boosting <- function(datan, stepno=20L, until=0,
-                               progress=1000,
+nb_filter <- function(datan, stepno=20L, until=0L,
+                               progress=1000L,
                                cores=getOption("mc.cores", 2L),
-                               mode=2) {
+                               mode=2L) {
   if (!exists("datan"))
     stop("datan must be provided")
   
