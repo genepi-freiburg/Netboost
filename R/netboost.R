@@ -222,13 +222,14 @@ cut_trees <- function(trees=NULL, datan=NULL, forest=NULL, minClusterSize= 10L, 
 #' @return List
 #' @export
 nb_summary <- function(clust_res = NULL, plot = TRUE) {
-  res <- list(
-    dendros <- list(),
-    names <- c(),
-    colors <- c(),
-    MEs <- data.frame(row.names = rownames(clust_res[[1]]$data)),
-    varExplained <- c()
-  )
+  # res <- list(
+  #   dendros <- list(),
+  #   names <- c(),
+  #   colors <- c(),
+  #   MEs <- data.frame(row.names = rownames(clust_res[[1]]$data)),
+  #   varExplained <- c()
+  # )
+  res <- vector("list")
   
   n_MEs <- 0
   n_MEs_background <- 0
@@ -251,29 +252,11 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
         colnames(tmp_MEs_new)[colnames(tmp_MEs)=="ME0"] <- paste0("ME0_", n_MEs_background)
       }
     }
-
-    
     res$colors <- c(res$colors, tmp.col.new)
-    # if (ncol(clust_res[[tree]]$MEs) > 1) {
-    #   tmp <- clust_res[[tree]]$MEs
-    #   for (j in 1:ncol(tmp)) {
-    #     if (colnames(tmp)[j] == "ME0") {
-    #       n_MEs_background <- n_MEs_background + 1
-    #       colnames(tmp)[j] <- paste0("ME0_", n_MEs_background)
-    #     } else{
-    #       n_MEs <- n_MEs +1
-    #       colnames(tmp)[j] <- paste0("ME", (n_MEs))
-    #     }
-    #   }
-      res$MEs <- cbind(res[[4]], tmp_MEs_new)
-      res$varExplained <- c(res[[5]], clust_res[[tree]]$varExplained)
-    # } else{
-    #   tmp <- clust_res[[tree]]$MEs
-    #   colnames(tmp)[1] <- paste0("ME", (n_MEs + 1))
-    #   res$MEs <- cbind(res[[4]], tmp)
-    #   n_MEs <- n_MEs + 1
-    # }
+    if("MEs" %in% names(res)){res$MEs <- cbind(res$MEs, tmp_MEs_new)}else{res$MEs <- tmp_MEs_new}
+    if("varExplained" %in% names(res)){res$varExplained <- c(res$varExplained , clust_res[[tree]]$varExplained)}else{res$varExplained <-  clust_res[[tree]]$varExplained}
   }
+  names(res$varExplained)<- colnames(res$MEs)
   
   cat("Netboost detected ",
       n_MEs,

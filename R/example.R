@@ -26,6 +26,8 @@ exampleNB <- function() {
  
   
   ### compute cluster settings
+  # install.packages("/data/bin/netboost_1.021.tar.gz", repos = NULL, type="source")
+  
   # library(netboost)
   options("mc.cores"=10L)
   data(tcga_aml_meth_rna_chr18)
