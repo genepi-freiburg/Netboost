@@ -37,4 +37,3 @@ List
 \description{
 The Netboost clustering is performed in three subsequent steps. First, a filter of important edges in the network is calculated. Next, pairwise distances are calculated. Last, clustering is performed. For details see Schlosser et al. doi...
 }
-

@@ -1,1 +1,1 @@
-export INSTALL_PATH := /h/schlosser/scratch_global/source/mcupgma
+export INSTALL_PATH := $(SCRIPTS_DIR)..

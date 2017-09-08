@@ -12,4 +12,3 @@ Absolute path for "exec" folder
 \description{
 Returns the absolute path to "exec" folder in the package.
 }
-
