@@ -36,7 +36,8 @@ netboost <- function(datan=NULL,stepno=20L, until=0L,
   results <- nb_clust(datan=datan, filter=filter, dist=dist, minClusterSize = minClusterSize, MEDissThres = MEDissThres,
                       max_singleton=max_singleton, cores=cores, plot = plot)
   print("Netboost: Finished clustering step.")
-  print("\nNetboost: Finished Netboost.")
+  print("Netboost: Finished Netboost.")
+  return(results)
  }
 
 
