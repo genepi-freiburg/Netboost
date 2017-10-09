@@ -1,9 +1,9 @@
 ##########################################################################
 # MC-UPGMA  - Accurate huge scale clustering by Memory Constrained UPGMA #
 #             Loewenstein et al. Bioinformatics. 2008 Jul 1;24(13):i41-9.#
-# 									 #
-# Makefile - compiles multi-round clustering code compilation		 #
-#									 #
+#                                                                        #
+# Makefile - compiles multi-round clustering code compilation            #
+#                                                                        #
 # Copyright (C) Elon Portugaly, Yaniv Loewenstein                        #              
 #                School of Computer Science And Engineering              # 
 #                Hebrew University of Jerusalem                          #
@@ -13,7 +13,8 @@
 #      This source code is distributed under the terms of the            #
 #      GNU General Public License. See the file LICENSE                  #
 #      for details.                                                      #
-#									 #
+#                                                                        #
+# CHG jo 06.10.2017: compiler taken from global settings
 ##########################################################################
 
 # When using this makefile for a new project, all one has to do is:
@@ -23,14 +24,13 @@
 # Do not use makedepend with this makefile. This makefile automaticly generates a .d file for each .o files. The .d file lists all dependencies of the .o file. This makefile then includes all the .d files.
 # This makefile does not support dynamic libraries and library creation
 
-
-
 #######################################################################################
 #  SETTINGS         ###################################################################
 #######################################################################################
 # Define compiler and flags
-CXX = g++
-CC = gcc
+# CHG jo 06.10.2017: compiler taken from global settings
+#CXX = g++
+#CC = gcc
 COMPILER = ${CXX}
 
 # compilation flags (e.g. -I paths - search paths for <> include clauses)
@@ -41,13 +41,15 @@ CFLAGS = -O3 -I./
 LDFLAGS_DEBUG = -g
 LDFLAGS = -O3
 
-
 #ARCH := $(shell arch)_$(shell uname -s)
 ARCH := $(shell uname -m)_$(shell uname -s)
 
 OBJDIR := obj.$(ARCH)
 DEPDIR := dep.$(ARCH)
-BINDIR := bin.$(ARCH)
+
+# CHG JO 09.10.2017: architecture not required for R package
+#BINDIR := bin.$(ARCH)
+BINDIR := bin
 
 # executable names
 PROGRAMS = hierarchical_clustering test_heap
@@ -55,7 +57,6 @@ PROGRAMS = hierarchical_clustering test_heap
 # make program file (EXEC) list from program name list (PROGRAMS)
 EXEC = $(patsubst %, $(BINDIR)/%, $(PROGRAMS))
 EXEC_DEBUG = $(patsubst %, $(BINDIR).debug/%, $(PROGRAMS))
-
 
 # source lists...
 SOURCES = $(wildcard *.cpp) $(wildcard */*.cpp)
@@ -72,7 +73,6 @@ OBJECTS_DEBUG = $(patsubst %.cpp, $(OBJDIR).debug/%.o,$(SOURCES)) $(patsubst %.g
 # make .d file list from source lists
 # %.d files are makefiles including all the dependecies of %.o
 DEPENDENCYFILES = $(patsubst %.cpp,$(DEPDIR)/%.d, $(SOURCES))
-
 
 ######################################################################
 
@@ -110,21 +110,12 @@ $(BINDIR).debug/hierarchical_clustering: $(OBJDIR).debug/HierarchicalClustering_
 $(BINDIR)/test_heap: $(OBJDIR)/test_heap.o $(OBJDIR)/test_heap.cmdline.o
 $(BINDIR).debug/test_heap: $(OBJDIR).debug/test_heap.o $(OBJDIR).debug/test_heap.cmdline.o
 
-
-
-
 # include %.d files
 -include $(DEPENDENCYFILES)
-
-
 
 #######################################################################################
 #  TARGETS          ###################################################################
 #######################################################################################
-
-
-
-
 
 # pattern rules for making different kind of files
 

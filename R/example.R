@@ -1,3 +1,33 @@
+#' Example to get access to the MCUPGMA executables.
+#'
+#' @export
+mcupgma_example <- function() {
+  exec <- netboostMCUPGMAPath()
+  files <- Sys.glob(file.path(exec, '*'))
+  paste("Available MCUPGMA executables and scripts under:", exec)
+  tmp <- sapply(files, basename)
+  names(tmp) <- NULL
+  print(tmp)
+}
+
+#' Execute a program/script from the installes MCUPGMA suite.
+#'
+#' @param exec  Name of the file of the executable.
+#' @return response from system2() call
+#' @export
+mcupgma_exec <- function(exec=NULL, ...) {
+  if (is.null(exec)) stop("mcupgma_exec: call without executable")
+
+  exec_abs_path <- file.path(netboostMCUPGMAPath(), exec)
+
+  if (!file.exists(exec_abs_path))
+    stop(paste("mcupgma_exec: file does not exist:", exec))
+
+  return(system2(command=exec_abs_path,
+                 args=...,
+                 stdout=TRUE, stderr=TRUE))
+}
+
 #' Test/example code.
 #'
 #' @export
@@ -30,7 +60,6 @@ nb_example <- function() {
   
   # library(netboost)
 
-  
   system(paste0("rm -rf clustering/*"))
   system(paste0("rm -r clustering/"))
   system(paste0("rm -r iteration_*/"))

@@ -31,6 +31,7 @@
 
   ## Store exec and general path in package variables
   assign("exec_path", file.path(pPath, "exec"), envir = .netboostInternal)
+  assign("mcupgma_path", file.path(pPath, "mcupgma"), envir = .netboostInternal)
   assign("pkg_path", pPath, envir = .netboostInternal)
 }
 
@@ -43,6 +44,18 @@ netboostExecPath <- function() {
   }
   else {
     stop("Executable path not existing (key exec_path missing in envir)")
+  }
+}
+
+#' Returns the absolute path to folder with mcupgma executables and scripts.
+#'
+#' @return Absolute path for "mcupgma" folder
+netboostMCUPGMAPath <- function() {
+  if (exists("mcupgma_path", envir = .netboostInternal)) {
+    return(get("mcupgma_path", envir = .netboostInternal))
+  }
+  else {
+    stop("mcupgma path not existing (key mcupgma_path missing in envir)")
   }
 }
 

@@ -28,8 +28,10 @@
 #									 #
 # Aug 2008 - YL added documentation and MC-UPGMA specific targets	 #
 #									 #
+#
+# CHG jo Oct 2017:
+# - added  -Wno-deprecated for GCC
 #########################################################################
-
 
 
 ###################################################################
@@ -47,7 +49,7 @@ PERFORM = 1
 
 ifdef COMPILE
 #CXX = /cs/phd/ofirpele/utils/stl_decrypt/gfilt -Wall
-CXXFLAGS +=  -Wall
+CXXFLAGS +=  -Wall -Wno-deprecated
 endif
 
 ifdef RUNTIME
@@ -76,7 +78,9 @@ CXX_EXEC = $(CXX) $(CXXFLAGS) $(LDFLAGS)
 ######################################################################
 # architecture spec - OS and hardware, 
 ARCH := $(shell uname -m)_$(shell uname -s)
-BINDIR := bin.$(ARCH)
+# CHG JO 09.10.2017: architecture not required for R package
+#BINDIR := bin.$(ARCH)
+BINDIR := bin
 OBJDIR := obj.$(ARCH)
 
 ####################################################################
