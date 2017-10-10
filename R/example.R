@@ -5,9 +5,7 @@ mcupgma_example <- function() {
   exec <- netboostMCUPGMAPath()
   files <- Sys.glob(file.path(exec, '*'))
   paste("Available MCUPGMA executables and scripts under:", exec)
-  tmp <- sapply(files, basename)
-  names(tmp) <- NULL
-  print(tmp)
+  print(sapply(files, basename, USE.NAMES=FALSE))
 }
 
 #' Execute a program/script from the installes MCUPGMA suite.
