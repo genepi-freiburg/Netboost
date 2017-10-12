@@ -15,9 +15,9 @@ library(parallel)
 #' @return matrix n times 2 matrix with the indicies of the n unique entrees of the filter
 #' @export
 nb_filter <- function(datan, stepno=20L, until=0L,
-                               progress=1000L,
-                               cores=getOption("mc.cores", 2L),
-                               mode=2L) {
+                      progress=1000L,
+                      cores=getOption("mc.cores", 2L),
+                      mode=2L) {
   if (!exists("datan"))
     stop("datan must be provided")
   
@@ -58,13 +58,16 @@ nb_filter <- function(datan, stepno=20L, until=0L,
     print(paste("Sequential version"))
     
     boosting_filter <- lapply(seq(1, until),
-                  function(x) {
-                    if ((((x-1) %% progress) == 0)) {
-                       print(sprintf("idx: %d (%.1f%%) - %s", x, x * 100 / until, date()))
-                    }
-                    
-                    netboost:::cpp_filter_step(x)
-                  })
+                              function(x) {
+                                if ((((x-1) %% progress) == 0)) {
+                                  print(sprintf("idx: %d (%.1f%%) - %s",
+                                                x,
+                                                x * 100 / until,
+                                                date()))
+                                }
+                                
+                                netboost:::cpp_filter_step(x)
+                              })
   }
   
   ## Important!: stop (free memory, else suitable memory is still blocked)

@@ -26,7 +26,7 @@ netboost <- function(datan=NULL,stepno=20L, until=0L,
                      minClusterSize = 2L,
                      MEDissThres = 0.25,
                      cores=getOption("mc.cores", 2L)) {
-    print("Netboost: Initialising filter step.")
+  print("Netboost: Initialising filter step.")
   filter <- nb_filter(datan=datan, stepno=stepno, until=until, progress=progress, cores=cores,mode=mode)
   print("Netboost: Finished filter step.")
   print("Netboost: Initialising distance calculation.")
@@ -38,7 +38,7 @@ netboost <- function(datan=NULL,stepno=20L, until=0L,
   print("Netboost: Finished clustering step.")
   print("Netboost: Finished Netboost.")
   return(results)
- }
+}
 
 
 #' Calculate network adjacencies for filter
@@ -48,8 +48,11 @@ netboost <- function(datan=NULL,stepno=20L, until=0L,
 #' @param softPower Integer. Exponent of the transformation
 #' @return Vector with adjacencies for the filter
 calculate_adjacency <- function(datan=NULL,filter=NULL,softPower=2) {
-  return(sapply(1:nrow(filter),function(i){abs(cor(datan[,filter[i,1]],datan[,filter[i,2]]))^softPower}))
- }
+  return(sapply(1:nrow(filter),
+                function(i) {
+                  abs(cor(datan[,filter[i,1]],datan[,filter[i,2]]))^softPower
+                }))
+}
 
 #' Calculate distance
 #' (external wrapper for internal C++ function)
@@ -62,9 +65,9 @@ calculate_adjacency <- function(datan=NULL,filter=NULL,softPower=2) {
 #' @return Vector with distances (same length as adjacency)
 #' @export
 nb_dist <- function(filter=NULL,
-                     datan=NULL,
-                     softPower=2,
-                     cores=getOption("mc.cores", 2L)) {
+                    datan=NULL,
+                    softPower=2,
+                    cores=getOption("mc.cores", 2L)) {
   # if (is.null(filter) || is.null(adjacency))
   #   stop("Both filter and adjacency must be provided")
 
@@ -75,13 +78,14 @@ nb_dist <- function(filter=NULL,
   #   stop("adjacency is required a vector with length > 0")
   cores <- max(cores, 1)
 
-  ## RcppParallel amount of threads started  
+  ## RcppParallel amount of threads to be started
   setThreadOptions(numThreads=cores)
 
-  return(netboost:::cpp_dist_tom(filter, calculate_adjacency(datan=datan, filter=filter,softPower=softPower)))
+  return(netboost:::cpp_dist_tom(filter,
+                                 calculate_adjacency(datan=datan,
+                                                     filter=filter,
+                                                     softPower=softPower)))
 }
-
-
 
 #' Calculate dendrogram for a sparse distance matrix
 #' (external wrapper MC-UPGMA clustering package Loewenstein et al.
@@ -91,16 +95,55 @@ nb_dist <- function(filter=NULL,
 #' @param max_singleton     The maximal singleton in the clustering. Usually equals the number of features.
 #' @return Dendrogram
 nb_mcupgma <- function(filter=NULL,dist=NULL,max_singleton=NULL,cores=getOption("mc.cores", 2L)) {
-  dir.create(path="clustering",recursive=TRUE)
-  system(paste0("rm -rf clustering/*"))
-  system(paste0("rm -r iteration_*/"))
+#  dir.create(path="clustering",recursive=TRUE)
+#  system(paste0("rm -rf clustering/*"))
+#  system(paste0("rm -r iteration_*/"))
+
+  # Deletes all files under netboostTmpPath(), esp. clustering/iteration_
+  netboostTmpCleanup()
   
-  write.table(file="clustering/dist.edges",cbind(format(filter,scientific=FALSE,trim=TRUE),format(dist,scientific=FALSE,trim=TRUE)),row.names=FALSE,col.names=FALSE,sep="\t",quote=FALSE)
-  system("gzip -f clustering/dist.edges")
-  cluster <- file.path(netboost:::netboostPackagePath(), "mcupgma", "scripts", "cluster.pl")
-  system(paste0(cluster," -max_distance ",1," -max_singleton ",max_singleton," -iterations 1000 -heap_size 10000000 -num_hash_buckets 40 -jobs ",cores," -retries 1 -output_tree_file clustering/dist.mcupgma_tree -split_unmodified_edges ",cores," clustering/dist.edges.gz")) 
+  if (!dir.create(file.path(netboostTmpPath(), "clustering")))
+    stop(paste("Unable to create:", file.path(netboostTmpPath(), "clustering")))
   
-  return(as.matrix(read.table(file="clustering/dist.mcupgma_tree",row.names=NULL,col.names=c("cluster_id1","cluster_id2","distance","cluster_id3"))))
+  file_dist_edges <- file.path(netboostTmpPath(), "clustering", "dist.edges")
+  file_dist_tree <- file.path(netboostTmpPath(), "clustering", "dist.mcupgma_tree")
+
+#  write.table(file="clustering/dist.edges",
+  write.table(file=file_dist_edges,
+              cbind(format(filter, scientific=FALSE, trim=TRUE),
+                    format(dist, scientific=FALSE, trim=TRUE)),
+              row.names=FALSE,
+              col.names=FALSE,
+              sep="\t",
+              quote=FALSE)
+  
+#  system("gzip -f clustering/dist.edges")
+  ret <- system2("gzip", args = c("--verbose", "-f", file_dist_edges))
+  file_dist_edges_packed <- paste0(file_dist_edges, ".gz")
+  
+#  cluster <- file.path(netboost:::netboostPackagePath(), "mcupgma", "scripts", "cluster.pl")
+#  system(paste0(cluster,
+#                " -max_distance ", 1,
+#                " -max_singleton ", max_singleton,
+#                " -iterations 1000 -heap_size 10000000 -num_hash_buckets 40 -jobs ", cores,
+#                " -retries 1 -output_tree_file clustering/dist.mcupgma_tree -split_unmodified_edges ", cores,
+#                " clustering/dist.edges.gz"))
+
+  mcupgma_exec(exec="cluster.pl",
+               "-max_distance", 1,
+               "-max_singleton", max_singleton,
+               "-iterations 1000 -heap_size 10000000 -num_hash_buckets 40",
+               "-jobs", cores,
+               "-retries 1",
+               "-output_tree_file", file_dist_tree,
+               "-split_unmodified_edges",
+               cores,     # Ist das hier richtig?
+               file_dist_edges_packed)
+
+#  return(as.matrix(read.table(file="clustering/dist.mcupgma_tree",
+  return(as.matrix(read.table(file=file_dist_tree,
+                              row.names=NULL,
+                              col.names=c("cluster_id1","cluster_id2","distance","cluster_id3"))))
 }
 
 #' Extracts independent trees from nb_mcupgma results
@@ -115,7 +158,7 @@ tree_search <- function(forest=NULL) {
   # (Alternative: convert manually "matrix(as.integer(forest), nrow=nrow(forest))")
   forest <- as.matrix(forest)
   
-    if (is.null(forest) || !is.matrix(forest))
+  if (is.null(forest) || !is.matrix(forest))
     stop("forest must be provided (as integer matrix)")
   
   return(netboost:::cpp_tree_search(forest))
@@ -231,8 +274,6 @@ cut_trees <- function(trees=NULL, datan=NULL, forest=NULL, minClusterSize= 10L, 
   return(res)
 }
 
-
-
 #' Netboost clustering step
 #'
 #' @param filter    Filter-Matrix as returned by nb_filter.
@@ -251,9 +292,6 @@ nb_clust <- function(filter=NULL,dist=NULL,datan=NULL,max_singleton=dim(datan)[2
   sum_res <- nb_summary(clust_res = results, plot = plot)
   return(sum_res)
 }
-
-
-
 
 #' Summarize results from a forest. Plot trees together.
 #'

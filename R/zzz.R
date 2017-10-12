@@ -33,7 +33,78 @@
   assign("exec_path", file.path(pPath, "exec"), envir = .netboostInternal)
   assign("mcupgma_path", file.path(pPath, "mcupgma"), envir = .netboostInternal)
   assign("pkg_path", pPath, envir = .netboostInternal)
+
+  ## Per default, temporary data is written to R tempdir. But as those may become
+  ## large and R normally use /tmp, user must be enabled to change those later.
+  nb_set_tempdir(file.path(tempdir(), "netboost"))
 }
+
+#' If package detached, clean up temporary folders.
+.onDetach <- function(libpath) {
+  netboostTmpCleanup()
+}
+
+#' Assigns temporary path for internal use (esp. mcupgma)
+#' 
+#' @param dir Directory (Default: R temporary folder)
+#' @export
+nb_set_tempdir <- function(folder=tempdir()) {
+  # TODO Cleanup maybe currently existing temporary folder.
+  netboostTmpCleanup()
+
+  if (file.exists(folder) && !dir.exists(folder))
+    stop(paste("Given temporary exists as file:", folder),
+         call.=FALSE)
+  
+  if (!dir.exists(folder)) {
+    warning(paste("Given temporary directory not existing. Create:", folder),
+            call. = FALSE)
+
+    if (!dir.create(folder, recursive = TRUE, showWarnings = TRUE))
+      stop(paste("Error creating temporary folder:", folder))
+  }
+  else {
+    # Existing folder must be empty, as will be removed on cleanup.
+    files <- Sys.glob(file.path(folder, '*'))
+    
+    if (length(files) > 0)
+      stop(paste("Given temporary folder not empty:", folder))
+  }
+
+  assign("temp_dir", folder, envir = .netboostInternal)
+}
+
+#' Cleans the netboost temporary folder.
+netboostTmpCleanup <- function() {
+  folder <- netboostTmpPath(nostop=TRUE)
+  
+  if (folder == "") return()
+
+  if (dir.exists(folder)) {
+    message(paste("Cleaning temporary folder:", folder))
+    
+    ## Delete and recreate more convenient than globbing through the folders
+    unlink(folder, recursive = TRUE)
+    dir.create(folder)
+  }
+}
+
+#' Returns the absolute path to "exec" folder in the package.
+#'
+#' @param  nostop   Return on error (default: stop)
+#' @return Absolute path for "exec" folder
+netboostTmpPath <- function(nostop=FALSE) {
+  if (exists("temp_dir", envir = .netboostInternal)) {
+    return(get("temp_dir", envir = .netboostInternal))
+  }
+  else {
+    if (nostop)
+      return("")
+    else
+      stop("No temporary folder set")
+  }
+}
+
 
 #' Returns the absolute path to "exec" folder in the package.
 #'

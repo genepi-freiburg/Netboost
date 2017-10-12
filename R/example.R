@@ -8,43 +8,29 @@ mcupgma_example <- function() {
   print(sapply(files, basename, USE.NAMES=FALSE))
 }
 
-#' Execute a program/script from the installes MCUPGMA suite.
-#'
-#' @param exec  Name of the file of the executable.
-#' @return response from system2() call
-#' @export
-mcupgma_exec <- function(exec=NULL, ...) {
-  if (is.null(exec)) stop("mcupgma_exec: call without executable")
-
-  exec_abs_path <- file.path(netboostMCUPGMAPath(), exec)
-
-  if (!file.exists(exec_abs_path))
-    stop(paste("mcupgma_exec: file does not exist:", exec))
-
-  return(system2(command=exec_abs_path,
-                 args=...,
-                 stdout=TRUE, stderr=TRUE))
-}
 
 #' Test/example code.
 #'
+#' @param cores CPU cores to use
 #' @export
-nb_example <- function() {
+nb_example <- function(cores=2L) {
   # load data
   # methylation and RNA data
   data(tcga_aml_meth_rna_chr18) # 180 patients x 5283 features
   data(tcga_aml_covariates)
 
-  options("mc.cores"=20L)
-  options("mc.cores"=8L)
-  
+  options("mc.cores"=cores)
+
   filter <- nb_filter(datan=tcga_aml_meth_rna_chr18, stepno=20L)
   dist <- nb_dist(datan=tcga_aml_meth_rna_chr18, filter=filter, softPower=6)
-  pdf(file="results_netboost.pdf",width = 30)
-    results <- nb_clust(datan=tcga_aml_meth_rna_chr18, filter=filter, dist=dist, minClusterSize = 10L, MEDissThres = 0.25)
+
+#  pdf(file="results_netboost.pdf", width = 30)
+  pdf(file=file.path(getwd(), "results_netboost.pdf"), width = 30)
+  results <- nb_clust(datan=tcga_aml_meth_rna_chr18, filter=filter, dist=dist, minClusterSize = 10L, MEDissThres = 0.25)
   dev.off()
   
-  pdf(file="results_netboost.pdf",width = 30)
+#  pdf(file="results_netboost.pdf",width = 30)
+  pdf(file=file.path(getwd(), "results_netboost.pdf"), width = 30)
   results <- netboost(datan=tcga_aml_meth_rna_chr18,stepno=20L, softPower=6L, minClusterSize = 10L, MEDissThres = 0.25) 
   dev.off()
   
@@ -58,7 +44,13 @@ nb_example <- function() {
   
   # library(netboost)
 
-  system(paste0("rm -rf clustering/*"))
-  system(paste0("rm -r clustering/"))
-  system(paste0("rm -r iteration_*/"))
+  # Debugging: check produced temporary files.
+  stop("Check files")
+
+  #  system(paste0("rm -rf clustering/*"))
+  #  system(paste0("rm -r clustering/"))
+  #  system(paste0("rm -r iteration_*/"))
+  
+  # Cleanup all produced temporary filed (esp. clustering/iteration_*)
+  netboostTmpCleanup()
 }
