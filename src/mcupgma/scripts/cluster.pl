@@ -193,19 +193,32 @@ GetOptions(
 	   'allow_non_dendrogram!'  => \$allow_non_dendrogram,
 	   'sleep=i' => \$sleep_seconds_per_round
           );
-die("$USAGE") if ($help);
-if ($log_file){
-  open(STDERR,"> $log_file") or die("could not open log file:$!");  
+
+# CHG JO: on display help, return with success instead fail (with die())
+#die("$USAGE") if ($help);
+if ($help) {
+  print STDERR "$USAGE";    ## whyever it wants help on STDERR
+  exit 0;
+}
+
+# CHG JO: possible temporaray path (mainly for iteration folders) read from
+# environment (in principle better would be reading from Makefile install_path.mk).
+my $tmp_path = (exists $ENV{TMP_PATH}) ? $ENV{TMP_PATH} : '.';
+
+if ($log_file) {
+  # CHG JO: switch to three param mode
+#  open(STDERR,"> $log_file") or die("could not open log file:$!");  
+  open(STDERR, ">", $log_file) or die("could not open log file:$!");  
   my $oldfh = select(STDERR); $| = 1; select($oldfh);
 }
 open(LOG,">&STDERR") or die;
 
 if ($out_file) {
-  open(STDOUT,"> $out_file") or die ("could not open out file:$!");
+  # CHG JO: switch to three param mode
+  open(STDOUT, ">", $out_file) or die ("could not open out file:$!");
+#  open(STDOUT, ">$out_file") or die ("could not open out file:$!");
 }
 ############### END AUTOAMTIC CODE ####################################
-
-
 
 ### Add the scripts dir to the PATH env variable, and to the make include option (-I) ###########
 if ($inc) {
@@ -215,9 +228,6 @@ if ($inc) {
 }
 $ENV{PATH}.=":$inc";
 #################################################################################################
-
-
-
 
 die if ($jobs < 0);
 die if ($MAX_N_RETRIES    < 0);
@@ -280,7 +290,7 @@ unless (defined($max_singleton_id)){
 #######################
 print LOG "output cluster tree file: $output_tree_file (removing file, and building it from scratch)\n";
 if (!$jumpstart) {
-	print LOG `rm -fv $output_tree_file`; 
+  print LOG `rm -fv $output_tree_file`;
 } else {
 	warn("the tree file does not exist, but we're in jumpstart mode!") unless (-e $output_tree_file);
         print LOG "not removing existing tree, since jumpstart is set\n";
@@ -341,7 +351,10 @@ while(1) {
   }
   close(EDGES) or die("can't close edge stram $is_edges_remain");
   my $nclusters;
- if ($sizes_file) { # skip the first
+  if ($sizes_file) { # skip the first
+    # CHG JO: Debugging.
+    print LOG "wc on non existing file: $sizes_file" unless -e $sizes_file;
+
     chomp($nclusters = `wc -l $sizes_file `);
     print LOG "checking the number of alive clusters - `wc -l` says:'$nclusters'\n";
     die unless ($nclusters =~ /^\s*(\d+)\s+\S+\s*$/);
@@ -389,14 +402,24 @@ while(1) {
   } else {
     print LOG "$progname:returned 0 - looks like success!\n";
 
+    # CHG JO: all iteration_X files accessed under $tmp_path
     # A list of the up-to-date edges files, connecting only valid clusters, is given in iteration_$t/outputs_listing
-    unless (-s "iteration_$t/outputs_listing"){ # the file is empty or non existing, meaning the process wasn't complete successfully 
-      print LOG "$progname:alas! the iteration_$t/outputs_listing file is missing! let's retry\n";
+    unless (-s "$tmp_path/iteration_$t/outputs_listing"){ # the file is empty or non existing, meaning the process wasn't complete successfully 
+      print LOG "$progname:alas! the $tmp_path/iteration_$t/outputs_listing file is missing! let's retry\n";
       ++$n_retries;
       next; # jump to the beginning of this loop to try again without incrementing the iteration counter $t.
     }	
-    @input_files = `cat iteration_$t/outputs_listing `;     die if $?;
-    $sizes_file = "iteration_$t/cluster_sizes";
+    @input_files = `cat $tmp_path/iteration_$t/outputs_listing `;     die if $?;
+    $sizes_file = "$tmp_path/iteration_$t/cluster_sizes";
+    
+    # # A list of the up-to-date edges files, connecting only valid clusters, is given in iteration_$t/outputs_listing
+    # unless (-s "iteration_$t/outputs_listing"){ # the file is empty or non existing, meaning the process wasn't complete successfully 
+    #   print LOG "$progname:alas! the iteration_$t/outputs_listing file is missing! let's retry\n";
+    #   ++$n_retries;
+    #   next; # jump to the beginning of this loop to try again without incrementing the iteration counter $t.
+    # }	
+    # @input_files = `cat iteration_$t/outputs_listing `;     die if $?;
+    # $sizes_file = "iteration_$t/cluster_sizes";
     chomp(@input_files);
     die if (scalar(@input_files) > 10); #this is the number of lines
     @input_files = split(/\s+/,"@input_files"); # now we have seperate file per array element again
@@ -406,4 +429,3 @@ while(1) {
     #    last;
   }	
 }
-

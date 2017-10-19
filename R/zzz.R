@@ -29,14 +29,33 @@
   ## Path to "exec"-folder in installed package
   pPath <- file.path(libname, pkgname)
 
+  mcupgmaPath <- file.path(pPath, "mcupgma")
+  
   ## Store exec and general path in package variables
   assign("exec_path", file.path(pPath, "exec"), envir = .netboostInternal)
-  assign("mcupgma_path", file.path(pPath, "mcupgma"), envir = .netboostInternal)
+  assign("mcupgma_path", mcupgmaPath, envir = .netboostInternal)
   assign("pkg_path", pPath, envir = .netboostInternal)
 
   ## Per default, temporary data is written to R tempdir. But as those may become
   ## large and R normally use /tmp, user must be enabled to change those later.
   nb_set_tempdir(file.path(tempdir(), "netboost"))
+
+  ## Add the current (real) loading path to MCUPGMA Makefiles (install_path.mk
+  ## is loaded by definitions.mk, which is included in all real Makefiles).
+  mcupgma_install <- file.path(mcupgmaPath, "install_path.mk")
+
+  ## If this file is not existing in this location, this is no working installation
+  ## (may happen during build and included test-loads)
+  if (file.exists(mcupgma_install)) {
+    print(paste("Modified:", mcupgma_install))
+    filew <-file(mcupgma_install, open="w")
+    writeLines(con=filew, text=c(paste("export INSTALL_PATH := ", mcupgmaPath)))
+    writeLines(con=filew, text=c(paste("export TMP_PATH := ", netboostTmpPath())))
+    close(filew)
+  }
+  else {
+    warning(paste("File not written (as it does not exist):", mcupgma_install))
+  }
 }
 
 #' If package detached, clean up temporary folders.

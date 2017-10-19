@@ -67,7 +67,10 @@ ifeq (0,${MAKELEVEL})
 # to be overridne externally, usefull for debug now                        #
 #                                                                          #
 t = 1
-OUTDIR = iteration_$t
+
+# CHG JO: iteration folders relative to TMP_PATH
+OUTDIR = $(TMP_PATH)/iteration_$t
+#OUTDIR = iteration_$t
 # order is important here, to preserve sorting if we're using head before clustering
 #INPUT_EDGES_FILES    = $(wildcard iteration0/*.edges.gz)
 

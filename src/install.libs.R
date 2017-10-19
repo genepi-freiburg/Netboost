@@ -21,6 +21,22 @@ print(paste("SHLIB_EXT", SHLIB_EXT))
 ## mcupgma lying in src folder
 src_mcupgma  <- file.path(R_PACKAGE_SOURCE, 'src', 'mcupgma')
 
+## Destination path of R package
+dest_lib <- file.path(R_PACKAGE_DIR, paste0('libs', R_ARCH))
+
+## MCUPGMA folder (binaries, scripts and additional files)
+dest_mcupgma <- file.path(R_PACKAGE_DIR, 'mcupgma')
+
+print(paste("INSTALL PATH: ",
+            file.path(src_mcupgma, "scripts", "install_path.mk")))
+
+# Original MCUPGMA Makefile: create installation path as separate file with
+# only export of variable INSTALL_PATH.
+system2("echo", paste0("export INSTALL_PATH := ",
+                       dest_mcupgma,
+                       " > ",
+                       file.path(src_mcupgma, "scripts", "install_path.mk")))
+
 ## Build mcupgma package (package builds itself in own folder)
 system2(command="make",                   ## Clean
         args=c(paste0("-C ", src_mcupgma),
@@ -33,9 +49,6 @@ system2(command="make",                   ## Build all
                "all"))
 
 ## TODO Add checks.
-
-## All programs and scripts go to exec folder of package.
-dest_mcupgma <- file.path(R_PACKAGE_DIR, 'mcupgma')
 
 print(paste("SRC: ", src_mcupgma))
 print(paste("DEST:", dest_mcupgma))
@@ -62,7 +75,6 @@ for (path in c(file.path('clustering_round', 'bin'),
     warning(paste("MCUPGMA build: empty files in directory: ",
                   copy_path,
                   " (build failed)"))
-  
     
   print(paste("COPY FROM:", copy_path, "TO:", dest_mcupgma, "FILES:"))
   print(files)
@@ -74,7 +86,6 @@ print(paste("HAVE:", files))
 
 ## Copy own (non-mcugpma) libraries (basically only netboost.so) to dest.
 ## Basically the code from R manual.
-dest_lib <- file.path(R_PACKAGE_DIR, paste0('libs', R_ARCH))
 dir.create(dest_lib, recursive = TRUE, showWarnings = FALSE)
 files <- Sys.glob(paste0("*", SHLIB_EXT))
 file.copy(files, dest_lib, overwrite = TRUE)

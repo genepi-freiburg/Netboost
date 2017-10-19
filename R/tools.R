@@ -32,7 +32,8 @@ mcupgma_exec <- function(exec=NULL, ..., console=TRUE) {
   ret <- system2(command = exec_abs_path,
                  stdout = std, stderr = std,
                  wait=TRUE,
-                 args=call_args)
+                 args=call_args,
+                 env=c(paste0("TMP_PATH=", netboostTmpPath())))
 
 #  flush.console()
   

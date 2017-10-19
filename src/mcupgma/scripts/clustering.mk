@@ -14,6 +14,7 @@
 #                                                                        #
 ##########################################################################
 
+# Import INSTALL_PATH and TMP_PATH
 include definitions.mk
 
 ifndef INPUT_EDGES_FILES
@@ -29,7 +30,10 @@ next_t = $(shell perl -e '{$$a = shift; print ++$$a}' $(t))
 
 # \psi in the paper (missing values are assumed to be that)
 export PSI = 1000
-export OUTDIR = iteration_$t
+
+# CHG JO: iteration folders relative to TMP_PATH
+export OUTDIR = $(TMP_PATH)/iteration_$t
+
 TREE := tree
 export CUMULATIVE_TREE_FILE = $(OUTDIR)/tree
 export TREE_FILE = $(OUTDIR)/tree_part$t
@@ -42,7 +46,7 @@ export INPUT_EDGES_FILES
 
 .PHONY:test_input $(INPUT_EDGES_FILES)
 
-all: verbose test_input $(OUTDIR) $(TREE) $(OUTDIR)/outputs_listing
+all:	verbose test_input $(OUTDIR) $(TREE) $(OUTDIR)/outputs_listing
 
 # Test that directories are not mistakenly given as input files
 test_input: $(INPUT_EDGES_FILES)
@@ -108,7 +112,9 @@ $(OUTDIR)/outputs_listing:$(TREE_FILE)
 #############################
 #############################
 $(OUTDIR):
-	mkdir $(OUTDIR)
+# CHG JO: as OUTDIR can contain subdirectories, create parents too
+	mkdir -p $(OUTDIR)
+#	mkdir $(OUTDIR)
 
 
 #############################

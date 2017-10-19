@@ -119,7 +119,12 @@ nb_mcupgma <- function(filter=NULL,dist=NULL,max_singleton=NULL,cores=getOption(
   
 #  system("gzip -f clustering/dist.edges")
   ret <- system2("gzip", args = c("--verbose", "-f", file_dist_edges))
-  file_dist_edges_packed <- paste0(file_dist_edges, ".gz")
+
+  ## If gzip compressed file, the original file (and variable) is replaced
+  if (ret == 0 && file.exists(paste0(file_dist_edges, ".gz")))
+    file_dist_edges <- paste0(file_dist_edges, ".gz")
+  else
+    warning(paste("Gzip maybe failed on:", file_dist_edges, "Return:", ret))
   
 #  cluster <- file.path(netboost:::netboostPackagePath(), "mcupgma", "scripts", "cluster.pl")
 #  system(paste0(cluster,
@@ -138,7 +143,7 @@ nb_mcupgma <- function(filter=NULL,dist=NULL,max_singleton=NULL,cores=getOption(
                "-output_tree_file", file_dist_tree,
                "-split_unmodified_edges",
                cores,     # Ist das hier richtig?
-               file_dist_edges_packed)
+               file_dist_edges)
 
 #  return(as.matrix(read.table(file="clustering/dist.mcupgma_tree",
   return(as.matrix(read.table(file=file_dist_tree,

@@ -14,12 +14,10 @@
 #                                                                        #
 ##########################################################################
 
-
 ##########################################################################
 ##   NUMERIC PARAMS  #####################################################
 ##########################################################################
 include definitions.mk
-
 
 #################################################################
 # maximum heap size (= M edges) for clustering, depends on the  #
@@ -73,14 +71,12 @@ ifndef ARCH
 ARCH := $(shell uname -m)_$(shell uname -s)
 endif
 
-
 # clustering executable with flags and arguments set
 CLUSTERER = $(CLUSTERER_EXEC) --average-type=arithmetic --number-of-input-edges $(M)  --max-distance $(PSI) --max-cluster-index $(FIRST_MERGE_ID) 
 
 ##############################################
 #             TARGETS                        #
 ##############################################
-
 
 $(CUMULATIVE_TREE_FILE):$(TREE_FILE)
 

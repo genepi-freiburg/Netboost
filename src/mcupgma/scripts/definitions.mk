@@ -11,6 +11,9 @@
 #      This source code is distributed under the terms of the            #
 #      GNU General Public License. See the file LICENSE                  #
 #      for details.                                                      #
+#
+# MODIFICATIONS Oct 2017, jo:
+# - Adjustments to directory structure (all binaries in one directory)
 #                                                                        #
 ##########################################################################
 
@@ -19,7 +22,6 @@ export SHELL := /bin/bash
 
 ifndef DEFINITIONS_MK_INCLUDED
 DEFINITIONS_MK_INCLUDED := 1
-
 
 # turn off, if you want the intermediates to be not deleted
 export DELETE_INTERMEDIATE_EDGE_FILES := 1
@@ -61,10 +63,15 @@ export ARCH := $(shell uname -m)_$(shell uname -s)
 ##################################
 # location of the directory with executables for external merging code:
 #export INSTALL_PATH := ~lonshy/mc_upgma_distribution/src
+
+# CHG JO: install_path.mk is written by each start of the R package.
 include install_path.mk
 
-export MERGER_APP_BIN := $(INSTALL_PATH)/clustering_util/bin.$(ARCH)
-export CLUSTERER_EXEC := $(INSTALL_PATH)/clustering_round/bin.$(ARCH)/hierarchical_clustering
+# CHG JO: adjust to new structure
+export MERGER_APP_BIN := $(INSTALL_PATH)
+export CLUSTERER_EXEC := $(INSTALL_PATH)/hierarchical_clustering
+#export MERGER_APP_BIN := $(INSTALL_PATH)/clustering_util/bin.$(ARCH)
+#export CLUSTERER_EXEC := $(INSTALL_PATH)/clustering_round/bin.$(ARCH)/hierarchical_clustering
 
 ifdef ALLOW_INEXACT_MERGES 
 CLUSTERER_EXEC +=  --allow-non-dendrogram
@@ -72,7 +79,6 @@ endif
 
 # use unix's seq command, or a perl imitation if it is not installed
 SEQ := $(shell test -x /usr/bin/seq && echo seq || echo seq.pl)
-
 
 # sh pipe exit code forwarding workaround: 
 # Normally, in sh shell when one program in the pipeline exits abnormally, you would not know, since you only 
@@ -113,6 +119,4 @@ done;
 endef
 
 ##echo "SKIPPED PIPE TEST..."
-
-
 endif #DEFINITIONS_MK_INCLUDED
