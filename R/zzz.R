@@ -76,7 +76,7 @@ nb_set_tempdir <- function(folder=tempdir()) {
          call.=FALSE)
   
   if (!dir.exists(folder)) {
-    warning(paste("Given temporary directory not existing. Create:", folder),
+    warning(paste("Given temporary directory not existing. Created:", folder),
             call. = FALSE)
 
     if (!dir.create(folder, recursive = TRUE, showWarnings = TRUE))
