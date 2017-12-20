@@ -19,8 +19,10 @@ nb_example <- function(cores=2L) {
   data(tcga_aml_meth_rna_chr18) # 180 patients x 5283 features
   data(tcga_aml_covariates)
 
+ 
   options("mc.cores"=cores)
 
+  tcga_aml_meth_rna_chr18 <- scale(tcga_aml_meth_rna_chr18,center=TRUE,scale=TRUE)
   filter <- nb_filter(datan=tcga_aml_meth_rna_chr18, stepno=20L)
   dist <- nb_dist(datan=tcga_aml_meth_rna_chr18, filter=filter, softPower=6)
 

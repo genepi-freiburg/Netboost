@@ -26,6 +26,8 @@ netboost <- function(datan=NULL,stepno=20L, until=0L,
                      minClusterSize = 2L,
                      MEDissThres = 0.25,
                      cores=getOption("mc.cores", 2L)) {
+  print("Netboost: Scaling and centering data.")
+  datan <- scale(datan,center=TRUE,scale=TRUE)
   print("Netboost: Initialising filter step.")
   filter <- nb_filter(datan=datan, stepno=stepno, until=until, progress=progress, cores=cores,mode=mode)
   print("Netboost: Finished filter step.")
