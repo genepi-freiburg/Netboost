@@ -18,22 +18,10 @@ nb_example <- function(cores=2L) {
   # methylation and RNA data
   data(tcga_aml_meth_rna_chr18) # 180 patients x 5283 features
   data(tcga_aml_covariates)
-
- 
   options("mc.cores"=cores)
 
-  tcga_aml_meth_rna_chr18 <- scale(tcga_aml_meth_rna_chr18,center=TRUE,scale=TRUE)
-  filter <- nb_filter(datan=tcga_aml_meth_rna_chr18, stepno=20L)
-  dist <- nb_dist(datan=tcga_aml_meth_rna_chr18, filter=filter, softPower=6)
-
-#  pdf(file="results_netboost.pdf", width = 30)
   pdf(file=file.path(getwd(), "results_netboost.pdf"), width = 30)
-  results <- nb_clust(datan=tcga_aml_meth_rna_chr18, filter=filter, dist=dist, minClusterSize = 10L, MEDissThres = 0.25)
-  dev.off()
-  
-#  pdf(file="results_netboost.pdf",width = 30)
-  pdf(file=file.path(getwd(), "results_netboost.pdf"), width = 30)
-  results <- netboost(datan=tcga_aml_meth_rna_chr18,stepno=20L, softPower=6L, minClusterSize = 10L, MEDissThres = 0.25) 
+  results <- netboost(datan=tcga_aml_meth_rna_chr18,stepno=20L, minClusterSize = 10L, MEDissThres = 0.25) 
   dev.off()
   
   ### Transfer results to the same data (bug check)

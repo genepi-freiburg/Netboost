@@ -20,17 +20,26 @@ library(WGCNA)
 netboost <- function(datan=NULL,stepno=20L, until=0L,
                      progress=1000L,
                      mode=2L,
-                     softPower=2L,
+                     softPower=NULL,
                      max_singleton=dim(datan)[2],
                      plot=TRUE,
                      minClusterSize = 2L,
                      MEDissThres = 0.25,
                      cores=getOption("mc.cores", 2L)) {
   print("Netboost: Scaling and centering data.")
-  datan <- scale(datan,center=TRUE,scale=TRUE)
+  datan <- as.data.frame(scale(datan,center=TRUE,scale=TRUE))
   print("Netboost: Initialising filter step.")
   filter <- nb_filter(datan=datan, stepno=stepno, until=until, progress=progress, cores=cores,mode=mode)
   print("Netboost: Finished filter step.")
+  
+if(is.null(softPower)){
+# Random subset out of allocation
+random_features <- sample(ncol(datan), min(c(10000,ncol(datan))))
+# Call the network topology analysis function
+sft <- pickSoftThreshold(datan[,random_features])
+softPower <- sft$powerEstimate
+}
+  
   print("Netboost: Initialising distance calculation.")
   dist <- nb_dist(datan=datan, filter=filter, softPower=softPower, cores=cores)
   print("Netboost: Finished distance calculation.")
