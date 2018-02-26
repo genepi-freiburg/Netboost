@@ -5,9 +5,9 @@
 \title{Netboost clustering.}
 \usage{
 netboost(datan = NULL, stepno = 20L, until = 0L, progress = 1000L,
-  mode = 2L, softPower = 2L, max_singleton = dim(datan)[2], plot = TRUE,
-  minClusterSize = 2L, MEDissThres = 0.25, cores = getOption("mc.cores",
-  2L))
+  mode = 2L, softPower = NULL, max_singleton = dim(datan)[2],
+  plot = TRUE, minClusterSize = 2L, MEDissThres = 0.25,
+  cores = getOption("mc.cores", 2L))
 }
 \arguments{
 \item{datan}{Data frame were rows correspond to samples and columns to features.}
