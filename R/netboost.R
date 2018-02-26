@@ -38,6 +38,7 @@ random_features <- sample(ncol(datan), min(c(10000,ncol(datan))))
 # Call the network topology analysis function
 sft <- pickSoftThreshold(datan[,random_features])
 softPower <- sft$powerEstimate
+print(paste0("Netboost: softPower was set to ",softPower," based on the scale free topology criterion."))
 }
   
   print("Netboost: Initialising distance calculation.")
