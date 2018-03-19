@@ -26,6 +26,9 @@ netboost <- function(datan=NULL,stepno=20L, until=0L,
                      minClusterSize = 2L,
                      MEDissThres = 0.25,
                      cores=getOption("mc.cores", 2L)) {
+  # Initialize parallelization of WGCNA package.
+  if (cores > 1) allowWGCNAThreads(nThreads = cores)
+
   print("Netboost: Scaling and centering data.")
   datan <- as.data.frame(scale(datan,center=TRUE,scale=TRUE))
   print("Netboost: Initialising filter step.")
