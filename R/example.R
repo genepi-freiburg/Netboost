@@ -14,6 +14,9 @@ mcupgma_example <- function() {
 #' @param cores CPU cores to use
 #' @export
 nb_example <- function(cores=2L) {
+  ## Supress warning of third party package (which one?)
+  if (cores > 1) allowWGCNAThreads()
+
   # load data
   # methylation and RNA data
   data(tcga_aml_meth_rna_chr18) # 180 patients x 5283 features
