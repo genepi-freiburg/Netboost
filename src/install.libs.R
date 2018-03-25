@@ -75,14 +75,14 @@ for (path in c(file.path('clustering_round', 'bin'),
     warning(paste("MCUPGMA build: empty files in directory: ",
                   copy_path,
                   " (build failed)"))
-    
-  print(paste("COPY FROM:", copy_path, "TO:", dest_mcupgma, "FILES:"))
-  print(files)
+
+#  print(paste("COPY FROM:", copy_path, "TO:", dest_mcupgma, "FILES:"))
+#  print(files)
   file.copy(files, dest_mcupgma, overwrite = TRUE)
 }
 
 files <- Sys.glob(paste0(dest_mcupgma, "/*"))
-print(paste("HAVE:", files))
+#print(paste("HAVE:", files))
 
 ## Copy own (non-mcugpma) libraries (basically only netboost.so) to dest.
 ## Basically the code from R manual.
