@@ -12,6 +12,7 @@
 #' 
 #' @importFrom Rcpp evalCpp
 #' @importFrom RcppParallel setThreadOptions
+#' @importFrom grDevices dev.off gray pdf rainbow
 #' @useDynLib netboost
 #'
 #' @param libname Path to R installation (base package dir)
@@ -22,8 +23,9 @@
   ## Optional startup message, mainly for development.
   packageStartupMessage(paste(pkgname,
                               desc$Version,
-                              desc$Date,
-                              "Loaded from:", libname),
+                              "loaded"),
+#                              desc$Date,
+#                              "Loaded from:", libname),
                         appendLF = TRUE)
 
   ## Path to "exec"-folder in installed package
@@ -47,7 +49,7 @@
   ## If this file is not existing in this location, this is no working installation
   ## (may happen during build and included test-loads)
   if (file.exists(mcupgma_install)) {
-    print(paste("Modified:", mcupgma_install))
+#    print(paste("Modified:", mcupgma_install))
     filew <-file(mcupgma_install, open="w")
     writeLines(con=filew, text=c(paste("export INSTALL_PATH := ", mcupgmaPath)))
     writeLines(con=filew, text=c(paste("export TMP_PATH := ", netboostTmpPath())))
@@ -65,20 +67,28 @@
 
 #' Assigns temporary path for internal use (esp. mcupgma)
 #' 
-#' @param dir Directory (Default: R temporary folder)
+#' @param tmp Directory (Default: R temporary folder)
 #' @export
-nb_set_tempdir <- function(folder=tempdir()) {
+nb_set_tempdir <- function(tmp = NULL) {
   # TODO Cleanup maybe currently existing temporary folder.
   netboostTmpCleanup()
 
+  folder <- tmp
+
+  if (is.null(tmp))
+    folder <- tempdir()
+  
   if (file.exists(folder) && !dir.exists(folder))
     stop(paste("Given temporary exists as file:", folder),
          call.=FALSE)
   
   if (!dir.exists(folder)) {
-    warning(paste("Given temporary directory not existing. Created:", folder),
-            call. = FALSE)
-
+    if (is.null(tmp))
+      message("Using temporary directory:", folder)
+    else
+      warning(paste("Given temporary directory not existing. Created:", folder),
+              call. = FALSE)
+    
     if (!dir.create(folder, recursive = TRUE, showWarnings = TRUE))
       stop(paste("Error creating temporary folder:", folder))
   }

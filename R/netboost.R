@@ -1,8 +1,17 @@
-library(WGCNA)
+# Load WGCNA, try to hide the annoying mega-message (only a try as it is
+# printed...)
+# Workaround using environment to force WGCNA skipping it's mega-message.
+Sys.setenv(ALLOW_WGCNA_THREADS=0)
+suppressPackageStartupMessages(library(WGCNA))
+Sys.unsetenv("ALLOW_WGCNA_THREADS")
 
 #' Netboost clustering.
 #' 
-#' The Netboost clustering is performed in three subsequent steps. First, a filter of important edges in the network is calculated. Next, pairwise distances are calculated. Last, clustering is performed. For details see Schlosser et al. doi...
+#' The Netboost clustering is performed in three subsequent steps.
+#' First, a filter of important edges in the network is calculated.
+#' Next, pairwise distances are calculated.
+#' Last, clustering is performed.
+#' For details see Schlosser et al. doi...
 #'
 #' @param softPower Integer. Exponent of the transformation
 #' @param cores Integer. Amount of CPU cores used (<=1 : sequential)
@@ -15,6 +24,7 @@ library(WGCNA)
 #' @param max_singleton   Integer. The maximal singleton in the clustering. Usually equals the number of features.
 #' @param minClusterSize  Integer. The minimum number of features in one module.
 #' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for merging close modules.
+#' @param verbose   Additional diagnostic messages.
 #' @return List
 #' @export
 netboost <- function(datan=NULL,stepno=20L, until=0L,
@@ -25,9 +35,10 @@ netboost <- function(datan=NULL,stepno=20L, until=0L,
                      plot=TRUE,
                      minClusterSize = 2L,
                      MEDissThres = 0.25,
-                     cores=getOption("mc.cores", 2L)) {
+                     cores=getOption("mc.cores", 2L),
+                     verbose = getOption("verbose")) {
   # Initialize parallelization of WGCNA package.
-  if (cores > 1) allowWGCNAThreads(nThreads = cores)
+  if (cores > 1) WGCNA::allowWGCNAThreads(nThreads = cores)
 
   print("Netboost: Scaling and centering data.")
   datan <- as.data.frame(scale(datan,center=TRUE,scale=TRUE))
@@ -35,14 +46,14 @@ netboost <- function(datan=NULL,stepno=20L, until=0L,
   filter <- nb_filter(datan=datan, stepno=stepno, until=until, progress=progress, cores=cores,mode=mode)
   print("Netboost: Finished filter step.")
   
-if(is.null(softPower)){
-# Random subset out of allocation
-random_features <- sample(ncol(datan), min(c(10000,ncol(datan))))
-# Call the network topology analysis function
-sft <- pickSoftThreshold(datan[,random_features])
-softPower <- sft$powerEstimate
-print(paste0("Netboost: softPower was set to ",softPower," based on the scale free topology criterion."))
-}
+  if(is.null(softPower)){
+    # Random subset out of allocation
+    random_features <- sample(ncol(datan), min(c(10000,ncol(datan))))
+    # Call the network topology analysis function
+    sft <- pickSoftThreshold(datan[,random_features])
+    softPower <- sft$powerEstimate
+    print(paste0("Netboost: softPower was set to ",softPower," based on the scale free topology criterion."))
+  }
   
   print("Netboost: Initialising distance calculation.")
   dist <- nb_dist(datan=datan, filter=filter, softPower=softPower, cores=cores)
@@ -54,7 +65,6 @@ print(paste0("Netboost: softPower was set to ",softPower," based on the scale fr
   print("Netboost: Finished Netboost.")
   return(results)
 }
-
 
 #' Calculate network adjacencies for filter
 #' 
@@ -77,12 +87,14 @@ calculate_adjacency <- function(datan=NULL,filter=NULL,softPower=2) {
 #' @param datan     Dataset
 #' @param softPower Integer. Exponent of the transformation
 #' @param cores Integer. Amount of CPU cores used (<=1 : sequential)
+#' @param verbose   Logical. Additional diagnostic messages.
 #' @return Vector with distances (same length as adjacency)
 #' @export
 nb_dist <- function(filter=NULL,
                     datan=NULL,
                     softPower=2,
-                    cores=getOption("mc.cores", 2L)) {
+                    cores = getOption("mc.cores", 2L),
+                    verbose = getOption("verbose")) {
   # if (is.null(filter) || is.null(adjacency))
   #   stop("Both filter and adjacency must be provided")
 
@@ -94,7 +106,7 @@ nb_dist <- function(filter=NULL,
   cores <- max(cores, 1)
 
   ## RcppParallel amount of threads to be started
-  setThreadOptions(numThreads=cores)
+  setThreadOptions(numThreads = cores)
 
   return(netboost:::cpp_dist_tom(filter,
                                  calculate_adjacency(datan=datan,
@@ -108,12 +120,13 @@ nb_dist <- function(filter=NULL,
 #' @param filter    Filter-Matrix
 #' @param dist      Filter-Matrix
 #' @param max_singleton     The maximal singleton in the clustering. Usually equals the number of features.
+#' @param verbose   Logical. Additional diagnostic messages.
 #' @return Dendrogram
-nb_mcupgma <- function(filter=NULL,dist=NULL,max_singleton=NULL,cores=getOption("mc.cores", 2L)) {
-#  dir.create(path="clustering",recursive=TRUE)
-#  system(paste0("rm -rf clustering/*"))
-#  system(paste0("rm -r iteration_*/"))
-
+nb_mcupgma <- function(filter = NULL,
+                       dist = NULL,
+                       max_singleton = NULL,
+                       cores = getOption("mc.cores", 2L),
+                       verbose = getOption("verbose")) {
   # Deletes all files under netboostTmpPath(), esp. clustering/iteration_
   netboostTmpCleanup()
   
@@ -133,7 +146,9 @@ nb_mcupgma <- function(filter=NULL,dist=NULL,max_singleton=NULL,cores=getOption(
               quote=FALSE)
   
 #  system("gzip -f clustering/dist.edges")
-  ret <- system2("gzip", args = c("--verbose", "-f", file_dist_edges))
+  ret <- system2("gzip",
+                 args = c("-f", file_dist_edges,
+                          ifelse(verbose, "--verbose", "")))
 
   ## If gzip compressed file, the original file (and variable) is replaced
   if (ret == 0 && file.exists(paste0(file_dist_edges, ".gz")))

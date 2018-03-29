@@ -1,2 +1,7 @@
-PKG_CXXFLAGS=`${R_HOME}/bin/Rscript -e "Rcpp:::CxxFlags()"` -std=c++11 -mavx
+# C++11 required.
+CXX_STD = CXX11
+
+# Also, AVX(1) is mandatory.
+PKG_CXXFLAGS=`${R_HOME}/bin/Rscript -e "Rcpp:::CxxFlags()"` -mavx
+
 PKG_LIBS=`${R_HOME}/bin/Rscript -e "Rcpp:::LdFlags()"`

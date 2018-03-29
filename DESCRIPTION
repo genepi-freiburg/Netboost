@@ -1,16 +1,38 @@
 Package: netboost
 Type: Package
 Title: Netboost: Network analysis supported by boosting
-Version: 1.025.4
-Date: 2018-03-25
-Author: Pascal Schlosser <schlosser@imbi.uni-freiburg.de>, with contributions from Jochen Knaus <jo@imbi.uni-freiburg.de>
+Version: 1.026.1
+Date: 2018-03-29
+Authors@R: c(person("Pascal", "Schlosser", role = c("aut", "cre"),
+                    email = "schlosser@imbi.uni-freiburg.de"),
+             person("Jochen", "Knaus", role = c("aut"),
+                    email = "jo@imbi.uni-freiburg.de"),
+             person("Yaniv", "Loewenstein", role = c("ctb")))
 Maintainer: Pascal Schlosser <schlosser@imbi.uni-freiburg.de>
 Description: Multiline comment Multiline comment Multiline comment Multiline comment
     Multiline comment Multiline comment Multiline comment Multiline comment
-License: GPL (>= 2)
-Depends: Rcpp,RcppParallel,parallel,WGCNA
-Imports: Rcpp,RcppParallel
-LinkingTo: Rcpp,RcppParallel
-SystemRequirements: GNU make,Bash,Perl,Gzip
-Suggests: testthat
+    This package comes bundled with MC-UPGMA clustering package by Yaniv Loewenstein.
+Depends:
+  R (>= 3.0.1),
+  Rcpp,
+  RcppParallel,
+  parallel,
+  WGCNA
+Imports:
+  Rcpp,
+  RcppParallel
+LinkingTo:
+  Rcpp,
+  RcppParallel
+SystemRequirements:
+  GNU make,
+  Bash,
+  Perl,
+  Gzip
+OS_type: unix
+ByteCompile: yes
+NeedsCompilation: yes
+License: GPL-3
+URL: https://github.com/genepi-freiburg/Netboost
+BugReports: https://github.com/genepi-freiburg/Netboost/issues
 RoxygenNote: 6.0.1
