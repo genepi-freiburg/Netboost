@@ -34,16 +34,16 @@ nb_filter <- function(datan, stepno=20L, until=0L,
     until = ncol(datan);
   
   # check mode
-  if(!(mode %in% c(0,1,2))){
+  if(!(mode %in% c(0, 1, 2))){
     stop("mode must be 0 (x86), 1 (FMA) or 2 (AVX).")
   }
 
   ## Initialize data structures for optimized boosting (once)
-  netboost:::cpp_filter_base(as.matrix(datan), stepno, mode=mode);
+  cpp_filter_base(as.matrix(datan), stepno, mode=mode);
   
   ## Parallelization "conventional" via mclapply.
   if (cores > 1) {
-    print(paste("Parallel version:", cores, "cores"))
+    #print(paste("Parallel version:", cores, "cores"))
     
     boosting_filter <- mclapply(seq(1, until),
                     function(x) {
@@ -51,12 +51,11 @@ nb_filter <- function(datan, stepno=20L, until=0L,
                         print(sprintf("idx: %d (%.1f%%) - %s", x, x * 100 / until, date()))
                       }
                       
-                      netboost:::cpp_filter_step(x)
+                      cpp_filter_step(x)
                     },
                     mc.cores=cores)
   } else {   ## Sequential function for debugging.
-    print(paste("Sequential version"))
-    
+#    print(paste("Sequential version"))
     boosting_filter <- lapply(seq(1, until),
                               function(x) {
                                 if ((((x-1) %% progress) == 0)) {
@@ -66,14 +65,14 @@ nb_filter <- function(datan, stepno=20L, until=0L,
                                                 date()))
                                 }
                                 
-                                netboost:::cpp_filter_step(x)
+                                cpp_filter_step(x)
                               })
   }
   
   ## Important!: stop (free memory, else suitable memory is still blocked)
-  netboost:::cpp_filter_end();
-  
-  filter <- do.call("rbind",lapply(1:length(boosting_filter), function(x) {
+  cpp_filter_end();
+
+  filter <- do.call("rbind", lapply(1:length(boosting_filter), function(x) {
     return(as.data.frame(cbind(as.integer(boosting_filter[[x]]),
                                as.integer(rep(x,length(boosting_filter[[x]]))))))
   }))

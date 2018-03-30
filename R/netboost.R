@@ -24,18 +24,20 @@ Sys.unsetenv("ALLOW_WGCNA_THREADS")
 #' @param max_singleton   Integer. The maximal singleton in the clustering. Usually equals the number of features.
 #' @param minClusterSize  Integer. The minimum number of features in one module.
 #' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for merging close modules.
+#' @param plot Logical. Create plot.
 #' @param verbose   Additional diagnostic messages.
 #' @return List
 #' @export
-netboost <- function(datan=NULL,stepno=20L, until=0L,
-                     progress=1000L,
-                     mode=2L,
-                     softPower=NULL,
-                     max_singleton=dim(datan)[2],
-                     plot=TRUE,
+netboost <- function(datan = NULL,
+                     stepno = 20L, until = 0L,
+                     progress = 1000L,
+                     mode = 2L,
+                     softPower = NULL,
+                     max_singleton = dim(datan)[2],
+                     plot = TRUE,
                      minClusterSize = 2L,
                      MEDissThres = 0.25,
-                     cores=getOption("mc.cores", 2L),
+                     cores = getOption("mc.cores", 2),
                      verbose = getOption("verbose")) {
   # Initialize parallelization of WGCNA package.
   if (cores > 1) WGCNA::allowWGCNAThreads(nThreads = cores)
@@ -108,10 +110,10 @@ nb_dist <- function(filter=NULL,
   ## RcppParallel amount of threads to be started
   setThreadOptions(numThreads = cores)
 
-  return(netboost:::cpp_dist_tom(filter,
-                                 calculate_adjacency(datan=datan,
-                                                     filter=filter,
-                                                     softPower=softPower)))
+  return(cpp_dist_tom(filter,
+                      calculate_adjacency(datan=datan,
+                                          filter=filter,
+                                          softPower=softPower)))
 }
 
 #' Calculate dendrogram for a sparse distance matrix
@@ -121,6 +123,7 @@ nb_dist <- function(filter=NULL,
 #' @param dist      Filter-Matrix
 #' @param max_singleton     The maximal singleton in the clustering. Usually equals the number of features.
 #' @param verbose   Logical. Additional diagnostic messages.
+#' @param cores     Integer. Amount of CPU cores used.
 #' @return Dendrogram
 nb_mcupgma <- function(filter = NULL,
                        dist = NULL,
@@ -156,26 +159,24 @@ nb_mcupgma <- function(filter = NULL,
   else
     warning(paste("Gzip maybe failed on:", file_dist_edges, "Return:", ret))
   
-#  cluster <- file.path(netboost:::netboostPackagePath(), "mcupgma", "scripts", "cluster.pl")
-#  system(paste0(cluster,
-#                " -max_distance ", 1,
-#                " -max_singleton ", max_singleton,
-#                " -iterations 1000 -heap_size 10000000 -num_hash_buckets 40 -jobs ", cores,
-#                " -retries 1 -output_tree_file clustering/dist.mcupgma_tree -split_unmodified_edges ", cores,
-#                " clustering/dist.edges.gz"))
+  ret <- mcupgma_exec(exec="cluster.pl",
+                      "-max_distance", 1,
+                      "-max_singleton", max_singleton,
+                      "-iterations 1000 -heap_size 10000000 -num_hash_buckets 40",
+                      "-jobs", cores,
+                      "-retries 1",
+                      "-output_tree_file", file_dist_tree,
+                      "-split_unmodified_edges",
+                      cores,     # Ist das hier richtig?
+                      file_dist_edges,
+                      console = FALSE)
+  
+  if (verbose)
+    print(ret)
+  
+  if (!file.exists(file_dist_tree) || file.info(file_dist_tree)$size == 0)
+    stop("No output file created. mcupgma error :(")
 
-  mcupgma_exec(exec="cluster.pl",
-               "-max_distance", 1,
-               "-max_singleton", max_singleton,
-               "-iterations 1000 -heap_size 10000000 -num_hash_buckets 40",
-               "-jobs", cores,
-               "-retries 1",
-               "-output_tree_file", file_dist_tree,
-               "-split_unmodified_edges",
-               cores,     # Ist das hier richtig?
-               file_dist_edges)
-
-#  return(as.matrix(read.table(file="clustering/dist.mcupgma_tree",
   return(as.matrix(read.table(file=file_dist_tree,
                               row.names=NULL,
                               col.names=c("cluster_id1","cluster_id2","distance","cluster_id3"))))
@@ -196,7 +197,7 @@ tree_search <- function(forest=NULL) {
   if (is.null(forest) || !is.matrix(forest))
     stop("forest must be provided (as integer matrix)")
   
-  return(netboost:::cpp_tree_search(forest))
+  return(cpp_tree_search(forest))
 }
 
 
@@ -244,10 +245,14 @@ tree_dendro <- function(tree=NULL, datan=NULL, forest=NULL) {
 #'
 #' @param tree_dendro List of tree specific objects including dendrogram, tree data and features originating from the tree_dendro function.
 #' @param datan Dataset
-#' @param forest Matrix
 #' @param MEDissThres Module Eigengene Dissimilarity Threshold for merging close modules.
+#' @param plot Logical. Create plot
+#' @param minClusterSize XXX
+#' @param name_of_tree XXX
 #' @return Object of class hclust
-cut_dendro <- function(tree_dendro=NULL, minClusterSize= 10L, datan=NULL, MEDissThres = NULL, name_of_tree="", plot = TRUE) {
+cut_dendro <- function(tree_dendro=NULL, minClusterSize= 10L, 
+                       datan=NULL, MEDissThres = NULL,
+                       name_of_tree="", plot = TRUE) {
   dynamicMods <- cutreeDynamic(dendro = tree_dendro$dendro, method="tree", deepSplit = TRUE, minClusterSize = minClusterSize)
   ### Merging of Dynamic Modules ###
   # Calculate eigengenes
@@ -290,8 +295,15 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 10L, datan=NULL, MEDiss
 #' Module detection for the results from a nb_mcupgma call
 #'
 #' @param trees List of trees, where one tree is a list of ids and rows
+#' @param plot Logical. Create plot.
+#' @param datan XXX
+#' @param forest XXX
+#' @param minClusterSize XXX
+#' @param MEDissThres XXX
 #' @return List
-cut_trees <- function(trees=NULL, datan=NULL, forest=NULL, minClusterSize= 10L, MEDissThres = NULL, plot = TRUE) {
+cut_trees <- function(trees=NULL, datan=NULL, 
+                      forest=NULL, minClusterSize= 10L,
+                      MEDissThres = NULL, plot = TRUE) {
   res <- list()
   i <- 1L
   for(tree in trees){
@@ -318,9 +330,17 @@ cut_trees <- function(trees=NULL, datan=NULL, forest=NULL, minClusterSize= 10L, 
 #' @param minClusterSize  Integer. The minimum number of features in one module.
 #' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for merging close modules.
 #' @param cores Integer. Amount of CPU cores used (<=1 : sequential)
+#' @param plot Logical. Create plot.
 #' @return List
 #' @export
-nb_clust <- function(filter=NULL,dist=NULL,datan=NULL,max_singleton=dim(datan)[2], minClusterSize = 10L, MEDissThres = 0.25, cores=getOption("mc.cores", 2L), plot = TRUE) {
+nb_clust <- function(filter = NULL,
+                     dist = NULL,
+                     datan = NULL,
+                     max_singleton = dim(datan)[2],
+                     minClusterSize = 10L,
+                     MEDissThres = 0.25,
+                     cores = getOption("mc.cores", 2L),
+                     plot = TRUE) {
   forest <- nb_mcupgma(filter=filter,dist=dist,max_singleton=max_singleton,cores=cores)
   trees <- tree_search(forest)
   results <- cut_trees(trees=trees,datan=datan, forest=forest, minClusterSize = minClusterSize, MEDissThres = MEDissThres, plot = plot)
@@ -331,6 +351,7 @@ nb_clust <- function(filter=NULL,dist=NULL,datan=NULL,max_singleton=dim(datan)[2
 #' Summarize results from a forest. Plot trees together.
 #'
 #' @param clust_res Clustering results from cut_trees call.
+#' @param plot Logical. Create plot.
 #' @return List
 nb_summary <- function(clust_res = NULL, plot = TRUE) {
   res <- vector("list")

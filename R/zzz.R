@@ -12,22 +12,41 @@
 #' 
 #' @importFrom Rcpp evalCpp
 #' @importFrom RcppParallel setThreadOptions
+#' @importFrom parallel mclapply
+#'
 #' @importFrom grDevices dev.off gray pdf rainbow
+#' @importFrom graphics abline layout par
+#' @importFrom stats as.dendrogram as.dist cor hclust order.dendrogram
+#' @importFrom utils data packageDescription read.table write.table
+#'
 #' @useDynLib netboost
 #'
 #' @param libname Path to R installation (base package dir)
 #' @param pkgname Package name (should be "netboost")
 .onAttach <- function(libname, pkgname) {
   desc <- packageDescription(pkgname)
+
+  # If no default core count given, detect.  
+  if (is.null(getOption("mc.cores")) || !is.integer(getOption("mc.cores"))) {
+    # logical = FALSE is not working correctly if CPU has logical cores, which
+    # are disabled (at least Linux).
+    # Means: if CPU has logical cores, core count should be set manually.
+    cores <- parallel::detectCores()
+    
+    if (is.na(cores)) cores <- 1
+    
+    options("mc.cores" = cores)
+  }
   
   ## Optional startup message, mainly for development.
   packageStartupMessage(paste(pkgname,
                               desc$Version,
-                              "loaded"),
-#                              desc$Date,
-#                              "Loaded from:", libname),
+                              desc$Date,
+                              "Default CPU cores:",
+                              getOption("mc.cores")),
                         appendLF = TRUE)
-
+  #                              "Loaded from:", libname),
+  
   ## Path to "exec"-folder in installed package
   pPath <- file.path(libname, pkgname)
 
@@ -85,9 +104,9 @@ nb_set_tempdir <- function(tmp = NULL) {
   if (!dir.exists(folder)) {
     if (is.null(tmp))
       message("Using temporary directory:", folder)
-    else
-      warning(paste("Given temporary directory not existing. Created:", folder),
-              call. = FALSE)
+#    else
+#      warning(paste("Given temporary directory not existing. Created:", folder),
+#              call. = FALSE)
     
     if (!dir.create(folder, recursive = TRUE, showWarnings = TRUE))
       stop(paste("Error creating temporary folder:", folder))

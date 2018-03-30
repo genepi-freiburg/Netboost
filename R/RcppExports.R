@@ -5,7 +5,7 @@
 #' 
 #' @param data Matrix
 #' @param stepno Amount of steps
-#' @param mode Accelerator mode (0: x86, 1: FMA, 2: AVX)
+#' @param mode_ Accelerator mode (0: x86, 1: FMA, 2: AVX)
 cpp_filter_base <- function(data, stepno = 20L, mode_ = 2L) {
     invisible(.Call('_netboost_filter_base', PACKAGE = 'netboost', data, stepno, mode_))
 }
@@ -31,11 +31,9 @@ cpp_filter_step <- function(col_y) {
 #'   1. - Sequential preparation of index and partner caches per value in filter
 #'   2. - Parallel calculation of the distances with cached vectors
 #'
-#' @todo Preparation of cache could also be done in parallel
-#'
-#' @export
 #' @param filter Filter matrix
 #' @param adjacency Vector
+#' @return Vector
 cpp_dist_tom <- function(filter, adjacency) {
     .Call('_netboost_dist_tom', PACKAGE = 'netboost', filter, adjacency)
 }
@@ -44,7 +42,6 @@ cpp_dist_tom <- function(filter, adjacency) {
 #' @details Constraint: IDs 0 <= x (Integer)
 #'
 #' @param netboost_forest Input-matrix (4 columns, ids in colum 0,1,3)
-#'  export  (NO export here, wrapper in R required)
 #'
 cpp_tree_search <- function(netboost_forest) {
     .Call('_netboost_tree_search', PACKAGE = 'netboost', netboost_forest)

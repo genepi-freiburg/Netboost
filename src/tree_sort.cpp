@@ -3,7 +3,7 @@
  *
  * Standard: C++11.
  *
- * Sept/Oct 2016, jo
+ * Sept/Oct 2016, jo@imbi.uni-freiburg.de
  */
 
 // [[Rcpp::interfaces(r)]]
@@ -351,11 +351,11 @@ template <> Rcpp::IntegerVector Tree<std::vector<STORAGE_INT>>::get_ids() {
 template<typename T> unsigned int Tree<T>::id_running = 0;
 template<typename T> unsigned int Tree<T>::trees = 0;
 
+//  export  (NO export here, wrapper in R required)
 //' @title Tree search.
 //' @details Constraint: IDs 0 <= x (Integer)
 //'
 //' @param netboost_forest Input-matrix (4 columns, ids in colum 0,1,3)
-//'  export  (NO export here, wrapper in R required)
 //'
 // [[Rcpp::export(name = "cpp_tree_search")]]
 Rcpp::List tree_search(const IntegerMatrix &netboost_forest) {
