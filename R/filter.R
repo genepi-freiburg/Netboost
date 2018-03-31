@@ -38,6 +38,8 @@ nb_filter <- function(datan, stepno=20L, until=0L,
     stop("mode must be 0 (x86), 1 (FMA) or 2 (AVX).")
   }
 
+  message(paste("Netboost: Filtering"))
+  
   ## Initialize data structures for optimized boosting (once)
   cpp_filter_base(as.matrix(datan), stepno, mode=mode);
   

@@ -42,11 +42,13 @@ netboost <- function(datan = NULL,
   # Initialize parallelization of WGCNA package.
   if (cores > 1) WGCNA::allowWGCNAThreads(nThreads = cores)
 
-  print("Netboost: Scaling and centering data.")
+  message("Netboost: Scaling and centering data.")
   datan <- as.data.frame(scale(datan,center=TRUE,scale=TRUE))
-  print("Netboost: Initialising filter step.")
+  
+  message("Netboost: Initialising filter step.")
   filter <- nb_filter(datan=datan, stepno=stepno, until=until, progress=progress, cores=cores,mode=mode)
-  print("Netboost: Finished filter step.")
+  
+  message("Netboost: Finished filter step.")
   
   if(is.null(softPower)){
     # Random subset out of allocation
@@ -54,17 +56,20 @@ netboost <- function(datan = NULL,
     # Call the network topology analysis function
     sft <- pickSoftThreshold(datan[,random_features])
     softPower <- sft$powerEstimate
-    print(paste0("Netboost: softPower was set to ",softPower," based on the scale free topology criterion."))
+    message(paste0("Netboost: softPower was set to ", softPower, 
+                   " based on the scale free topology criterion."))
   }
   
-  print("Netboost: Initialising distance calculation.")
+  message("Netboost: Initialising distance calculation.")
   dist <- nb_dist(datan=datan, filter=filter, softPower=softPower, cores=cores)
-  print("Netboost: Finished distance calculation.")
-  print("Netboost: Initialising clustering step.")
+  message("Netboost: Finished distance calculation.")
+  
+  message("Netboost: Initialising clustering step.")
   results <- nb_clust(datan=datan, filter=filter, dist=dist, minClusterSize = minClusterSize, MEDissThres = MEDissThres,
                       max_singleton=max_singleton, cores=cores, plot = plot)
-  print("Netboost: Finished clustering step.")
-  print("Netboost: Finished Netboost.")
+  message("Netboost: Finished clustering step.")
+  
+  message("Netboost: Finished Netboost.")
   return(results)
 }
 
@@ -415,7 +420,9 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
       par(mar = c(4, 4, 0, 4))
       first_col <- last_col + 1
       last_col <- last_col + length(res$dendro[[tree]]$labels)
-      plotColorUnderTree(res$dendro[[tree]], c(gray(level=0.7),rainbow(n = (length(unique(plot_colors))-1)))[plot_colors[first_col:last_col]+1])
+      # XXX Use rainbow_hcl?
+      plotColorUnderTree(res$dendro[[tree]], c(gray(level=0.7),
+                                               rainbow(n = (length(unique(plot_colors))-1)))[plot_colors[first_col:last_col]+1])
     }
   }
   

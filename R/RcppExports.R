@@ -39,7 +39,12 @@ cpp_dist_tom <- function(filter, adjacency) {
 }
 
 #' @title Tree search.
-#' @details Constraint: IDs 0 <= x (Integer)
+#' @name cpp_tree_search
+#' 
+#' @description
+#' Constraint: IDs 0 <= x (Integer)
+#' 
+#' @backref src/tree_sort.cpp 
 #'
 #' @param netboost_forest Input-matrix (4 columns, ids in colum 0,1,3)
 #'

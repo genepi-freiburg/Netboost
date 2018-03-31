@@ -18,6 +18,8 @@
 #' @importFrom graphics abline layout par
 #' @importFrom stats as.dendrogram as.dist cor hclust order.dendrogram
 #' @importFrom utils data packageDescription read.table write.table
+#' 
+#' @importFrom WGCNA allowWGCNAThreads
 #'
 #' @useDynLib netboost
 #'
@@ -123,14 +125,15 @@ nb_set_tempdir <- function(tmp = NULL) {
 }
 
 #' Cleans the netboost temporary folder.
-netboostTmpCleanup <- function() {
+netboostTmpCleanup <- function(verbose = FALSE) {
   folder <- netboostTmpPath(nostop=TRUE)
-  
+
   if (folder == "") return()
 
   if (dir.exists(folder)) {
-    message(paste("Cleaning temporary folder:", folder))
-    
+    if (verbose)
+      message(paste("Netboost: cleaning temporary folder:", folder))
+
     ## Delete and recreate more convenient than globbing through the folders
     unlink(folder, recursive = TRUE)
     dir.create(folder)

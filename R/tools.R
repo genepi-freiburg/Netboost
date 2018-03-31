@@ -44,7 +44,8 @@ mcupgma_exec <- function(exec=NULL, ..., console=TRUE) {
     preserve <- file.path(netboostTmpPath(), paste0("output_", exec))
     file.copy(std, preserve)
     warning(paste("Execution of", exec, "returned no success:", ret,
-                  "STDOUT/ERR in:", preserve),
+                  "(this may be an real error or not).",
+                  "STDOUT/ERR output saved in:", preserve),
             call. = FALSE)
 #    file.show(std)
   }
