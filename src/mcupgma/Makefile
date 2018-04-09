@@ -105,7 +105,8 @@ tarball_util: $(CLUSTERING_UTIL_DIR).tar.gz
 
 $(CLUSTERING_DIR).tar.gz: $(wildcard $(CLUSTERING_DIR)/*)
 	@echo "==== creating tarball for clustering code $(CLUSTERING_DIR).tar.gz"
-	tar -czf $(CLUSTERING_DIR).tar.gz $(CLUSTERING_DIR) --exclude '*bin*' --exclude '*obj*' --exclude '*dep*' --exclude '*~'
+#	tar -czf $(CLUSTERING_DIR).tar.gz $(CLUSTERING_DIR) --exclude '*bin*' --exclude '*obj*' --exclude '*dep*' --exclude '*~'
+	tar -czf $(CLUSTERING_DIR).tar.gz $(CLUSTERING_DIR)
 
 $(CLUSTERING_UTIL_DIR).tar.gz: $(wildcard $(CLUSTERING_UTIL_DIR)/*)
 	@echo "==== creating tarball for clustering utilities code $(CLUSTERING_UTIL_DIR).tar.gz"
@@ -118,16 +119,18 @@ distribution: $(DISTRIBUTION_FILENAME)
 $(DISTRIBUTION_FILENAME): $(DISTRIBUTION_FILES)
 	@echo "==== creating distribution tarball $@ with scripts, clustering code, clustering utilities code, etc."
 #	@test -e $@ && (echo "refusing to overrun existing copy of $@"; exit 12;) || echo ok
-	tar -czf $@ $^ --exclude '*bin*' --exclude '*obj*' --exclude '*dep*' --exclude '*~'
+#	tar -czf $@ $^ --exclude '*bin*' --exclude '*obj*' --exclude '*dep*' --exclude '*~'
+	tar -czf $@ $^
 
 # CHG jo 06.10.2017
+# NOTE: --preserve-root scheint nicht zu gehen auf Mac.
 clean:
 	@echo "Clean build."
 	@find $(CLUSTERING_DIR) -name '*.o' -delete -print
 	@find $(CLUSTERING_UTIL_DIR) -name '*.o' -delete -print
-	@rm -rvf --preserve-root $(CLUSTERING_UTIL_DIR_BIN)
-	@rm -rvf --preserve-root $(CLUSTERING_DIR_BIN)
-	@rm -rvf --preserve-root $(CLUSTERING_DIR)/dep.$(ARCH)
-	@rm -rvf --preserve-root $(CLUSTERING_DIR)/obj.$(ARCH)
+#	@rm -rvf --preserve-root $(CLUSTERING_UTIL_DIR_BIN)
+#	@rm -rvf --preserve-root $(CLUSTERING_DIR_BIN)
+#	@rm -rvf --preserve-root $(CLUSTERING_DIR)/dep.$(ARCH)
+#	@rm -rvf --preserve-root $(CLUSTERING_DIR)/obj.$(ARCH)
 	@rm -vf $(CLUSTERING_DIR).tar.gz
 	@rm -vf $(CLUSTERING_UTIL_DIR).tar.gz
