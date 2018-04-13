@@ -42,6 +42,10 @@ netboost <- function(datan = NULL,
   # Initialize parallelization of WGCNA package.
   if (cores > 1) WGCNA::allowWGCNAThreads(nThreads = cores)
 
+	if (ncol(datan)>5000000){
+	   stop("A bug in sparse UPGMA currently prevents analyses with more than 5 million features.")
+	}
+
   message("Netboost: Scaling and centering data.")
   datan <- as.data.frame(scale(datan,center=TRUE,scale=TRUE))
   
