@@ -323,8 +323,8 @@ NumericVector dist_tom(const IntegerMatrix &filter,
   // Others.
   catch (...) {
     //     auto eptr = std::current_exception();
-    Rcout << endl << endl << "Greetings from wtf land: " << endl << endl;
-    ::Rf_error("C++ exception (unknown reason)");
+    Rcout << endl << endl << "C++ exception. " << endl << endl;
+    ::Rf_error("(unknown reason)");
   }
   
   return results;
