@@ -261,17 +261,17 @@ struct Distance_Parallel : public RcppParallel::Worker {
   }
 };
 
+//  @export
+// TODO Preparation of cache could also be done in parallel
 //' @title Function to calcutate distance
 //' @details
 //' Steps:
 //'   1. - Sequential preparation of index and partner caches per value in filter
 //'   2. - Parallel calculation of the distances with cached vectors
 //'
-//' @todo Preparation of cache could also be done in parallel
-//'
-//' @export
 //' @param filter Filter matrix
 //' @param adjacency Vector
+//' @return Vector
 // [[Rcpp::export(name = "cpp_dist_tom")]]
 NumericVector dist_tom(const IntegerMatrix &filter,
                        const NumericVector &adjacency) {

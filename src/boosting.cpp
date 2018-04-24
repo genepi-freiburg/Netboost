@@ -19,7 +19,7 @@
  * - Armadillo version is about three times slower.
  * - RcppParallel version still in debugging.
  * - FMA doesn't bring real advantage to AVX (few percent and
- *   even being slower in many cases -- ontested on different Xeons).
+ *   even being slower in many cases -- tested on different Xeons).
  *
  * Jun 2016, jo
  * R package Dec 2016, jo
@@ -651,7 +651,7 @@ int mode = 0;
 //' 
 //' @param data Matrix
 //' @param stepno Amount of steps
-//' @param mode Accelerator mode (0: x86, 1: FMA, 2: AVX)
+//' @param mode_ Accelerator mode (0: x86, 1: FMA, 2: AVX)
 // [[Rcpp::export(name=cpp_filter_base)]]
 void filter_base(const NumericMatrix &data, unsigned int stepno = 20,
                  int mode_ = 2) {

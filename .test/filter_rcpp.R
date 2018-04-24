@@ -1,3 +1,6 @@
+# Version for dynamic creation of C++ sources.
+# Can modify C++-compiler setting on setup (which cannot be done on package creation)
+
 #' Setup: probing hardware capabilities (SSE 4.2 and AVX) and then compile the
 #' main program with according feature sets.
 #' Therefore two programs are compiled:

@@ -1,8 +1,17 @@
-library(WGCNA)
+# Load WGCNA, try to hide the annoying mega-message (only a try as it is
+# printed...)
+# Workaround using environment to force WGCNA skipping it's mega-message.
+Sys.setenv(ALLOW_WGCNA_THREADS=0)
+suppressPackageStartupMessages(library(WGCNA))
+Sys.unsetenv("ALLOW_WGCNA_THREADS")
 
 #' Netboost clustering.
 #' 
-#' The Netboost clustering is performed in three subsequent steps. First, a filter of important edges in the network is calculated. Next, pairwise distances are calculated. Last, clustering is performed. For details see Schlosser et al. doi...
+#' The Netboost clustering is performed in three subsequent steps.
+#' First, a filter of important edges in the network is calculated.
+#' Next, pairwise distances are calculated.
+#' Last, clustering is performed.
+#' For details see Schlosser et al. doi...
 #'
 #' @param softPower Integer. Exponent of the transformation
 #' @param cores Integer. Amount of CPU cores used (<=1 : sequential)
@@ -15,46 +24,58 @@ library(WGCNA)
 #' @param max_singleton   Integer. The maximal singleton in the clustering. Usually equals the number of features.
 #' @param minClusterSize  Integer. The minimum number of features in one module.
 #' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for merging close modules.
+#' @param plot Logical. Create plot.
+#' @param verbose   Additional diagnostic messages.
 #' @return List
 #' @export
-netboost <- function(datan=NULL,stepno=20L, until=0L,
-                     progress=1000L,
-                     mode=2L,
-                     softPower=NULL,
-                     max_singleton=dim(datan)[2],
-                     plot=TRUE,
+netboost <- function(datan = NULL,
+                     stepno = 20L, until = 0L,
+                     progress = 1000L,
+                     mode = 2L,
+                     softPower = NULL,
+                     max_singleton = dim(datan)[2],
+                     plot = TRUE,
                      minClusterSize = 2L,
                      MEDissThres = 0.25,
-                     cores=getOption("mc.cores", 2L)) {
+                     cores = getOption("mc.cores", 2),
+                     verbose = getOption("verbose")) {
   # Initialize parallelization of WGCNA package.
   if (cores > 1) WGCNA::allowWGCNAThreads(nThreads = cores)
 
-  print("Netboost: Scaling and centering data.")
+	if (ncol(datan)>5000000){
+	   stop("A bug in sparse UPGMA currently prevents analyses with more than 5 million features.")
+	}
+
+  message("Netboost: Scaling and centering data.")
   datan <- as.data.frame(scale(datan,center=TRUE,scale=TRUE))
-  print("Netboost: Initialising filter step.")
+  
+  message("Netboost: Initialising filter step.")
   filter <- nb_filter(datan=datan, stepno=stepno, until=until, progress=progress, cores=cores,mode=mode)
-  print("Netboost: Finished filter step.")
   
-if(is.null(softPower)){
-# Random subset out of allocation
-random_features <- sample(ncol(datan), min(c(10000,ncol(datan))))
-# Call the network topology analysis function
-sft <- pickSoftThreshold(datan[,random_features])
-softPower <- sft$powerEstimate
-print(paste0("Netboost: softPower was set to ",softPower," based on the scale free topology criterion."))
-}
+  message("Netboost: Finished filter step.")
   
-  print("Netboost: Initialising distance calculation.")
+  if(is.null(softPower)){
+    # Random subset out of allocation
+    random_features <- sample(ncol(datan), min(c(10000,ncol(datan))))
+    # Call the network topology analysis function
+    sft <- pickSoftThreshold(datan[,random_features])
+    softPower <- sft$powerEstimate
+    message(paste0("Netboost: softPower was set to ", softPower, 
+                   " based on the scale free topology criterion."))
+  }
+  
+  message("Netboost: Initialising distance calculation.")
   dist <- nb_dist(datan=datan, filter=filter, softPower=softPower, cores=cores)
-  print("Netboost: Finished distance calculation.")
-  print("Netboost: Initialising clustering step.")
+  message("Netboost: Finished distance calculation.")
+  
+  message("Netboost: Initialising clustering step.")
   results <- nb_clust(datan=datan, filter=filter, dist=dist, minClusterSize = minClusterSize, MEDissThres = MEDissThres,
                       max_singleton=max_singleton, cores=cores, plot = plot)
-  print("Netboost: Finished clustering step.")
-  print("Netboost: Finished Netboost.")
+  message("Netboost: Finished clustering step.")
+  
+  message("Netboost: Finished Netboost.")
   return(results)
 }
-
 
 #' Calculate network adjacencies for filter
 #' 
@@ -77,12 +98,14 @@ calculate_adjacency <- function(datan=NULL,filter=NULL,softPower=2) {
 #' @param datan     Dataset
 #' @param softPower Integer. Exponent of the transformation
 #' @param cores Integer. Amount of CPU cores used (<=1 : sequential)
+#' @param verbose   Logical. Additional diagnostic messages.
 #' @return Vector with distances (same length as adjacency)
 #' @export
 nb_dist <- function(filter=NULL,
                     datan=NULL,
                     softPower=2,
-                    cores=getOption("mc.cores", 2L)) {
+                    cores = getOption("mc.cores", 2L),
+                    verbose = getOption("verbose")) {
   # if (is.null(filter) || is.null(adjacency))
   #   stop("Both filter and adjacency must be provided")
 
@@ -94,12 +117,12 @@ nb_dist <- function(filter=NULL,
   cores <- max(cores, 1)
 
   ## RcppParallel amount of threads to be started
-  setThreadOptions(numThreads=cores)
+  setThreadOptions(numThreads = cores)
 
-  return(netboost:::cpp_dist_tom(filter,
-                                 calculate_adjacency(datan=datan,
-                                                     filter=filter,
-                                                     softPower=softPower)))
+  return(cpp_dist_tom(filter,
+                      calculate_adjacency(datan=datan,
+                                          filter=filter,
+                                          softPower=softPower)))
 }
 
 #' Calculate dendrogram for a sparse distance matrix
@@ -108,15 +131,21 @@ nb_dist <- function(filter=NULL,
 #' @param filter    Filter-Matrix
 #' @param dist      Filter-Matrix
 #' @param max_singleton     The maximal singleton in the clustering. Usually equals the number of features.
+#' @param verbose   Logical. Additional diagnostic messages.
+#' @param cores     Integer. Amount of CPU cores used.
 #' @return Dendrogram
-nb_mcupgma <- function(filter=NULL,dist=NULL,max_singleton=NULL,cores=getOption("mc.cores", 2L)) {
-#  dir.create(path="clustering",recursive=TRUE)
-#  system(paste0("rm -rf clustering/*"))
-#  system(paste0("rm -r iteration_*/"))
-
+nb_mcupgma <- function(filter = NULL,
+                       dist = NULL,
+                       max_singleton = NULL,
+                       cores = getOption("mc.cores", 2L),
+                       verbose = getOption("verbose")) {
   # Deletes all files under netboostTmpPath(), esp. clustering/iteration_
   netboostTmpCleanup()
   
+  	if (ncol(datan)>5000000){
+	   stop("A bug in sparse UPGMA currently prevents analyses with more than 5 million features.")
+	}
+
   if (!dir.create(file.path(netboostTmpPath(), "clustering")))
     stop(paste("Unable to create:", file.path(netboostTmpPath(), "clustering")))
   
@@ -133,7 +162,9 @@ nb_mcupgma <- function(filter=NULL,dist=NULL,max_singleton=NULL,cores=getOption(
               quote=FALSE)
   
 #  system("gzip -f clustering/dist.edges")
-  ret <- system2("gzip", args = c("--verbose", "-f", file_dist_edges))
+  ret <- system2("gzip",
+                 args = c("-f", file_dist_edges,
+                          ifelse(verbose, "--verbose", "")))
 
   ## If gzip compressed file, the original file (and variable) is replaced
   if (ret == 0 && file.exists(paste0(file_dist_edges, ".gz")))
@@ -141,26 +172,24 @@ nb_mcupgma <- function(filter=NULL,dist=NULL,max_singleton=NULL,cores=getOption(
   else
     warning(paste("Gzip maybe failed on:", file_dist_edges, "Return:", ret))
   
-#  cluster <- file.path(netboost:::netboostPackagePath(), "mcupgma", "scripts", "cluster.pl")
-#  system(paste0(cluster,
-#                " -max_distance ", 1,
-#                " -max_singleton ", max_singleton,
-#                " -iterations 1000 -heap_size 10000000 -num_hash_buckets 40 -jobs ", cores,
-#                " -retries 1 -output_tree_file clustering/dist.mcupgma_tree -split_unmodified_edges ", cores,
-#                " clustering/dist.edges.gz"))
+  ret <- mcupgma_exec(exec="cluster.pl",
+                      "-max_distance", 1,
+                      "-max_singleton", max_singleton,
+                      "-iterations 1000 -heap_size 10000000 -num_hash_buckets 40",
+                      "-jobs", cores,
+                      "-retries 1",
+                      "-output_tree_file", file_dist_tree,
+                      "-split_unmodified_edges",
+                      cores,     # Ist das hier richtig?
+                      file_dist_edges,
+                      console = FALSE)
+  
+  if (verbose)
+    print(ret)
+  
+  if (!file.exists(file_dist_tree) || file.info(file_dist_tree)$size == 0)
+    stop("No output file created. mcupgma error :(")
 
-  mcupgma_exec(exec="cluster.pl",
-               "-max_distance", 1,
-               "-max_singleton", max_singleton,
-               "-iterations 1000 -heap_size 10000000 -num_hash_buckets 40",
-               "-jobs", cores,
-               "-retries 1",
-               "-output_tree_file", file_dist_tree,
-               "-split_unmodified_edges",
-               cores,     # Ist das hier richtig?
-               file_dist_edges)
-
-#  return(as.matrix(read.table(file="clustering/dist.mcupgma_tree",
   return(as.matrix(read.table(file=file_dist_tree,
                               row.names=NULL,
                               col.names=c("cluster_id1","cluster_id2","distance","cluster_id3"))))
@@ -181,7 +210,7 @@ tree_search <- function(forest=NULL) {
   if (is.null(forest) || !is.matrix(forest))
     stop("forest must be provided (as integer matrix)")
   
-  return(netboost:::cpp_tree_search(forest))
+  return(cpp_tree_search(forest))
 }
 
 
@@ -229,10 +258,14 @@ tree_dendro <- function(tree=NULL, datan=NULL, forest=NULL) {
 #'
 #' @param tree_dendro List of tree specific objects including dendrogram, tree data and features originating from the tree_dendro function.
 #' @param datan Dataset
-#' @param forest Matrix
 #' @param MEDissThres Module Eigengene Dissimilarity Threshold for merging close modules.
+#' @param plot Logical. Create plot
+#' @param minClusterSize XXX
+#' @param name_of_tree XXX
 #' @return Object of class hclust
-cut_dendro <- function(tree_dendro=NULL, minClusterSize= 10L, datan=NULL, MEDissThres = NULL, name_of_tree="", plot = TRUE) {
+cut_dendro <- function(tree_dendro=NULL, minClusterSize= 10L, 
+                       datan=NULL, MEDissThres = NULL,
+                       name_of_tree="", plot = TRUE) {
   dynamicMods <- cutreeDynamic(dendro = tree_dendro$dendro, method="tree", deepSplit = TRUE, minClusterSize = minClusterSize)
   ### Merging of Dynamic Modules ###
   # Calculate eigengenes
@@ -275,8 +308,15 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 10L, datan=NULL, MEDiss
 #' Module detection for the results from a nb_mcupgma call
 #'
 #' @param trees List of trees, where one tree is a list of ids and rows
+#' @param plot Logical. Create plot.
+#' @param datan XXX
+#' @param forest XXX
+#' @param minClusterSize XXX
+#' @param MEDissThres XXX
 #' @return List
-cut_trees <- function(trees=NULL, datan=NULL, forest=NULL, minClusterSize= 10L, MEDissThres = NULL, plot = TRUE) {
+cut_trees <- function(trees=NULL, datan=NULL, 
+                      forest=NULL, minClusterSize= 10L,
+                      MEDissThres = NULL, plot = TRUE) {
   res <- list()
   i <- 1L
   for(tree in trees){
@@ -303,9 +343,17 @@ cut_trees <- function(trees=NULL, datan=NULL, forest=NULL, minClusterSize= 10L, 
 #' @param minClusterSize  Integer. The minimum number of features in one module.
 #' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for merging close modules.
 #' @param cores Integer. Amount of CPU cores used (<=1 : sequential)
+#' @param plot Logical. Create plot.
 #' @return List
 #' @export
-nb_clust <- function(filter=NULL,dist=NULL,datan=NULL,max_singleton=dim(datan)[2], minClusterSize = 10L, MEDissThres = 0.25, cores=getOption("mc.cores", 2L), plot = TRUE) {
+nb_clust <- function(filter = NULL,
+                     dist = NULL,
+                     datan = NULL,
+                     max_singleton = dim(datan)[2],
+                     minClusterSize = 10L,
+                     MEDissThres = 0.25,
+                     cores = getOption("mc.cores", 2L),
+                     plot = TRUE) {
   forest <- nb_mcupgma(filter=filter,dist=dist,max_singleton=max_singleton,cores=cores)
   trees <- tree_search(forest)
   results <- cut_trees(trees=trees,datan=datan, forest=forest, minClusterSize = minClusterSize, MEDissThres = MEDissThres, plot = plot)
@@ -316,6 +364,7 @@ nb_clust <- function(filter=NULL,dist=NULL,datan=NULL,max_singleton=dim(datan)[2
 #' Summarize results from a forest. Plot trees together.
 #'
 #' @param clust_res Clustering results from cut_trees call.
+#' @param plot Logical. Create plot.
 #' @return List
 nb_summary <- function(clust_res = NULL, plot = TRUE) {
   res <- vector("list")
@@ -379,7 +428,9 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
       par(mar = c(4, 4, 0, 4))
       first_col <- last_col + 1
       last_col <- last_col + length(res$dendro[[tree]]$labels)
-      plotColorUnderTree(res$dendro[[tree]], c(gray(level=0.7),rainbow(n = (length(unique(plot_colors))-1)))[plot_colors[first_col:last_col]+1])
+      # XXX Use rainbow_hcl?
+      plotColorUnderTree(res$dendro[[tree]], c(gray(level=0.7),
+                                               rainbow(n = (length(unique(plot_colors))-1)))[plot_colors[first_col:last_col]+1])
     }
   }
   

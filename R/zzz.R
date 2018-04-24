@@ -12,22 +12,43 @@
 #' 
 #' @importFrom Rcpp evalCpp
 #' @importFrom RcppParallel setThreadOptions
+#' @importFrom parallel mclapply
+#'
 #' @importFrom grDevices dev.off gray pdf rainbow
+#' @importFrom graphics abline layout par
+#' @importFrom stats as.dendrogram as.dist cor hclust order.dendrogram
+#' @importFrom utils data packageDescription read.table write.table
+#' 
+#' @importFrom WGCNA allowWGCNAThreads
+#'
 #' @useDynLib netboost
 #'
 #' @param libname Path to R installation (base package dir)
 #' @param pkgname Package name (should be "netboost")
 .onAttach <- function(libname, pkgname) {
   desc <- packageDescription(pkgname)
+
+  # If no default core count given, detect.  
+  if (is.null(getOption("mc.cores")) || !is.integer(getOption("mc.cores"))) {
+    # logical = FALSE is not working correctly if CPU has logical cores, which
+    # are disabled (at least Linux).
+    # Means: if CPU has logical cores, core count should be set manually.
+    cores <- parallel::detectCores()
+    
+    if (is.na(cores)) cores <- 1
+    
+    options("mc.cores" = cores)
+  }
   
   ## Optional startup message, mainly for development.
   packageStartupMessage(paste(pkgname,
                               desc$Version,
                               "loaded"),
-#                              desc$Date,
-#                              "Loaded from:", libname),
+                              "Default CPU cores:",
+                              getOption("mc.cores")),
                         appendLF = TRUE)
-
+  #                              "Loaded from:", libname),
+  
   ## Path to "exec"-folder in installed package
   pPath <- file.path(libname, pkgname)
 
@@ -67,20 +88,28 @@
 
 #' Assigns temporary path for internal use (esp. mcupgma)
 #' 
-#' @param dir Directory (Default: R temporary folder)
+#' @param tmp Directory (Default: R temporary folder)
 #' @export
-nb_set_tempdir <- function(folder=tempdir()) {
+nb_set_tempdir <- function(tmp = NULL) {
   # TODO Cleanup maybe currently existing temporary folder.
   netboostTmpCleanup()
 
+  folder <- tmp
+
+  if (is.null(tmp))
+    folder <- tempdir()
+  
   if (file.exists(folder) && !dir.exists(folder))
     stop(paste("Given temporary exists as file:", folder),
          call.=FALSE)
   
   if (!dir.exists(folder)) {
-    warning(paste("Given temporary directory not existing. Created:", folder),
-            call. = FALSE)
-
+    if (is.null(tmp))
+      message("Using temporary directory:", folder)
+#    else
+#      warning(paste("Given temporary directory not existing. Created:", folder),
+#              call. = FALSE)
+    
     if (!dir.create(folder, recursive = TRUE, showWarnings = TRUE))
       stop(paste("Error creating temporary folder:", folder))
   }
@@ -96,14 +125,15 @@ nb_set_tempdir <- function(folder=tempdir()) {
 }
 
 #' Cleans the netboost temporary folder.
-netboostTmpCleanup <- function() {
+netboostTmpCleanup <- function(verbose = FALSE) {
   folder <- netboostTmpPath(nostop=TRUE)
-  
+
   if (folder == "") return()
 
   if (dir.exists(folder)) {
-    message(paste("Cleaning temporary folder:", folder))
-    
+    if (verbose)
+      message(paste("Netboost: cleaning temporary folder:", folder))
+
     ## Delete and recreate more convenient than globbing through the folders
     unlink(folder, recursive = TRUE)
     dir.create(folder)

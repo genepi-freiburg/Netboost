@@ -1,7 +1,8 @@
-#' Execute a program/script from the installes MCUPGMA suite.
+#' Execute a program/script from the installed MCUPGMA suite.
 #'
 #' @param exec    Name of the file of the executable.
-#' @param console Print output to R console or fetch for return to caller
+#' @param console Logical. Print output to R console or fetch for return to caller
+#' @param ...  Arguments passed to mcupgma executable in order required by program
 #' @return console=TRUE: exit code (0: no error). console=FALSE: STDOUT/STDERR output
 #' @export
 mcupgma_exec <- function(exec=NULL, ..., console=TRUE) {
@@ -38,9 +39,16 @@ mcupgma_exec <- function(exec=NULL, ..., console=TRUE) {
 #  flush.console()
   
   # If execution returned error, always throw warning.
-  if (ret > 0)
-    warning(paste("Execution of", exec, "returned error:", ret),
-            call.=FALSE)
+  # Also, save copy of output.
+  if (ret != 0) {
+    preserve <- file.path(netboostTmpPath(), paste0("output_", exec))
+    file.copy(std, preserve)
+    warning(paste("Execution of", exec, "returned no success:", ret,
+                  "(this may be an real error or not).",
+                  "STDOUT/ERR output saved in:", preserve),
+            call. = FALSE)
+#    file.show(std)
+  }
   
   # If STDIN/STDERR was printed on console, return exit code.
   # Else, read output from temporary file and return as text.

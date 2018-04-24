@@ -7,7 +7,7 @@
 netboost(datan = NULL, stepno = 20L, until = 0L, progress = 1000L,
   mode = 2L, softPower = NULL, max_singleton = dim(datan)[2],
   plot = TRUE, minClusterSize = 2L, MEDissThres = 0.25,
-  cores = getOption("mc.cores", 2L))
+  cores = getOption("mc.cores", 2), verbose = getOption("verbose"))
 }
 \arguments{
 \item{datan}{Data frame were rows correspond to samples and columns to features.}
@@ -25,15 +25,23 @@ if compiled accordingly and available on the hardware.}
 
 \item{max_singleton}{Integer. The maximal singleton in the clustering. Usually equals the number of features.}
 
+\item{plot}{Logical. Create plot.}
+
 \item{minClusterSize}{Integer. The minimum number of features in one module.}
 
 \item{MEDissThres}{Numeric. Module Eigengene Dissimilarity Threshold for merging close modules.}
 
 \item{cores}{Integer. Amount of CPU cores used (<=1 : sequential)}
+
+\item{verbose}{Additional diagnostic messages.}
 }
 \value{
 List
 }
 \description{
-The Netboost clustering is performed in three subsequent steps. First, a filter of important edges in the network is calculated. Next, pairwise distances are calculated. Last, clustering is performed. For details see Schlosser et al. doi...
+The Netboost clustering is performed in three subsequent steps.
+First, a filter of important edges in the network is calculated.
+Next, pairwise distances are calculated.
+Last, clustering is performed.
+For details see Schlosser et al. doi...
 }
