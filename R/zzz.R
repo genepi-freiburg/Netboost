@@ -44,7 +44,7 @@
   packageStartupMessage(paste(pkgname,
                               desc$Version,
                               "loaded"),
-                              "Default CPU cores:",
+                              paste("Default CPU cores:",
                               getOption("mc.cores")),
                         appendLF = TRUE)
   #                              "Loaded from:", libname),
