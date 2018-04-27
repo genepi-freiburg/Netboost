@@ -125,9 +125,9 @@ clean:
 	@echo "Clean build."
 	@find $(CLUSTERING_DIR) -name '*.o' -delete -print
 	@find $(CLUSTERING_UTIL_DIR) -name '*.o' -delete -print
-	@rm -rvf --preserve-root $(CLUSTERING_UTIL_DIR_BIN)
-	@rm -rvf --preserve-root $(CLUSTERING_DIR_BIN)
-	@rm -rvf --preserve-root $(CLUSTERING_DIR)/dep.$(ARCH)
-	@rm -rvf --preserve-root $(CLUSTERING_DIR)/obj.$(ARCH)
+#	@rm -rvf --preserve-root $(CLUSTERING_UTIL_DIR_BIN)
+#	@rm -rvf --preserve-root $(CLUSTERING_DIR_BIN)
+#	@rm -rvf --preserve-root $(CLUSTERING_DIR)/dep.$(ARCH)
+#	@rm -rvf --preserve-root $(CLUSTERING_DIR)/obj.$(ARCH)
 	@rm -vf $(CLUSTERING_DIR).tar.gz
 	@rm -vf $(CLUSTERING_UTIL_DIR).tar.gz
