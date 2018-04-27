@@ -142,7 +142,7 @@ nb_mcupgma <- function(filter = NULL,
   # Deletes all files under netboostTmpPath(), esp. clustering/iteration_
   netboostTmpCleanup()
   
-  	if (ncol(datan)>5000000){
+  	if (max_singleton>5000000){
 	   stop("A bug in sparse UPGMA currently prevents analyses with more than 5 million features.")
 	}
 
