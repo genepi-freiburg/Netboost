@@ -1,8 +1,8 @@
 Package: netboost
 Type: Package
 Title: Netboost: Network analysis supported by boosting
-Version: 1.026.3
-Date: 2018-03-30
+Version: 1.026.4
+Date: 2018-05-01
 Authors@R: c(person("Pascal", "Schlosser", role = c("aut", "cre"),
                     email = "schlosser@imbi.uni-freiburg.de"),
              person("Jochen", "Knaus", role = c("aut", "ctb"),

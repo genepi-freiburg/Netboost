@@ -1,7 +1,7 @@
 # Load WGCNA, try to hide the annoying mega-message (only a try as it is
 # printed...)
 # Workaround using environment to force WGCNA skipping it's mega-message.
-Sys.setenv(ALLOW_WGCNA_THREADS=0)
+Sys.setenv(ALLOW_WGCNA_THREADS=1)
 suppressPackageStartupMessages(library(WGCNA))
 Sys.unsetenv("ALLOW_WGCNA_THREADS")
 
