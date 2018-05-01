@@ -15,5 +15,6 @@ install_github("genepi-freiburg/netboost")
 ```
 
 # Example
-```nb_example()
+```R
+nb_example()
 ```
