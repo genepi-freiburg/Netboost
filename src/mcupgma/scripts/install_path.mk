@@ -1,1 +1,1 @@
-export INSTALL_PATH := /tmp/RtmpBMhAEb/devtools_install_5a9c310b5ce/netboost/mcupgma
+export INSTALL_PATH := /home/jo/R/x86_64-pc-linux-gnu-library/3.4/netboost/mcupgma

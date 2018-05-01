@@ -15,3 +15,5 @@ src/mcupgma/clustering_round/obj*
 src/mcupgma/clustering_util/obj*
 src/mcupgma/*.tar.gz
 results_netboost.pdf
+src/mcupgma/scripts/install_path.mk
+
