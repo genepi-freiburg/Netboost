@@ -43,8 +43,8 @@
   ## Optional startup message, mainly for development.
   packageStartupMessage(paste(pkgname,
                               desc$Version,
-                              desc$Date,
-                              "Default CPU cores:",
+                              "loaded"),
+                              paste("Default CPU cores:",
                               getOption("mc.cores")),
                         appendLF = TRUE)
   #                              "Loaded from:", libname),

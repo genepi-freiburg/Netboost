@@ -38,6 +38,10 @@ nb_filter <- function(datan, stepno=20L, until=0L,
     stop("mode must be 0 (x86), 1 (FMA) or 2 (AVX).")
   }
 
+	if (ncol(datan)>5000000){
+	   stop("A bug in sparse UPGMA currently prevents analyses with more than 5 million features.")
+	}
+
   message(paste("Netboost: Filtering"))
   
   ## Initialize data structures for optimized boosting (once)
