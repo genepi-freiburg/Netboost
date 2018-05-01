@@ -5,6 +5,8 @@ Sys.setenv(ALLOW_WGCNA_THREADS=1)
 suppressPackageStartupMessages(library(WGCNA))
 Sys.unsetenv("ALLOW_WGCNA_THREADS")
 
+library(colorspace)
+
 #' Netboost clustering.
 #' 
 #' The Netboost clustering is performed in three subsequent steps.
@@ -428,9 +430,13 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
       par(mar = c(4, 4, 0, 4))
       first_col <- last_col + 1
       last_col <- last_col + length(res$dendro[[tree]]$labels)
-      # XXX Use rainbow_hcl?
-      plotColorUnderTree(res$dendro[[tree]], c(gray(level=0.7),
-                                               rainbow(n = (length(unique(plot_colors))-1)))[plot_colors[first_col:last_col]+1])
+
+      
+      plotColorUnderTree(res$dendro[[tree]], c(gray(level = 0.7),
+                                               colorspace::rainbow_hcl(n = (length(
+                                                 unique(plot_colors)
+                                               ) - 1)))[plot_colors[first_col:last_col] + 1])
+      # rainbow_hcl(n = (length(unique(plot_colors))-1)))[plot_colors[first_col:last_col]+1])
     }
   }
   

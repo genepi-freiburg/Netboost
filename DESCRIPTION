@@ -15,6 +15,7 @@ Description: Multiline comment Multiline comment Multiline comment Multiline com
 Depends:
   R (>= 3.0.1),
   parallel,
+  colorspace,
   WGCNA
 Imports:
   Rcpp,
