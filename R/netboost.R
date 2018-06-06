@@ -43,7 +43,7 @@ netboost <- function(datan = NULL,
                      cores = getOption("mc.cores", 2),
                      verbose = getOption("verbose")) {
   # Initialize parallelization of WGCNA package.
-  if (cores > 1) WGCNA::allowWGCNAThreads(nThreads = cores)
+  if (cores > 1) WGCNA::allowWGCNAThreads(nThreads = as.numeric(cores))
 
 	if (ncol(datan)>5000000){
 	   stop("A bug in sparse UPGMA currently prevents analyses with more than 5 million features.")
