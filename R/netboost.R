@@ -40,7 +40,7 @@ netboost <- function(datan = NULL,
                      plot = TRUE,
                      minClusterSize = 2L,
                      MEDissThres = 0.25,
-                     cores = getOption("mc.cores", 2),
+                     cores = as.integer(getOption("mc.cores", 2)),
                      verbose = getOption("verbose")) {
   # Initialize parallelization of WGCNA package.
   if (cores > 1) WGCNA::allowWGCNAThreads(nThreads = as.numeric(cores))
