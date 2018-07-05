@@ -9,7 +9,7 @@ mcupgma_example <- function() {
 }
 
 
-#' Test/example code.
+#' Test/example code. Applies netboost to the TCGA-AML CHR18 DNA methylation and gene expression data supplied with the package. 
 #'
 #' @param cores Integer. CPU cores to use.
 #' @param keep Logical. Keep mcupgma intermediate files.

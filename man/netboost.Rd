@@ -15,18 +15,18 @@ netboost(datan = NULL, stepno = 20L, until = 0L, progress = 1000L,
 
 \item{stepno}{Integer amount of boosting steps applied in the filtering step}
 
-\item{until}{Stop at index/column (if 0: iterate through all columns)}
+\item{until}{Stop at index/column (if 0: iterate through all columns). For testing purposes in large datasets.}
 
 \item{progress}{Integer. If > 0, print progress after every X steps (mind: parallel!)}
 
 \item{mode}{Integer. Mode (0: x86, 1: FMA, 2: AVX). Features are only available
 if compiled accordingly and available on the hardware.}
 
-\item{softPower}{Integer. Exponent of the transformation}
+\item{softPower}{Integer. Exponent of the transformation. Set automatically based on the scale free topology criterion if unspecified.}
 
 \item{max_singleton}{Integer. The maximal singleton in the clustering. Usually equals the number of features.}
 
-\item{plot}{Logical. Create plot.}
+\item{plot}{Logical. Should plots be created?}
 
 \item{minClusterSize}{Integer. The minimum number of features in one module.}
 
