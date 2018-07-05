@@ -7,7 +7,8 @@
 netboost(datan = NULL, stepno = 20L, until = 0L, progress = 1000L,
   mode = 2L, softPower = NULL, max_singleton = dim(datan)[2],
   plot = TRUE, minClusterSize = 2L, MEDissThres = 0.25,
-  cores = getOption("mc.cores", 2), verbose = getOption("verbose"))
+  cores = as.integer(getOption("mc.cores", 2)),
+  verbose = getOption("verbose"))
 }
 \arguments{
 \item{datan}{Data frame were rows correspond to samples and columns to features.}
