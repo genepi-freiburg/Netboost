@@ -47,9 +47,10 @@ nb_example <- function(cores = getOption("mc.cores", 2L),
   tmp <-  nb_transfer(nb_summary = results,
                       new_data = tcga_aml_meth_rna_chr18)
   
-  ## XXX Pascal: stop condition?
-  sum(results$MEs != tmp)
-  
+  ## Check transfer of data
+  sum(round(results$MEs,12) != round(tmp,12))
+  sum(round(results$MEs,12) == round(tmp,12))
+
   # Cleanup all produced temporary filed (esp. clustering/iteration_*)
   if (!keep)
     netboostTmpCleanup()
