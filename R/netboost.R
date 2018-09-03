@@ -232,7 +232,7 @@ tree_dendro <- function(tree=NULL, datan=NULL, forest=NULL) {
   data_tree <- datan[,index.features]
   
   colnames_tree <- colnames(datan)[index.features]
-  tree_cluster <- forest[tree$rows,]
+  tree_cluster <- forest[tree$rows,,drop=FALSE]
 
   all_ids <- rev(sort(unique(c(forest[,c(1,2,4)]))))
   none_tree_ids <- all_ids[!(all_ids %in% tree$ids)]
@@ -246,7 +246,7 @@ tree_dendro <- function(tree=NULL, datan=NULL, forest=NULL) {
   
   cutpoint <- dim(data_tree)[2]
   dendro <- list()
-  dendro$merge <- tree_cluster[,c(1,2)]
+  dendro$merge <- tree_cluster[,c(1,2),drop=FALSE]
   dendro$merge[dendro$merge<=cutpoint] <- -dendro$merge[dendro$merge<=cutpoint]
   dendro$merge[dendro$merge>0] <- dendro$merge[dendro$merge>0]-cutpoint
   dendro$merge <-  apply(dendro$merge,c(1,2),function(x){(as.integer(x))})
@@ -295,18 +295,22 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 2L,
     MEList <- moduleEigengenes(tree_dendro$data, colors = merged$colors)
     MEs <- MEList$eigengenes
     MEDiss <- 1-cor(MEs);
-    METree <- hclust(as.dist(MEDiss), method = "average");
-    if(plot == TRUE){
-      plot(METree, main =paste0(name_of_tree,"Clustering of merged module eigengenes"),
-         xlab = "", sub = "")
-      plotDendroAndColors(dendro=tree_dendro$dendro, colors=mergedColors,"Merged Dynamic", dendroLabels = FALSE, hang = 0.01, addGuide = TRUE, guideHang = 0.05, main=paste0(name_of_tree,"Cluster Dendrogram"))
+    if(length(MEDiss) > 1){
+      METree <- hclust(as.dist(MEDiss), method = "average");
+      if(plot == TRUE & length(tree_dendro$dendro$labels)>2){
+        plot(METree, main =paste0(name_of_tree,"Clustering of merged module eigengenes"),
+           xlab = "", sub = "")
+        plotDendroAndColors(dendro=tree_dendro$dendro, colors=mergedColors,"Merged Dynamic", dendroLabels = FALSE, hang = 0.01, addGuide = TRUE, guideHang = 0.05, main=paste0(name_of_tree,"Cluster Dendrogram"))
+      }
     }
     }else{
     cat("\nOnly one module in ",name_of_tree,".\n")
     mergedColors <- dynamicMods
-    if(plot == TRUE){
-      plot(tree_dendro$dendro, main=paste0(name_of_tree,"Cluster Dendrogram (Tree maximaly consists out of one module.)"))
-    }
+    if(length(tree_dendro$dendro$labels)>2){
+      if(plot == TRUE){
+        plot(tree_dendro$dendro, main=paste0(name_of_tree,"Cluster Dendrogram (Tree maximaly consists out of one module.)"))
+      }
+    }else{cat("\nOnly two elements in the one module in ",name_of_tree," (no plot generated).\n")}
   }
   cat("\nNetboost extracted",length(table(mergedColors)),"modules (including background) with an average size of",mean(table(mergedColors)[-1])," (excluding background) from ",substr(name_of_tree,start=1,stop=(nchar(name_of_tree)-1)),".\n")
   return(list(colors=mergedColors,MEs=MEs,varExplained=MEList$varExplained))
@@ -332,7 +336,7 @@ cut_trees <- function(trees=NULL, datan=NULL,
     res[[i]][["dendro"]] <- tree_dendro$dendro
     res[[i]][["data"]] <- tree_dendro$data
     res[[i]][["names"]] <- tree_dendro$names
-    cut_dendro <- cut_dendro(tree_dendro=tree_dendro, minClusterSize = minClusterSize, datan=datan, MEDissThres = MEDissThres,name_of_tree = paste0("Tree ",i,":"), plot = plot)
+    cut_dendro <- netboost:::cut_dendro(tree_dendro=tree_dendro, minClusterSize = minClusterSize, datan=datan, MEDissThres = MEDissThres,name_of_tree = paste0("Tree ",i,":"), plot = plot)
     res[[i]][["colors"]] <- cut_dendro$colors
     res[[i]][["MEs"]] <- cut_dendro$MEs
     res[[i]][["varExplained"]] <- cut_dendro$varExplained

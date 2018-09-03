@@ -7,7 +7,7 @@
 netboost(datan = NULL, stepno = 20L, until = 0L, progress = 1000L,
   mode = 2L, softPower = NULL, max_singleton = dim(datan)[2],
   plot = TRUE, minClusterSize = 2L, MEDissThres = 0.25,
-  cores = as.integer(getOption("mc.cores", 2)),
+  cores = as.integer(getOption("mc.cores", 2)), scale = TRUE,
   verbose = getOption("verbose"))
 }
 \arguments{
@@ -33,6 +33,8 @@ if compiled accordingly and available on the hardware.}
 \item{MEDissThres}{Numeric. Module Eigengene Dissimilarity Threshold for merging close modules.}
 
 \item{cores}{Integer. Amount of CPU cores used (<=1 : sequential)}
+
+\item{scale}{Logical. Should data be scaled and centered?}
 
 \item{verbose}{Additional diagnostic messages.}
 }
