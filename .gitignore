@@ -17,3 +17,9 @@ src/mcupgma/*.tar.gz
 results_netboost.pdf
 src/mcupgma/scripts/install_path.mk
 
+src/mcupgma/scripts/install_path.mk
+src/mcupgma/clustering_round/dep.x86_64_Darwin/HierarchicalClustering_main.d
+src/mcupgma/clustering_round/dep.x86_64_Darwin/HierarchicalClustering_with_unknown_edges.d
+src/mcupgma/clustering_round/dep.x86_64_Darwin/test_heap.d
+src/mcupgma/scripts/install_path.mk
+src/mcupgma/scripts/install_path.mk
