@@ -606,8 +606,7 @@ nb_filter <- function(datan, stepno=20L, until=0L,
 #'           
 #' @return List     A list with the following components (for details see WGCNA::moduleEigengenes): eigengenes, averageExpr, varExplained, nPC, validAEs, allAEOK
 #' @export
-nb_moduleEigengenes <- function (expr, colors, nPC = 1, align = "along average", scale = TRUE, verbose = 0, indent = 0) 
-{
+nb_moduleEigengenes <- function (expr, colors, nPC = 1, align = "along average", scale = TRUE, verbose = 0, indent = 0) {
     spaces = indentSpaces(indent)
     if (verbose == 1) 
         printFlush(paste(spaces, "moduleEigengenes: Calculating", 
@@ -696,6 +695,7 @@ nb_moduleEigengenes <- function (expr, colors, nPC = 1, align = "along average",
                   PrinComps[, i] = -PrinComps[, i]
               }
               0
+        }, silent = TRUE)
             if (class(ae) == "try-error") {
                 if (verbose > 0) {
                   printFlush(paste(spaces, " ..Average expression calculation of module", 
@@ -708,9 +708,7 @@ nb_moduleEigengenes <- function (expr, colors, nPC = 1, align = "along average",
                   ae, "The returned average expression vector will be invalid.\n"))
             }
             validAEs[i] = !(class(ae) == "try-error")
-        }
     }
     allAEOK = (sum(!validAEs) == 0)
-    list(eigengenes = PrinComps, averageExpr = averExpr, varExplained = varExpl, 
-        nPC = nPC, validAEs = validAEs, allAEOK = allAEOK)
+    list(eigengenes = PrinComps, averageExpr = averExpr, varExplained = varExpl, nPC = nPC, validAEs = validAEs, allAEOK = allAEOK)
 }
