@@ -51,6 +51,8 @@ nb_example <- function(cores = getOption("mc.cores", 2L),
   sum(round(results$MEs,12) != round(tmp,12))
   sum(round(results$MEs,12) == round(tmp,12))
 
+  nb_plot_dendro(nb_summary = results,labels=TRUE,colorsrandom=TRUE,seed=123)
+  
   # Cleanup all produced temporary filed (esp. clustering/iteration_*)
   if (!keep)
     netboostTmpCleanup()
