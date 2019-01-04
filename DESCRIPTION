@@ -2,16 +2,15 @@ Package: netboost
 Type: Package
 Title: Netboost: Network analysis supported by boosting
 Version: 1.029.0
-Date: 2018-06-06
+Date: 2019-01-04
 Authors@R: c(person("Pascal", "Schlosser", role = c("aut", "cre"),
                     email = "pascal.schlosser@uniklinik-freiburg.de"),
              person("Jochen", "Knaus", role = c("aut", "ctb"),
                     email = "jo@imbi.uni-freiburg.de"),
              person("Yaniv", "Loewenstein", role = c("aut")))
 Maintainer: Pascal Schlosser <pascal.schlosser@uniklinik-freiburg.de>
-Description: Multiline comment Multiline comment Multiline comment Multiline comment
-    Multiline comment Multiline comment Multiline comment Multiline comment
-    This package comes bundled with MC-UPGMA clustering package by Yaniv Loewenstein.
+Description: Netboost: Network analysis supported by boosting
+    This package comes bundled with the MC-UPGMA clustering package by Yaniv Loewenstein.
 Depends:
   R (>= 3.5.0),
   parallel,

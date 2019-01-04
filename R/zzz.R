@@ -45,8 +45,9 @@
                               desc$Version,
                               "loaded"),
                               paste("Default CPU cores:",
-                              getOption("mc.cores")),
-                        appendLF = TRUE)
+                              getOption("mc.cores"),
+                              "\n    _   __     __  __                     __ \n   / | / /__  / /_/ /_  ____  ____  _____/ /_\n  /  |/ / _ \/ __/ __ \/ __ \/ __ \/ ___/ __/\n / /|  /  __/ /_/ /_/ / /_/ / /_/ (__  ) /_  \n/_/ |_/\___/\__/_.___/\____/\____/____/\__/  \n"),
+                              appendLF = TRUE)
   #                              "Loaded from:", libname),
   
   ## Path to "exec"-folder in installed package
