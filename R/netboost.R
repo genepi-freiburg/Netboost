@@ -30,6 +30,8 @@ library(parallel)
 #' @param cores     Integer. Amount of CPU cores used (<=1 : sequential)
 #' @param scale     Logical. Should data be scaled and centered?
 #' @param verbose   Additional diagnostic messages.
+#' @param nPC        Number of principal components and variance explained entries to be calculated. The number of returned variance explained entries is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is issued.
+#' @param nb_min_varExpl        Minimum proportion of variance explained for returned module eigengenes. The number of PCs is capped at nPC.
 #' @return dendros  A list of dendrograms. For each fully separate part of the network an individual dendrogram.
 #' @return names    A vector of feature names.
 #' @return colors   A vector of numeric color coding in matching order of names and module eigengene names (color = 3 -> variable in ME3).
@@ -46,6 +48,8 @@ netboost <- function(datan = NULL,
                      plot = TRUE,
                      minClusterSize = 2L,
                      MEDissThres = 0.25,
+                     nPC = 1,
+                     nb_min_varExpl = 0.5,
                      cores = as.integer(getOption("mc.cores", 2)),
                      scale = TRUE,
                      verbose = getOption("verbose")) {
@@ -81,7 +85,7 @@ netboost <- function(datan = NULL,
   message("Netboost: Finished distance calculation.")
   
   message("Netboost: Initialising clustering step.")
-  results <- nb_clust(datan=datan, filter=filter, dist=dist, minClusterSize = minClusterSize, MEDissThres = MEDissThres,
+  results <- nb_clust(datan=datan, filter=filter, dist=dist, minClusterSize = minClusterSize, MEDissThres = MEDissThres, nPC = nPC, nb_min_varExpl = nb_min_varExpl,
                       max_singleton=max_singleton, cores=cores, plot = plot)
   message("Netboost: Finished clustering step.")
   
@@ -274,14 +278,16 @@ tree_dendro <- function(tree=NULL, datan=NULL, forest=NULL) {
 #' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for merging close modules.
 #' @param name_of_tree String. Annotating plots and messages.
 #' @param plot      Logical. Should plots be created?
+#' @param nPC        Number of principal components and variance explained entries to be calculated. The number of returned variance explained entries is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is issued.
+#' @param nb_min_varExpl        Minimum proportion of variance explained for returned module eigengenes. The number of PCs is capped at nPC.
 #' @return Object of class hclust
 cut_dendro <- function(tree_dendro=NULL, minClusterSize= 2L, 
                        datan=NULL, MEDissThres = NULL,
-                       name_of_tree="", plot = TRUE) {
+                       name_of_tree="", plot = TRUE, nPC = 1, nb_min_varExpl = 0.5) {
   dynamicMods <- cutreeDynamic(dendro = tree_dendro$dendro, method="tree", deepSplit = TRUE, minClusterSize = minClusterSize)
   ### Merging of Dynamic Modules ###
   # Calculate eigengenes
-  MEList <- nb_moduleEigengenes(expr=tree_dendro$data, colors = dynamicMods)
+  MEList <- nb_moduleEigengenes(expr=tree_dendro$data, colors = dynamicMods, nPC = nPC, nb_min_varExpl = nb_min_varExpl)
   MEs <- MEList$nb_eigengenes
   # Calculate dissimilarity of module eigengenes
   MEDiss <- 1-cor(MEs);
@@ -297,7 +303,7 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 2L,
     merged <- mergeCloseModules(exprData=tree_dendro$data, dynamicMods, cutHeight = MEDissThres, verbose = 3)
     mergedColors <- merged$colors;
     # Calculate eigengenes
-    MEList <- nb_moduleEigengenes(expr=tree_dendro$data, colors = merged$colors)
+    MEList <- nb_moduleEigengenes(expr=tree_dendro$data, colors = merged$colors, nPC = nPC, nb_min_varExpl = nb_min_varExpl)
     MEs <- MEList$nb_eigengenes
     MEDiss <- 1-cor(MEs);
     if(length(MEDiss) > 1){
@@ -329,10 +335,17 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 2L,
 #' @param minClusterSize  Integer. The minimum number of features in one module.
 #' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for merging close modules.
 #' @param plot      Logical. Should plots be created?
+#' @param nPC        Number of principal components and variance explained entries to be calculated. The number of returned variance explained entries is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is issued.
+#' @param nb_min_varExpl        Minimum proportion of variance explained for returned module eigengenes. The number of PCs is capped at nPC.
 #' @return List
-cut_trees <- function(trees=NULL, datan=NULL, 
-                      forest=NULL, minClusterSize= 2L,
-                      MEDissThres = NULL, plot = TRUE) {
+cut_trees <- function(trees=NULL,
+                      datan=NULL, 
+                      forest=NULL,
+                      minClusterSize= 2L,
+                      MEDissThres = NULL,
+                      plot = TRUE,
+                      nPC = 1,
+                      nb_min_varExpl = 0.5) {
   res <- list()
   i <- 1L
   for(tree in trees){
@@ -341,7 +354,7 @@ cut_trees <- function(trees=NULL, datan=NULL,
     res[[i]][["dendro"]] <- tree_dendro$dendro
     res[[i]][["data"]] <- tree_dendro$data
     res[[i]][["names"]] <- tree_dendro$names
-    cut_dendro <- netboost:::cut_dendro(tree_dendro=tree_dendro, minClusterSize = minClusterSize, datan=datan, MEDissThres = MEDissThres,name_of_tree = paste0("Tree ",i,":"), plot = plot)
+    cut_dendro <- netboost:::cut_dendro(tree_dendro=tree_dendro, minClusterSize = minClusterSize, datan=datan, MEDissThres = MEDissThres,name_of_tree = paste0("Tree ",i,":"), plot = plot, nPC = nPC, nb_min_varExpl = nb_min_varExpl)
     res[[i]][["colors"]] <- cut_dendro$colors
     res[[i]][["MEs"]] <- cut_dendro$MEs
     res[[i]][["varExplained"]] <- cut_dendro$varExplained
@@ -360,6 +373,8 @@ cut_trees <- function(trees=NULL, datan=NULL,
 #' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for merging close modules.
 #' @param cores     Integer. Amount of CPU cores used (<=1 : sequential)
 #' @param plot Logical. Create plot.
+#' @param nPC        Number of principal components and variance explained entries to be calculated. The number of returned variance explained entries is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is issued.
+#' @param nb_min_varExpl        Minimum proportion of variance explained for returned module eigengenes. The number of PCs is capped at nPC.
 #' @return List
 #' @export
 nb_clust <- function(filter = NULL,
@@ -369,10 +384,12 @@ nb_clust <- function(filter = NULL,
                      minClusterSize = 2L,
                      MEDissThres = 0.25,
                      cores = getOption("mc.cores", 2L),
-                     plot = TRUE) {
+                     plot = TRUE,
+                     nPC = 1,
+                     nb_min_varExpl = 0.5) {
   forest <- netboost:::nb_mcupgma(filter=filter,dist=dist,max_singleton=max_singleton,cores=cores)
   trees <- netboost:::tree_search(forest)
-  results <- netboost:::cut_trees(trees=trees,datan=datan, forest=forest, minClusterSize = minClusterSize, MEDissThres = MEDissThres, plot = plot)
+  results <- netboost:::cut_trees(trees=trees,datan=datan, forest=forest, minClusterSize = minClusterSize, MEDissThres = MEDissThres, plot = plot, nPC = nPC, nb_min_varExpl = nb_min_varExpl)
   sum_res <- netboost:::nb_summary(clust_res = results, plot = plot)
   return(sum_res)
 }
@@ -464,6 +481,7 @@ nb_transfer <- function(nb_summary = NULL, new_data = NULL, scale = FALSE){
 	new_data <- as.data.frame(scale(new_data,center=TRUE,scale=TRUE))
   }
   
+  #will replace with rotation matrix transfer
   MEs <- nb_moduleEigengenes(expr=new_data, colors = nb_summary$colors)$nb_eigengenes
 
   colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"),FUN = length) > 1] <- paste0("ME0_",substring(text = colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"),FUN = length) > 1], first = 4))
@@ -656,7 +674,7 @@ nb_plot_dendro <- function(nb_summary = NULL,labels=FALSE,main="",colorsrandom=F
 #' @return validAEs     Boolean vector. Each component (corresponding to the columns in ‘eigengenes’) is ‘TRUE’ if the corresponding module average expression is valid.
 #' @return allAEOK      Boolean flag signalling whether all returned module average expressions contain valid data. Note that ‘returnValidOnly==TRUE’ does not imply ‘allAEOK==TRUE’: some invalid average expressions may be returned if their corresponding eigengenes have been calculated correctly.
 #' @export
-nb_moduleEigengenes <- function (expr, colors, impute = TRUE, nPC = 10, align = "along average", 
+nb_moduleEigengenes <- function (expr, colors, impute = TRUE, nPC = 1, align = "along average", 
     excludeGrey = FALSE, grey = if (is.numeric(colors)) 0 else "grey", 
     subHubs = TRUE, trapErrors = FALSE, returnValidOnly = trapErrors, 
     softPower = 6, scale = TRUE, verbose = 0, indent = 0,nb_min_varExpl=0.5) 
