@@ -409,7 +409,7 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
     if("MEs" %in% names(res)){res$MEs <- cbind(res$MEs, tmp_MEs_new)}else{res$MEs <- tmp_MEs_new}
     if("varExplained" %in% names(res)){res$varExplained <- c(res$varExplained , clust_res[[tree]]$varExplained)}else{res$varExplained <-  clust_res[[tree]]$varExplained}
   }
-  names(res$varExplained)<- colnames(res$MEs)
+ # names(res$varExplained)<- colnames(res$MEs)
   
   cat("Netboost detected ",
       n_MEs,
