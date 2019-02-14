@@ -336,7 +336,7 @@ cut_trees <- function(trees=NULL, datan=NULL,
   res <- list()
   i <- 1L
   for(tree in trees){
-    tree_dendro <- tree_dendro(tree=tree,datan=datan,forest=forest)
+    tree_dendro <- netboost:::tree_dendro(tree=tree,datan=datan,forest=forest)
     res[[i]] <- list()
     res[[i]][["dendro"]] <- tree_dendro$dendro
     res[[i]][["data"]] <- tree_dendro$data
@@ -370,10 +370,10 @@ nb_clust <- function(filter = NULL,
                      MEDissThres = 0.25,
                      cores = getOption("mc.cores", 2L),
                      plot = TRUE) {
-  forest <- nb_mcupgma(filter=filter,dist=dist,max_singleton=max_singleton,cores=cores)
-  trees <- tree_search(forest)
-  results <- cut_trees(trees=trees,datan=datan, forest=forest, minClusterSize = minClusterSize, MEDissThres = MEDissThres, plot = plot)
-  sum_res <- nb_summary(clust_res = results, plot = plot)
+  forest <- netboost:::nb_mcupgma(filter=filter,dist=dist,max_singleton=max_singleton,cores=cores)
+  trees <- netboost:::tree_search(forest)
+  results <- netboost:::cut_trees(trees=trees,datan=datan, forest=forest, minClusterSize = minClusterSize, MEDissThres = MEDissThres, plot = plot)
+  sum_res <- netboost:::nb_summary(clust_res = results, plot = plot)
   return(sum_res)
 }
 
@@ -418,8 +418,7 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
       " background modules in ",
       length(clust_res),
       " trees.\n")
-  cat("Average size of the modules was ", mean(table(res$colors[!(res$colors <=
-                                                                    0)])), ".\n")
+  cat("Average size of the modules was ", mean(table(res$colors[!(res$colors <= 0)])), ".\n")
   cat(
     sum(res$colors <= 0),
     " of ",
@@ -762,7 +761,8 @@ nb_moduleEigengenes <- function (expr, colors, impute = TRUE, nPC = 10, align = 
                 printFlush(paste(spaces, " ...calculating SVD"))
             svd1 = svd(datModule, nu = min(n, p, nPC), nv = min(n, 
                 p, nPC))
-            nb_PCA <- prcomp(x=datModule, retx = TRUE, center = FALSE, scale. = FALSE,tol = NULL, rank. = NULL)
+            nb_PCA <- prcomp(x=t(datModule), retx = TRUE, center = FALSE, scale. = FALSE,tol = NULL, rank. = NULL)
+            print(dim(nb_PCA$x))
 #             nb_PCs <- nb_PCA$x
 #             nb_rotation <- nb_PCA$rotation
             if (verbose > 5) 
