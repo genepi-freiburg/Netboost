@@ -730,14 +730,14 @@ nb_plot_dendro <- function(nb_summary = NULL,labels=FALSE,main="",colorsrandom=F
   plot_colors[nb_summary$colors <= 0] <- gray(level = 0.7)
   for (tree in 1:length(nb_summary$dendros)) {
     par(mar = c(0, 4, 8, 4))
+    first_col <- last_col + 1
+    last_col <- last_col + length(nb_summary$dendros[[tree]]$labels)
     if(labels){
-      plot(nb_summary$dendros[[tree]],labels=nb_summary$names,main=main)
+      plot(nb_summary$dendros[[tree]],labels=nb_summary$names[first_col:last_col],main=main)
     }else{
       plot(nb_summary$dendros[[tree]],labels=FALSE,main=main)
     }
     par(mar = c(4, 4, 0, 4))
-    first_col <- last_col + 1
-    last_col <- last_col + length(nb_summary$dendros[[tree]]$labels)
     WGCNA::plotColorUnderTree(nb_summary$dendros[[tree]], colors=plot_colors[first_col:last_col],rowLabels="")
   }
 }

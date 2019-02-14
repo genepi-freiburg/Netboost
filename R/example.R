@@ -21,8 +21,7 @@ nb_example <- function(cores = getOption("mc.cores", 2L),
   data("tcga_aml_meth_rna_chr18",  # 180 patients x 5283 features
        package="netboost",
        envir = environment())
-  data("tcga_aml_covariates", package="netboost",
-       envir = environment())
+#  data("tcga_aml_covariates", package="netboost", envir = environment())
   
   pdfFile = file.path(tempdir(), "results_netboost.pdf")
   
@@ -30,6 +29,7 @@ nb_example <- function(cores = getOption("mc.cores", 2L),
   pdf(file=pdfFile, width = 30)
   results <- netboost(datan = tcga_aml_meth_rna_chr18,
                       stepno = 20L,
+                      softPower = 3L,
                       minClusterSize = 10L,
                       MEDissThres = 0.25)
   dev.off()
@@ -51,7 +51,7 @@ nb_example <- function(cores = getOption("mc.cores", 2L),
   sum(round(results$MEs,12) != round(tmp,12))
   sum(round(results$MEs,12) == round(tmp,12))
 
-  nb_plot_dendro(nb_summary = results,labels=TRUE,colorsrandom=TRUE,seed=123)
+#  nb_plot_dendro(nb_summary = results,labels=TRUE,colorsrandom=TRUE,seed=123)
   
   # Cleanup all produced temporary filed (esp. clustering/iteration_*)
   if (!keep)
