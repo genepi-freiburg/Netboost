@@ -397,19 +397,20 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
       if (col != 0 | length(unique(tmp.col)) == 1) {
         n_MEs <- n_MEs +1
         tmp.col.new[tmp.col == col] <- n_MEs
-        colnames(tmp_MEs_new)[colnames(tmp_MEs)==paste0("ME",col)] <- paste0("ME", (n_MEs))
+        colnames(tmp_MEs_new)[grepl(pattern=paste0("ME",col,"_"),colnames(tmp_MEs))] <- gsub(pattern=paste0("ME",col,"_"),replacement=paste0("ME",(n_MEs),"_"),colnames(tmp_MEs_new)[grepl(pattern=paste0("ME",col,"_"),colnames(tmp_MEs))])
       }
       if (col == 0 & length(unique(tmp.col)) != 1) {
         n_MEs_background <- n_MEs_background + 1
         tmp.col.new[tmp.col == col] <- -n_MEs_background
-        colnames(tmp_MEs_new)[colnames(tmp_MEs)=="ME0"] <- paste0("ME0_", n_MEs_background)
+        colnames(tmp_MEs_new)[grepl(pattern="ME0_",colnames(tmp_MEs))] <- gsub(pattern="ME0_",replacement=paste0("ME0_", n_MEs_background,"_"),colnames(tmp_MEs_new)[grepl(pattern="ME0_",colnames(tmp_MEs))])
       }
     }
     res$colors <- c(res$colors, tmp.col.new)
     if("MEs" %in% names(res)){res$MEs <- cbind(res$MEs, tmp_MEs_new)}else{res$MEs <- tmp_MEs_new}
-    if("varExplained" %in% names(res)){res$varExplained <- c(res$varExplained , clust_res[[tree]]$varExplained)}else{res$varExplained <-  clust_res[[tree]]$varExplained}
+    if("varExplained" %in% names(res)){res$varExplained <- cbind(res$varExplained , clust_res[[tree]]$varExplained)}else{res$varExplained <-  clust_res[[tree]]$varExplained}
   }
- # names(res$varExplained)<- colnames(res$MEs)
+#  colnames(res$varExplained)<- paste0("PC",1:nPCs)
+#  rownames(res$varExplained)<- colnames(res$MEs)
   
   cat("Netboost detected ",
       n_MEs,
