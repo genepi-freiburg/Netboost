@@ -282,7 +282,7 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 2L,
   ### Merging of Dynamic Modules ###
   # Calculate eigengenes
   MEList <- nb_moduleEigengenes(expr=tree_dendro$data, colors = dynamicMods)
-  MEs <- MEList$nb_eigengenes
+  MEs <- MEList$eigengenes
   # Calculate dissimilarity of module eigengenes
   MEDiss <- 1-cor(MEs);
   # Cluster module eigengenes
@@ -298,7 +298,7 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 2L,
     mergedColors <- merged$colors;
     # Calculate eigengenes
     MEList <- nb_moduleEigengenes(expr=tree_dendro$data, colors = merged$colors)
-    MEs <- MEList$nb_eigengenes
+    MEs <- MEList$eigengenes
     MEDiss <- 1-cor(MEs);
     if(length(MEDiss) > 1){
       METree <- hclust(as.dist(MEDiss), method = "average");
@@ -464,7 +464,7 @@ nb_transfer <- function(nb_summary = NULL, new_data = NULL, scale = FALSE){
 	new_data <- as.data.frame(scale(new_data,center=TRUE,scale=TRUE))
   }
   
-  MEs <- nb_moduleEigengenes(expr=new_data, colors = nb_summary$colors)$nb_eigengenes
+  MEs <- nb_moduleEigengenes(expr=new_data, colors = nb_summary$colors)$eigengenes
 
   colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"),FUN = length) > 1] <- paste0("ME0_",substring(text = colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"),FUN = length) > 1], first = 4))
   MEs <- MEs[,colnames(nb_summary$MEs)]
