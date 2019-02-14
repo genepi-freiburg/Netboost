@@ -281,8 +281,8 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 2L,
   dynamicMods <- cutreeDynamic(dendro = tree_dendro$dendro, method="tree", deepSplit = TRUE, minClusterSize = minClusterSize)
   ### Merging of Dynamic Modules ###
   # Calculate eigengenes
-  MEList <- moduleEigengenes(tree_dendro$data, colors = dynamicMods)
-  MEs <- MEList$eigengenes
+  MEList <- nb_moduleEigengenes(expr=tree_dendro$data, colors = dynamicMods)
+  MEs <- MEList$nb_eigengenes
   # Calculate dissimilarity of module eigengenes
   MEDiss <- 1-cor(MEs);
   # Cluster module eigengenes
@@ -297,8 +297,8 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 2L,
     merged <- mergeCloseModules(exprData=tree_dendro$data, dynamicMods, cutHeight = MEDissThres, verbose = 3)
     mergedColors <- merged$colors;
     # Calculate eigengenes
-    MEList <- moduleEigengenes(tree_dendro$data, colors = merged$colors)
-    MEs <- MEList$eigengenes
+    MEList <- nb_moduleEigengenes(expr=tree_dendro$data, colors = merged$colors)
+    MEs <- MEList$nb_eigengenes
     MEDiss <- 1-cor(MEs);
     if(length(MEDiss) > 1){
       METree <- hclust(as.dist(MEDiss), method = "average");
@@ -464,7 +464,7 @@ nb_transfer <- function(nb_summary = NULL, new_data = NULL, scale = FALSE){
 	new_data <- as.data.frame(scale(new_data,center=TRUE,scale=TRUE))
   }
   
-  MEs <- moduleEigengenes(new_data, colors = nb_summary$colors)$eigengenes
+  MEs <- nb_moduleEigengenes(expr=new_data, colors = nb_summary$colors)$nb_eigengenes
 
   colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"),FUN = length) > 1] <- paste0("ME0_",substring(text = colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"),FUN = length) > 1], first = 4))
   MEs <- MEs[,colnames(nb_summary$MEs)]
@@ -576,127 +576,6 @@ nb_filter <- function(datan, stepno=20L, until=0L,
 "tcga_aml_covariates"
 
 
-
-#' Calculation of module eigengenes. This is a modification of WGCNAs moduleEigengenes function
-#'
-#' @param expr      Expression data for a single set in the form of a data frame where rows are samples and columns are genes (probes).
-#' @param colors    A vector of the same length as the number of probes in ‘expr’, giving module color for all probes (genes).
-#' @param nPC       Number of principal components and variance explained entries to be calculated. Note that only the first principal component is returned; the rest are used only for the calculation of proportion of variance explained. The number of returned variance explained entries is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is issued.
-#' @param align     Controls whether eigengenes, whose orientation is undetermined, should be aligned with average expression (‘align = "along average"’, the default) or left as they are (‘align = ""’). Any other value will trigger an error.
-#' @param scale     logical; can be used to turn off scaling of the expression data before calculating the singular value decomposition. The scaling should only be turned off if the data has been scaled previously, in which case the function can run a bit faster.
-#' @param verbose   Controls verbosity of printed progress messages. 0 means silent, up to (about) 5 the verbosity gradually increases.
-#' @param indent    A single non-negative integer controlling indentation of printed messages. 0 means no indentation, each unit above that adds two spaces.
-#'           
-#' @return List     A list with the following components (for details see WGCNA::moduleEigengenes): eigengenes, averageExpr, varExplained, nPC, validAEs, allAEOK
-#' @export
-nb_moduleEigengenes <- function (expr, colors, nPC = 1, align = "along average", scale = TRUE, verbose = 0, indent = 0) {
-    spaces = indentSpaces(indent)
-    if (verbose == 1) 
-        printFlush(paste(spaces, "moduleEigengenes: Calculating", 
-            nlevels(as.factor(colors)), "module eigengenes in given set."))
-    if (is.null(expr)) {
-        stop("moduleEigengenes: Error: expr is NULL. ")
-    }
-    if (is.null(colors)) {
-        stop("moduleEigengenes: Error: colors is NULL. ")
-    }
-    if (is.null(dim(expr)) || length(dim(expr)) != 2) 
-        stop("moduleEigengenes: Error: expr must be two-dimensional.")
-    if (dim(expr)[2] != length(colors)) 
-        stop("moduleEigengenes: Error: ncol(expr) and length(colors) must be equal (one color per variable).")
-    if (is.factor(colors)) {
-        nl = nlevels(colors)
-        nlDrop = nlevels(colors[, drop = TRUE])
-        if (nl > nlDrop) 
-            stop(paste("Argument 'colors' contains unused levels (empty modules). ", 
-                "Use colors[, drop=TRUE] to get rid of them."))
-    }
-    alignRecognizedValues = c("", "along average")
-    if (!is.element(align, alignRecognizedValues)) {
-        printFlush(paste("ModulePrincipalComponents: Error:", 
-            "parameter align has an unrecognised value:", align, 
-            "; Recognized values are ", alignRecognizedValues))
-        stop()
-    }
-    maxVarExplained = 10
-    if (nPC > maxVarExplained) 
-        warning(paste("Given nPC is too large. Will use value", 
-            maxVarExplained))
-    nVarExplained = min(nPC, maxVarExplained)
-    modlevels = levels(factor(colors))
-
-    PrinComps = data.frame(matrix(NA, nrow = dim(expr)[[1]], 
-        ncol = length(modlevels)))
-    averExpr = data.frame(matrix(NA, nrow = dim(expr)[[1]], ncol = length(modlevels)))
-    varExpl = data.frame(matrix(NA, nrow = nVarExplained, ncol = length(modlevels)))
-    validAEs = rep(FALSE, length(modlevels))
-    validColors = colors
-    names(PrinComps) = paste(moduleColor.getMEprefix(), modlevels, 
-        sep = "")
-    names(averExpr) = paste("AE", modlevels, sep = "")
-    for (i in c(1:length(modlevels))) {
-        if (verbose > 1) 
-            printFlush(paste(spaces, "moduleEigengenes : Working on ME for module", 
-                modlevels[i]))
-        modulename = modlevels[i]
-        restrict1 = as.character(colors) == as.character(modulename)
-        if (verbose > 2) 
-            printFlush(paste(spaces, " ...", sum(restrict1), 
-                "variables"))
-        datModule = as.matrix(t(expr[, restrict1]))
-        n = dim(datModule)[1]
-        p = dim(datModule)[2]
-        pc = try({
-            if (verbose > 5) 
-                printFlush(paste(spaces, " ...scaling"))
-            if (scale) 
-                datModule = t(scale(t(datModule)))
-            if (verbose > 5) 
-                printFlush(paste(spaces, " ...calculating SVD"))
-            svd1 = svd(datModule, nu = min(n, p, nPC), nv = min(n, 
-                p, nPC))
-            if (verbose > 5) 
-                printFlush(paste(spaces, " ...calculating PVE"))
-            veMat = cor(svd1$v[, c(1:min(n, p, nVarExplained))], 
-                t(datModule), use = "p")
-            varExpl[c(1:min(n, p, nVarExplained)), i] = rowMeans(veMat^2, 
-                na.rm = TRUE)
-            svd1$v[, 1]
-        }, silent = TRUE)
-        PrinComps[, i] = pc
-        ae = try({
-             scaledExpr = scale(t(datModule))
-             averExpr[, i] = rowMeans(scaledExpr, na.rm = TRUE)
-             if (align == "along average") {
-                if (verbose > 4) 
-                  printFlush(paste(spaces, " .. aligning module eigengene with average expression."))
-                corAve = cor(averExpr[, i], PrinComps[, i], 
-                  use = "p")
-                if (!is.finite(corAve)) 
-                  corAve = 0
-                if (corAve < 0) 
-                  PrinComps[, i] = -PrinComps[, i]
-              }
-              0
-        }, silent = TRUE)
-            if (class(ae) == "try-error") {
-                if (verbose > 0) {
-                  printFlush(paste(spaces, " ..Average expression calculation of module", 
-                    modulename, "failed with the following error:"))
-                  printFlush(paste(spaces, "     ", ae, spaces, 
-                    " ..the returned average expression vector will be invalid."))
-                }
-                warning(paste("Average expression calculation of module", 
-                  modulename, "failed with the following error \n     ", 
-                  ae, "The returned average expression vector will be invalid.\n"))
-            }
-            validAEs[i] = !(class(ae) == "try-error")
-    }
-    allAEOK = (sum(!validAEs) == 0)
-    list(eigengenes = PrinComps, averageExpr = averExpr, varExplained = varExpl, nPC = nPC, validAEs = validAEs, allAEOK = allAEOK)
-}
-
-
 #' Plot dendrogram from Netboost output.
 #' 
 #' @param nb_summary Netboost results as generated by the nb_summary function.
@@ -743,7 +622,7 @@ nb_plot_dendro <- function(nb_summary = NULL,labels=FALSE,main="",colorsrandom=F
 }
 
 
-#' Netboost module aggregate measure extraction.
+#' Netboost module aggregate extraction.
 #' 
 #' This is a modification of WGCNA:::moduleEigengenes() (version WGCNA_1.66) to include more than the first principal component.
 #' For details see WGCNA:::moduleEigengenes().
@@ -763,6 +642,7 @@ nb_plot_dendro <- function(nb_summary = NULL,labels=FALSE,main="",colorsrandom=F
 #' @param verbose       Controls verbosity of printed progress messages. 0 means silent, up to (about) 5 the verbosity gradually increases.
 #' @param indent        A single non-negative integer controlling indentation of printed messages. 0 means no indentation, each unit above that adds two spaces.
 #' @param nb_min_varExpl        Minimum proportion of variance explained for returned module eigengenes. Is capped at nPC.
+#' 
 #' @return eigengenes   Module eigengenes in a dataframe, with each column corresponding to one eigengene. The columns are named by the corresponding color with an ‘"ME"’ prepended, e.g., ‘MEturquoise’ etc. If ‘returnValidOnly==FALSE’, module eigengenes whose calculation failed have all components set to ‘NA’.
 #' @return averageExpr  If ‘align == "along average"’, a dataframe containing average normalized expression in each module. The columns are named by the corresponding color with an ‘"AE"’ prepended, e.g., ‘AEturquoise’ etc.
 #' @return varExplained A dataframe in which each column corresponds to a module, with the component ‘varExplained[PC, module]’ giving the variance of module ‘module’ explained by the principal component no. ‘PC’. The calculation is exact irrespective of the number of computed principal components. At most 10 variance explained values are recorded in this dataframe.
