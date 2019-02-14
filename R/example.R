@@ -29,7 +29,7 @@ nb_example <- function(cores = getOption("mc.cores", 2L),
   results <- netboost(datan = tcga_aml_meth_rna_chr18,
                       stepno = 20L,
                       softPower = 3L,
-                      minClusterSize = 10L, nPC = 1,
+                      minClusterSize = 10L, nPC = 2,
                       MEDissThres = 0.25)
   nb_plot_dendro(nb_summary = results,labels=TRUE,colorsrandom=TRUE,seed=123)
   dev.off()
