@@ -30,7 +30,12 @@ library(parallel)
 #' @param cores     Integer. Amount of CPU cores used (<=1 : sequential)
 #' @param scale     Logical. Should data be scaled and centered?
 #' @param verbose   Additional diagnostic messages.
-#' @return List
+#' @return dendros  A list of dendrograms. For each fully separate part of the network an individual dendrogram.
+#' @return names    A vector of feature names.
+#' @return colors   A vector of numeric color coding in matching order of names and module eigengene names (color = 3 -> variable in ME3).
+#' @return MEs      Aggregated module measures (Module eigengenes).
+#' @return varExplained  Proportion of variance explained per module eigengene.
+#' @return dendros  A list of dendrograms. For each fully separate part of the network an individual dendrogram.
 #' @export
 netboost <- function(datan = NULL,
                      stepno = 20L, until = 0L,
@@ -735,4 +740,262 @@ nb_plot_dendro <- function(nb_summary = NULL,labels=FALSE,main="",colorsrandom=F
     last_col <- last_col + length(nb_summary$dendros[[tree]]$labels)
     WGCNA::plotColorUnderTree(nb_summary$dendros[[tree]], colors=plot_colors[first_col:last_col],rowLabels="")
   }
+}
+
+
+#' Netboost module aggregate measure extraction.
+#' 
+#' This is a modification of WGCNA:::moduleEigengenes() (version WGCNA_1.66) to include more than the first principal component.
+#' For details see WGCNA:::moduleEigengenes().
+#'
+#' @param expr     Expression data for a single set in the form of a data frame where rows are samples and columns are genes (probes).
+#' @param colors    A vector of the same length as the number of probes in ‘expr’, giving module color for all probes (genes). Color ‘"grey"’ is reserved for unassigned genes.     Expression
+#' @param impute    If ‘TRUE’, expression data will be checked for the presence of ‘NA’ entries and if the latter are present, numerical data will be imputed, using function ‘impute.knn’ and probes from the same module as the missing datum. The function ‘impute.knn’ uses a fixed random seed giving repeatable results.
+#' @param nPC       Number of principal components and variance explained entries to be calculated. The number of returned variance explained entries is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is issued.
+#' @param align     Controls whether eigengenes, whose orientation is undetermined, should be aligned with average expression (‘align = "along average"’, the default) or left as they are (‘align = ""’). Any other value will trigger an error.
+#' @param excludeGrey   Should the improper module consisting of 'grey' genes be excluded from the eigengenes?
+#' @param grey          Value of ‘colors’ designating the improper module. Note that if ‘colors’ is a factor of numbers, the default value will be incorrect.
+#' @param subHubs       Controls whether hub genes should be substituted for missing eigengenes. If ‘TRUE’, each missing eigengene (i.e., eigengene whose calculation failed and the error was trapped) will be replaced by a weighted average of the most connected hub genes in the corresponding module. If this calculation fails, or if ‘subHubs==FALSE’, the value of ‘trapErrors’ will determine whether the offending module will be removed or whether the function will issue an error and stop.
+#' @param trapErrors    Controls handling of errors from that may arise when there are too many ‘NA’ entries in expression data. If ‘TRUE’, errors from calling these functions will be trapped without abnormal exit.  If ‘FALSE’, errors will cause the function to stop. Note, however, that ‘subHubs’ takes precedence in the sense that if ‘subHubs==TRUE’ and ‘trapErrors==FALSE’, an error will be issued only if both the principal component and the hubgene calculations have failed.
+#' @param returnValidOnly   logical; controls whether the returned data frame of module eigengenes contains columns corresponding only to modules whose eigengenes or hub genes could be calculated correctly (‘TRUE’), or whether the data frame should have columns for each of the input color labels (‘FALSE’).
+#' @param softPower     The power used in soft-thresholding the adjacency matrix. Only used when the hubgene approximation is necessary because the principal component calculation failed. It must be non-negative. The default value should only be changed if there is a clear indication that it leads to incorrect results.
+#' @param scale         logical; can be used to turn off scaling of the expression data before calculating the singular value decomposition. The scaling should only be turned off if the data has been scaled previously, in which case the function can run a bit faster. Note however that the function first imputes, then scales the expression data in each module. If the expression contain missing data, scaling outside of the function and letting the function impute missing data may lead to slightly different results than if the data is scaled within the function.
+#' @param verbose       Controls verbosity of printed progress messages. 0 means silent, up to (about) 5 the verbosity gradually increases.
+#' @param indent        A single non-negative integer controlling indentation of printed messages. 0 means no indentation, each unit above that adds two spaces.
+#' @param nb_min_varExpl        Minimum proportion of variance explained for returned module eigengenes. Is capped at nPC.
+#' @return eigengenes   Module eigengenes in a dataframe, with each column corresponding to one eigengene. The columns are named by the corresponding color with an ‘"ME"’ prepended, e.g., ‘MEturquoise’ etc. If ‘returnValidOnly==FALSE’, module eigengenes whose calculation failed have all components set to ‘NA’.
+#' @return averageExpr  If ‘align == "along average"’, a dataframe containing average normalized expression in each module. The columns are named by the corresponding color with an ‘"AE"’ prepended, e.g., ‘AEturquoise’ etc.
+#' @return varExplained A dataframe in which each column corresponds to a module, with the component ‘varExplained[PC, module]’ giving the variance of module ‘module’ explained by the principal component no. ‘PC’. The calculation is exact irrespective of the number of computed principal components. At most 10 variance explained values are recorded in this dataframe.
+#' @return nPC          A copy of the input ‘nPC’.
+#' @return validMEs     A boolean vector. Each component (corresponding to the columns in ‘data’) is ‘TRUE’ if the corresponding eigengene is valid, and ‘FALSE’ if it is invalid. Valid eigengenes include both principal components and their hubgene approximations. When ‘returnValidOnly==FALSE’, by definition all returned eigengenes are valid and the entries of ‘validMEs’ are all ‘TRUE’.
+#' @return validColors  A copy of the input colors with entries corresponding to invalid modules set to ‘grey’ if given, otherwise 0 if ‘colors’ is numeric and "grey" otherwise.
+#' @return allOK        Boolean flag signalling whether all eigengenes have been calculated correctly, either as principal components or as the hubgene average approximation.
+#' @return allPC        Boolean flag signalling whether all returned eigengenes are principal components.
+#' @return isPC         Boolean vector. Each component (corresponding to the columns in ‘eigengenes’) is ‘TRUE’ if the corresponding eigengene is the first principal component and ‘FALSE’ if it is the hubgene approximation or is invalid.
+#' @return isHub        Boolean vector. Each component (corresponding to the columns in ‘eigengenes’) is ‘TRUE’ if the corresponding eigengene is the hubgene approximation and ‘FALSE’ if it is the first principal component or is invalid.
+#' @return validAEs     Boolean vector. Each component (corresponding to the columns in ‘eigengenes’) is ‘TRUE’ if the corresponding module average expression is valid.
+#' @return allAEOK      Boolean flag signalling whether all returned module average expressions contain valid data. Note that ‘returnValidOnly==TRUE’ does not imply ‘allAEOK==TRUE’: some invalid average expressions may be returned if their corresponding eigengenes have been calculated correctly.
+#' @export
+nb_moduleEigengenes <- function (expr, colors, impute = TRUE, nPC = 10, align = "along average", 
+    excludeGrey = FALSE, grey = if (is.numeric(colors)) 0 else "grey", 
+    subHubs = TRUE, trapErrors = FALSE, returnValidOnly = trapErrors, 
+    softPower = 6, scale = TRUE, verbose = 0, indent = 0,nb_min_varExpl=0.5) 
+{
+    spaces = indentSpaces(indent)
+    if (verbose == 1) 
+        printFlush(paste(spaces, "moduleEigengenes: Calculating", 
+            nlevels(as.factor(colors)), "module eigengenes in given set."))
+    if (is.null(expr)) {
+        stop("moduleEigengenes: Error: expr is NULL. ")
+    }
+    if (is.null(colors)) {
+        stop("moduleEigengenes: Error: colors is NULL. ")
+    }
+    if (is.null(dim(expr)) || length(dim(expr)) != 2) 
+        stop("moduleEigengenes: Error: expr must be two-dimensional.")
+    if (dim(expr)[2] != length(colors)) 
+        stop("moduleEigengenes: Error: ncol(expr) and length(colors) must be equal (one color per gene).")
+    if (is.factor(colors)) {
+        nl = nlevels(colors)
+        nlDrop = nlevels(colors[, drop = TRUE])
+        if (nl > nlDrop) 
+            stop(paste("Argument 'colors' contains unused levels (empty modules). ", 
+                "Use colors[, drop=TRUE] to get rid of them."))
+    }
+    if (softPower < 0) 
+        stop("softPower must be non-negative")
+    alignRecognizedValues = c("", "along average")
+    if (!is.element(align, alignRecognizedValues)) {
+        printFlush(paste("ModulePrincipalComponents: Error:", 
+            "parameter align has an unrecognised value:", align, 
+            "; Recognized values are ", alignRecognizedValues))
+        stop()
+    }
+    maxVarExplained = 10 
+    if (nPC > maxVarExplained) 
+        warning(paste("Given nPC is too large. Will use value", 
+            maxVarExplained))
+    nVarExplained = min(nPC, maxVarExplained)
+    modlevels = levels(factor(colors))
+    if (excludeGrey) 
+        if (sum(as.character(modlevels) != as.character(grey)) > 
+            0) {
+            modlevels = modlevels[as.character(modlevels) != 
+                as.character(grey)]
+        }
+        else {
+            stop(paste("Color levels are empty. Possible reason: the only color is grey", 
+                "and grey module is excluded from the calculation."))
+        }
+    PrinComps = data.frame(matrix(NA, nrow = dim(expr)[[1]], 
+        ncol = length(modlevels)))
+    nb_PrinComps <- data.frame(matrix(NA, nrow = dim(expr)[[1]], 
+        ncol = 0))
+    nb_rotations <- vector("list", length(modlevels))
+    averExpr = data.frame(matrix(NA, nrow = dim(expr)[[1]], ncol = length(modlevels)))
+    varExpl = data.frame(matrix(NA, nrow = nVarExplained, ncol = length(modlevels)))
+    validMEs = rep(TRUE, length(modlevels))
+    validAEs = rep(FALSE, length(modlevels))
+    isPC = rep(TRUE, length(modlevels))
+    isHub = rep(FALSE, length(modlevels))
+    validColors = colors
+    names(PrinComps) = paste(moduleColor.getMEprefix(), modlevels, 
+        sep = "")
+    names(averExpr) = paste("AE", modlevels, sep = "")
+    for (i in c(1:length(modlevels))) {
+        if (verbose > 1) 
+            printFlush(paste(spaces, "moduleEigengenes : Working on ME for module", 
+                modlevels[i]))
+        modulename = modlevels[i]
+        restrict1 = as.character(colors) == as.character(modulename)
+        if (verbose > 2) 
+            printFlush(paste(spaces, " ...", sum(restrict1), 
+                "genes"))
+        datModule = as.matrix(t(expr[, restrict1]))
+        n = dim(datModule)[1]
+        p = dim(datModule)[2]
+        pc = try({
+            if (nrow(datModule) > 1 && impute) {
+                seedSaved = FALSE
+                if (exists(".Random.seed")) {
+                  saved.seed = .Random.seed
+                  seedSaved = TRUE
+                }
+                if (any(is.na(datModule))) {
+                  if (verbose > 5) 
+                    printFlush(paste(spaces, " ...imputing missing data"))
+                  datModule = impute.knn(datModule, k = min(10, 
+                    nrow(datModule) - 1))
+                  try({
+                    if (!is.null(datModule$data)) 
+                      datModule = datModule$data
+                  }, silent = TRUE)
+                }
+                if (seedSaved) 
+                  .Random.seed <<- saved.seed
+            }
+            if (verbose > 5) 
+                printFlush(paste(spaces, " ...scaling"))
+            if (scale) 
+                datModule = t(scale(t(datModule)))
+            if (verbose > 5) 
+                printFlush(paste(spaces, " ...calculating SVD"))
+            svd1 = svd(datModule, nu = min(n, p, nPC), nv = min(n, 
+                p, nPC))
+            nb_PCA <- prcomp(x=datModule, retx = TRUE, center = FALSE, scale. = FALSE,tol = NULL, rank. = NULL)
+#             nb_PCs <- nb_PCA$x
+#             nb_rotation <- nb_PCA$rotation
+            if (verbose > 5) 
+                printFlush(paste(spaces, " ...calculating PVE"))
+            veMat = cor(svd1$v[, c(1:min(n, p, nVarExplained))], 
+                t(datModule), use = "p")
+            varExpl[c(1:min(n, p, nVarExplained)), i] = rowMeans(veMat^2, 
+                na.rm = TRUE)
+            svd1$v[, 1]
+        }, silent = TRUE)
+        if (class(pc) == "try-error") {
+            if ((!subHubs) && (!trapErrors)) 
+                stop(pc)
+            if (subHubs) {
+                if (verbose > 0) {
+                  printFlush(paste(spaces, " ..principal component calculation for module", 
+                    modulename, "failed with the following error:"))
+                  printFlush(paste(spaces, "     ", pc, spaces, 
+                    " ..hub genes will be used instead of principal components."))
+                }
+                isPC[i] = FALSE
+                pc = try({
+                  scaledExpr = scale(t(datModule))
+                  covEx = cov(scaledExpr, use = "p")
+                  covEx[!is.finite(covEx)] = 0
+                  modAdj = abs(covEx)^softPower
+                  kIM = (rowMeans(modAdj, na.rm = TRUE))^3
+                  if (max(kIM, na.rm = TRUE) > 1) 
+                    kIM = kIM - 1
+                  kIM[is.na(kIM)] = 0
+                  hub = which.max(kIM)
+                  alignSign = sign(covEx[, hub])
+                  alignSign[is.na(alignSign)] = 0
+                  isHub[i] = TRUE
+                  pcxMat = scaledExpr * matrix(kIM * alignSign, 
+                    nrow = nrow(scaledExpr), ncol = ncol(scaledExpr), 
+                    byrow = TRUE)/sum(kIM)
+                  pcx = rowMeans(pcxMat, na.rm = TRUE)
+                  varExpl[1, i] = mean(cor(pcx, t(datModule), 
+                    use = "p")^2, na.rm = TRUE)
+                  pcx
+                }, silent = TRUE)
+            }
+        }
+        if (class(pc) == "try-error") {
+            if (!trapErrors) 
+                stop(pc)
+            if (verbose > 0) {
+                printFlush(paste(spaces, " ..ME calculation of module", 
+                  modulename, "failed with the following error:"))
+                printFlush(paste(spaces, "     ", pc, spaces, 
+                  " ..the offending module has been removed."))
+            }
+            warning(paste("Eigengene calculation of module", 
+                modulename, "failed with the following error \n     ", 
+                pc, "The offending module has been removed.\n"))
+            validMEs[i] = FALSE
+            isPC[i] = FALSE
+            isHub[i] = FALSE
+            validColors[restrict1] = grey
+        }
+        else {
+            PrinComps[, i] = pc
+            nb_nPCs <- min(c(which(cumsum(varExpl[c(1:min(n, p, nVarExplained)), i])>nb_min_varExpl),nVarExplained))
+            nb_PrinComps <- cbind(nb_PrinComps,nb_PCA$x[,1:nb_nPCs])
+            colnames(nb_PrinComps)[(ncol(nb_PrinComps)-nb_nPCs+1):ncol(nb_PrinComps)] <- paste0(moduleColor.getMEprefix(), modlevels[i],"_pc",1:nb_nPCs)
+            nb_rotations[[i]] <- nb_PCA$rotations[,1:nb_nPCs]
+            ae = try({
+                if (isPC[i]) 
+                  scaledExpr = scale(t(datModule))
+                averExpr[, i] = rowMeans(scaledExpr, na.rm = TRUE)
+                if (align == "along average") {
+                  if (verbose > 4) 
+                    printFlush(paste(spaces, " .. aligning module eigengene with average expression."))
+                  corAve = cor(averExpr[, i], PrinComps[, i], 
+                    use = "p")
+                  if (!is.finite(corAve)) 
+                    corAve = 0
+                  if (corAve < 0) 
+                    PrinComps[, i] = -PrinComps[, i]
+                }
+                0
+            }, silent = TRUE)
+            if (class(ae) == "try-error") {
+                if (!trapErrors) 
+                  stop(ae)
+                if (verbose > 0) {
+                  printFlush(paste(spaces, " ..Average expression calculation of module", 
+                    modulename, "failed with the following error:"))
+                  printFlush(paste(spaces, "     ", ae, spaces, 
+                    " ..the returned average expression vector will be invalid."))
+                }
+                warning(paste("Average expression calculation of module", 
+                  modulename, "failed with the following error \n     ", 
+                  ae, "The returned average expression vector will be invalid.\n"))
+            }
+            validAEs[i] = !(class(ae) == "try-error")
+        }
+    }
+    allOK = (sum(!validMEs) == 0)
+    if (returnValidOnly && sum(!validMEs) > 0) {
+        PrinComps = PrinComps[, validMEs]
+        averExpr = averExpr[, validMEs]
+        varExpl = varExpl[, validMEs]
+        validMEs = rep(TRUE, times = ncol(PrinComps))
+        isPC = isPC[validMEs]
+        isHub = isHub[validMEs]
+        validAEs = validAEs[validMEs]
+    }
+    allPC = (sum(!isPC) == 0)
+    allAEOK = (sum(!validAEs) == 0)
+    list(eigengenes = PrinComps, averageExpr = averExpr, varExplained = varExpl, 
+        nPC = nPC, validMEs = validMEs, validColors = validColors, 
+        allOK = allOK, allPC = allPC, isPC = isPC, isHub = isHub, 
+        validAEs = validAEs, allAEOK = allAEOK,nb_eigengenes=nb_PrinComps,nb_rotations=nb_rotations)
 }
