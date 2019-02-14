@@ -424,11 +424,15 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
     }
     res$colors <- c(res$colors, tmp.col.new)
     if("MEs" %in% names(res)){res$MEs <- cbind(res$MEs, tmp_MEs_new)}else{res$MEs <- tmp_MEs_new}
-    if("varExplained" %in% names(res)){res$varExplained <- cbind(res$varExplained , clust_res[[tree]]$varExplained)}else{res$varExplained <-  clust_res[[tree]]$varExplained}
+    if("varExplained" %in% names(res)){
+      res$varExplained <- rbind(res$varExplained , clust_res[[tree]]$varExplained)
+    }else{
+        res$varExplained <-  clust_res[[tree]]$varExplained
+    }
   }
-#  colnames(res$varExplained)<- paste0("PC",1:nPCs)
-#  rownames(res$varExplained)<- colnames(res$MEs)
-  
+  rownames(res$varExplained)<- paste0("PC",1:nrow(res$varExplained))
+  colnames(res$varExplained)<- unique(unlist(lapply(strsplit(split="_pc",colnames(res$MEs)),FUN=function(x){x[1]})))
+
   cat("Netboost detected ",
       n_MEs,
       " modules and ",
@@ -586,12 +590,6 @@ nb_filter <- function(datan, stepno=20L, until=0L,
 #' @format A data frame with 180 rows and 5283 variables:
 #' @source \url{http://www.tcga.com/}
 "tcga_aml_meth_rna_chr18"
-
-#' TCGA covariates for 180 AML patients.
-#'
-#' @format A data frame with 188 rows and 78 variables:
-#' @source \url{http://www.tcga.com/}
-"tcga_aml_covariates"
 
 
 #' Plot dendrogram from Netboost output.

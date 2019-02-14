@@ -6,9 +6,9 @@
 \usage{
 netboost(datan = NULL, stepno = 20L, until = 0L, progress = 1000L,
   mode = 2L, softPower = NULL, max_singleton = dim(datan)[2],
-  plot = TRUE, minClusterSize = 2L, MEDissThres = 0.25,
-  cores = as.integer(getOption("mc.cores", 2)), scale = TRUE,
-  verbose = getOption("verbose"))
+  plot = TRUE, minClusterSize = 2L, MEDissThres = 0.25, nPC = 1,
+  nb_min_varExpl = 0.5, cores = as.integer(getOption("mc.cores", 2)),
+  scale = TRUE, verbose = getOption("verbose"))
 }
 \arguments{
 \item{datan}{Data frame were rows correspond to samples and columns to features.}
@@ -32,6 +32,10 @@ if compiled accordingly and available on the hardware.}
 
 \item{MEDissThres}{Numeric. Module Eigengene Dissimilarity Threshold for merging close modules.}
 
+\item{nPC}{Number of principal components and variance explained entries to be calculated. The number of returned variance explained entries is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is issued.}
+
+\item{nb_min_varExpl}{Minimum proportion of variance explained for returned module eigengenes. The number of PCs is capped at nPC.}
+
 \item{cores}{Integer. Amount of CPU cores used (<=1 : sequential)}
 
 \item{scale}{Logical. Should data be scaled and centered?}
@@ -39,7 +43,17 @@ if compiled accordingly and available on the hardware.}
 \item{verbose}{Additional diagnostic messages.}
 }
 \value{
-List
+dendros  A list of dendrograms. For each fully separate part of the network an individual dendrogram.
+
+names    A vector of feature names.
+
+colors   A vector of numeric color coding in matching order of names and module eigengene names (color = 3 -> variable in ME3).
+
+MEs      Aggregated module measures (Module eigengenes).
+
+varExplained  Proportion of variance explained per module eigengene.
+
+dendros  A list of dendrograms. For each fully separate part of the network an individual dendrogram.
 }
 \description{
 The Netboost clustering is performed in three subsequent steps.
