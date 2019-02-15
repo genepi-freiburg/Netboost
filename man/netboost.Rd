@@ -51,9 +51,11 @@ colors   A vector of numeric color coding in matching order of names and module 
 
 MEs      Aggregated module measures (Module eigengenes).
 
-varExplained  Proportion of variance explained per module eigengene.
+varExplained  Proportion of variance explained per module eigengene per principal component (max nPC principal components are listed).
 
 dendros  A list of dendrograms. For each fully separate part of the network an individual dendrogram.
+
+rotation Matrix of variable loadings divided by their singular values. datan %*% rotation = MEs (with datan potentially scaled)
 }
 \description{
 The Netboost clustering is performed in three subsequent steps.
