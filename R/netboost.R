@@ -324,7 +324,7 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 2L,
     }else{cat("\nOnly two elements in the one module in ",name_of_tree," (no plot generated).\n")}
   }
   cat("\nNetboost extracted",length(table(mergedColors)),"modules (including background) with an average size of",mean(table(mergedColors)[-1])," (excluding background) from ",substr(name_of_tree,start=1,stop=(nchar(name_of_tree)-1)),".\n")
-  return(list(colors=mergedColors,MEs=MEs,varExplained=MEList$varExplained,nb_rotations=MEList$nb_rotations))
+  return(list(colors=mergedColors,MEs=MEs,varExplained=MEList$varExplained,nb_rotations=MEList$nb_rotations,sev_PCs = MEList$eigengenes))
 }
 
 #' Module detection for the results from a nb_mcupgma call
@@ -357,6 +357,7 @@ cut_trees <- function(trees=NULL,
     cut_dendro <- netboost:::cut_dendro(tree_dendro=tree_dendro, minClusterSize = minClusterSize, datan=datan, MEDissThres = MEDissThres,name_of_tree = paste0("Tree ",i,":"), plot = plot, nPC = nPC, nb_min_varExpl = nb_min_varExpl)
     res[[i]][["colors"]] <- cut_dendro$colors
     res[[i]][["MEs"]] <- cut_dendro$MEs
+    res[[i]][["sev_PCs"]] <- cut_dendro$sev_PCs
     res[[i]][["varExplained"]] <- cut_dendro$varExplained
     res[[i]][["nb_rotations"]] <- cut_dendro$nb_rotations
     i <- i+1
@@ -425,6 +426,8 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
     }
     res$colors <- c(res$colors, tmp.col.new)
     if("MEs" %in% names(res)){res$MEs <- cbind(res$MEs, tmp_MEs_new)}else{res$MEs <- tmp_MEs_new}
+    if("nb_rotations" %in% names(res)){res$nb_rotations <- c(res$nb_rotations, clust_res[[tree]]$nb_rotations)}else{res$nb_rotations <- clust_res[[tree]]$nb_rotations}
+    if("sev_PCs" %in% names(res)){res$sev_PCs <- cbind(res$sev_PCs, clust_res[[tree]]$sev_PCs)}else{res$sev_PCs <- clust_res[[tree]]$sev_PCs}
     if("varExplained" %in% names(res)){
       res$varExplained <- cbind(res$varExplained , clust_res[[tree]]$varExplained)
     }else{
