@@ -32,7 +32,7 @@ nb_example <- function(cores = getOption("mc.cores", 2L),
   results <- netboost(datan = tcga_aml_meth_rna_chr18,
                       stepno = 20L,
                       softPower = 3L,
-                      minClusterSize = 10L, nPC = 1,
+                      minClusterSize = 10L, nPC = 2,
                       MEDissThres = 0.25)
   nb_plot_dendro(nb_summary = results,labels=TRUE,colorsrandom=TRUE,seed=123)
   dev.off()
@@ -47,11 +47,11 @@ nb_example <- function(cores = getOption("mc.cores", 2L),
   }
   
   ### Transfer results to the same data (bug check)
-  tmp <-  nb_transfer(nb_summary = results, new_data = tcga_aml_meth_rna_chr18)
-  
-  ## Check transfer of data
-  sum(round(results$MEs,12) != round(tmp,12))
-  sum(round(results$MEs,12) == round(tmp,12))
+  # tmp <-  nb_transfer(nb_summary = results, new_data = tcga_aml_meth_rna_chr18)
+  # 
+  # ## Check transfer of data
+  # sum(round(results$MEs,12) != round(tmp,12))
+  # sum(round(results$MEs,12) == round(tmp,12))
 
   # Cleanup all produced temporary filed (esp. clustering/iteration_*)
   if (!keep)

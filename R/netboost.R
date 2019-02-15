@@ -446,16 +446,22 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
   rownames(res$varExplained)<- paste0("PC",1:nrow(res$varExplained))
   colnames(res$varExplained)<- unique(unlist(lapply(strsplit(split="_pc",colnames(res$MEs)),FUN=function(x){x[1]})))
 
-  # res$rotation <- do.call("cbind",lapply(res$rotation,FUN=function(x){
-  #   if(is.null(dim(x))){
-  #     ncol <- 1
-  #     names <- names
-  #     }else{ncol<-}
-  #   y <- matrix(0,nrow=length(res$names),ncol=ncol)
-  #   y[rownames(x),] <- x
-  #   return(y)
-  # }))
-  
+  res$rotation <- do.call("cbind",lapply(res$rotation,FUN=function(x){
+    if(is.null(dim(x))){
+      y <- matrix(0,nrow=length(res$names),ncol=1)
+      rownames(y) <- res$names
+      y[names(x),] <- x
+ #     colnames(y) <- 
+      return(y)
+    }else{
+      y <- matrix(0,nrow=length(res$names),ncol=ncol(x))
+      rownames(y) <- res$names
+      y[rownames(x),] <- x
+      colnames(y) <- colnames(x)
+      return(y)
+    }
+   }))
+
   cat("\nNetboost detected ",
       n_MEs,
       " modules and ",
@@ -871,7 +877,7 @@ nb_moduleEigengenes <- function (expr, colors, impute = TRUE, nPC = 1, align = "
             nb_PrinComps <- cbind(nb_PrinComps,nb_PCA$x[,1:nb_nPCs])
             colnames(nb_PrinComps)[(ncol(nb_PrinComps)-nb_nPCs+1):ncol(nb_PrinComps)] <- paste0(moduleColor.getMEprefix(), modlevels[i],"_pc",1:nb_nPCs)
             colnames(nb_PCA$rotation)[1:nb_nPCs] <- paste0(moduleColor.getMEprefix(), modlevels[i],"_pc",1:nb_nPCs)
-            rotation[[i]] <- nb_PCA$rotation[,1:nb_nPCs]
+            rotation[[i]] <- nb_PCA$rotation[,1:nb_nPCs,drop=FALSE]
             ae = try({
                 if (isPC[i]) 
                   scaledExpr = scale(t(datModule))
