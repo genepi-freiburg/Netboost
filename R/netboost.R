@@ -783,8 +783,8 @@ nb_moduleEigengenes <- function (expr, colors, impute = TRUE, nPC = 1, align = "
             svd1 = svd(datModule, nu = min(n, p, nPC), nv = min(n, 
                 p, nPC))
             nb_PCA <- prcomp(x=t(datModule), retx = TRUE, center = FALSE, scale. = FALSE,tol = NULL, rank. = NULL)
-            nb_PCA$x <- t(t(nb_PCA$x[,min(n, p, nPC)])/svd1$d)
-            nb_PCA$rotation <- t(t(nb_PCA$rotation[,min(n, p, nPC)])/svd1$d)
+            nb_PCA$x <- t(t(nb_PCA$x)/svd1$d)
+            nb_PCA$rotation <- t(t(nb_PCA$rotation)/svd1$d)
             if (verbose > 5) 
                 printFlush(paste(spaces, " ...calculating PVE"))
             veMat = cor(svd1$v[, c(1:min(n, p, nVarExplained))], 
