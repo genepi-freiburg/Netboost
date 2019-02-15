@@ -16,9 +16,12 @@ mcupgma_example <- function() {
 #' @export
 nb_example <- function(cores = getOption("mc.cores", 2L),
                        keep = FALSE) {
+  cores = getOption("mc.cores", 2L)
+  keep = FALSE
+  
   # load data
   # methylation and RNA data
-  data("tcga_aml_meth_rna_chr18",  # 180 patients x 5283 features
+    data("tcga_aml_meth_rna_chr18",  # 180 patients x 5283 features
        package="netboost",
        envir = environment())
 
