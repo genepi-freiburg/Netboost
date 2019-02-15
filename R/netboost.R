@@ -447,7 +447,8 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
   colnames(res$varExplained)<- unique(unlist(lapply(strsplit(split="_pc",colnames(res$MEs)),FUN=function(x){x[1]})))
 
   res$rotation <- cbind(lapply(res$rotation,FUN=function(x){
-    y <- matrix(0,nrow=length(res$names),ncol=ncol(x))
+    if(is.null(dim(x))){ncol <- 1}else{ncol<-ncol(x)}
+    y <- matrix(0,nrow=length(res$names),ncol=ncol)
     y[rownames(x),] <- x
     return(y)
   }))
