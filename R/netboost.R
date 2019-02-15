@@ -419,6 +419,13 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
     tmp_MEs <- clust_res[[tree]]$MEs
     tmp_MEs_new <- tmp_MEs
     tmp_rotation <- clust_res[[tree]]$rotation
+    tmp_rotation <- do.call("cbind",lapply(tmp_rotation,FUN=function(x){
+      y <- matrix(0,nrow=length(clust_res[[tree]]$names),ncol=ncol(x))
+      rownames(y) <- clust_res[[tree]]$names
+      y[rownames(x),] <- x
+      colnames(y) <- colnames(x)
+      return(y)
+    }))
     tmp_rotation_new <- tmp_rotation
     for (col in unique(tmp.col)) {
       if (col != 0 | length(unique(tmp.col)) == 1) {
@@ -436,7 +443,7 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
     }
     res$colors <- c(res$colors, tmp.col.new)
     if("MEs" %in% names(res)){res$MEs <- cbind(res$MEs, tmp_MEs_new)}else{res$MEs <- tmp_MEs_new}
-    if("rotation" %in% names(res)){res$rotation <- c(res$rotation, tmp_rotation_new)}else{res$rotation <- tmp_rotation_new}
+    if("rotation" %in% names(res)){res$rotation <- c(res$rotation, list(tmp_rotation_new))}else{res$rotation <- list(tmp_rotation_new)}
     # if("svd_PCs" %in% names(res)){res$svd_PCs <- cbind(res$svd_PCs, clust_res[[tree]]$svd_PCs)}else{res$svd_PCs <- clust_res[[tree]]$svd_PCs}
     if("varExplained" %in% names(res)){
       res$varExplained <- cbind(res$varExplained , clust_res[[tree]]$varExplained)
@@ -448,13 +455,14 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
   colnames(res$varExplained)<- unique(unlist(lapply(strsplit(split="_pc",colnames(res$MEs)),FUN=function(x){x[1]})))
 
   res$rotation <- do.call("cbind",lapply(res$rotation,FUN=function(x){
-      y <- matrix(0,nrow=length(res$names),ncol=ncol(x))
-      rownames(y) <- res$names
-      y[rownames(x),] <- x
-      colnames(y) <- colnames(x)
-      return(y)
-   }))
-
+    y <- matrix(0,nrow=length(res$names),ncol=ncol(x))
+    rownames(y) <- res$names
+    y[rownames(x),] <- x
+    colnames(y) <- colnames(x)
+    return(y)
+  }))
+  
+  
   cat("\nNetboost detected ",
       n_MEs,
       " modules and ",
@@ -509,10 +517,12 @@ nb_transfer <- function(nb_summary = NULL, new_data = NULL, scale = FALSE){
 	new_data <- as.data.frame(scale(new_data,center=TRUE,scale=TRUE))
   }
   
+  MEs <- as.matrix(new_data) %*% nb_summary$rotation
+  
   #will replace with rotation matrix transfer
-  MEs <- nb_moduleEigengenes(expr=new_data, colors = nb_summary$colors)$nb_eigengenes
+  #MEs <- nb_moduleEigengenes(expr=new_data, colors = nb_summary$colors)$nb_eigengenes
+  # colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"),FUN = length) > 1] <- paste0("ME0_",substring(text = colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"),FUN = length) > 1], first = 4))
 
-  colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"),FUN = length) > 1] <- paste0("ME0_",substring(text = colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"),FUN = length) > 1], first = 4))
   MEs <- MEs[,colnames(nb_summary$MEs)]
   rownames(MEs) <- rownames(new_data)
   return(MEs)
