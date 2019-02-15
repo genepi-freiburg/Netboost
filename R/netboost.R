@@ -446,12 +446,15 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
   rownames(res$varExplained)<- paste0("PC",1:nrow(res$varExplained))
   colnames(res$varExplained)<- unique(unlist(lapply(strsplit(split="_pc",colnames(res$MEs)),FUN=function(x){x[1]})))
 
-  res$rotation <- cbind(lapply(res$rotation,FUN=function(x){
-    if(is.null(dim(x))){ncol <- 1}else{ncol<-ncol(x)}
-    y <- matrix(0,nrow=length(res$names),ncol=ncol)
-    y[rownames(x),] <- x
-    return(y)
-  }))
+  # res$rotation <- do.call("cbind",lapply(res$rotation,FUN=function(x){
+  #   if(is.null(dim(x))){
+  #     ncol <- 1
+  #     names <- names
+  #     }else{ncol<-}
+  #   y <- matrix(0,nrow=length(res$names),ncol=ncol)
+  #   y[rownames(x),] <- x
+  #   return(y)
+  # }))
   
   cat("\nNetboost detected ",
       n_MEs,
