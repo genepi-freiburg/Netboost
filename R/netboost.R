@@ -417,21 +417,25 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
     tmp.col.new <- tmp.col
     tmp_MEs <- clust_res[[tree]]$MEs
     tmp_MEs_new <- tmp_MEs
+    tmp_rotation <- clust_res[[tree]]$rotation
+    tmp_rotation_new <- tmp_rotation
     for (col in unique(tmp.col)) {
       if (col != 0 | length(unique(tmp.col)) == 1) {
         n_MEs <- n_MEs +1
         tmp.col.new[tmp.col == col] <- n_MEs
         colnames(tmp_MEs_new)[grepl(pattern=paste0("ME",col,"_"),colnames(tmp_MEs))] <- gsub(pattern=paste0("ME",col,"_"),replacement=paste0("ME",(n_MEs),"_"),colnames(tmp_MEs_new)[grepl(pattern=paste0("ME",col,"_"),colnames(tmp_MEs))])
+        colnames(tmp_rotation_new)[grepl(pattern=paste0("ME",col,"_"),colnames(tmp_rotation))] <- gsub(pattern=paste0("ME",col,"_"),replacement=paste0("ME",(n_MEs),"_"),colnames(tmp_rotation_new)[grepl(pattern=paste0("ME",col,"_"),colnames(tmp_rotation))])
       }
       if (col == 0 & length(unique(tmp.col)) != 1) {
         n_MEs_background <- n_MEs_background + 1
         tmp.col.new[tmp.col == col] <- -n_MEs_background
         colnames(tmp_MEs_new)[grepl(pattern="ME0_",colnames(tmp_MEs))] <- gsub(pattern="ME0_",replacement=paste0("ME0_", n_MEs_background,"_"),colnames(tmp_MEs_new)[grepl(pattern="ME0_",colnames(tmp_MEs))])
+        colnames(tmp_rotation_new)[grepl(pattern="ME0_",colnames(tmp_rotation))] <- gsub(pattern="ME0_",replacement=paste0("ME0_", n_MEs_background,"_"),colnames(tmp_rotation_new)[grepl(pattern="ME0_",colnames(tmp_rotation))])
       }
     }
     res$colors <- c(res$colors, tmp.col.new)
     if("MEs" %in% names(res)){res$MEs <- cbind(res$MEs, tmp_MEs_new)}else{res$MEs <- tmp_MEs_new}
-    if("rotation" %in% names(res)){res$rotation <- c(res$rotation, clust_res[[tree]]$rotation)}else{res$rotation <- clust_res[[tree]]$rotation}
+    if("rotation" %in% names(res)){res$rotation <- c(res$rotation, tmp_rotation_new)}else{res$rotation <- tmp_rotation_new}
     # if("svd_PCs" %in% names(res)){res$svd_PCs <- cbind(res$svd_PCs, clust_res[[tree]]$svd_PCs)}else{res$svd_PCs <- clust_res[[tree]]$svd_PCs}
     if("varExplained" %in% names(res)){
       res$varExplained <- cbind(res$varExplained , clust_res[[tree]]$varExplained)
@@ -442,13 +446,21 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
   rownames(res$varExplained)<- paste0("PC",1:nrow(res$varExplained))
   colnames(res$varExplained)<- unique(unlist(lapply(strsplit(split="_pc",colnames(res$MEs)),FUN=function(x){x[1]})))
 
-  cat("Netboost detected ",
+  res$rotation <- cbind(lapply(res$rotation,FUN=function(x){
+    y <- matrix(0,nrow=length(res$names),ncol=ncol(x))
+    y[rownames(x),] <- x
+    return(y)
+  }))
+  
+  cat("\nNetboost detected ",
       n_MEs,
       " modules and ",
       n_MEs_background,
       " background modules in ",
       length(clust_res),
-      " trees.\n")
+      " trees resulting in ",
+      ncol(res$MEs),
+      " aggreagate measures.\n")
   cat("Average size of the modules was ", mean(table(res$colors[!(res$colors <= 0)])), ".\n")
   cat(
     sum(res$colors <= 0),
@@ -855,6 +867,7 @@ nb_moduleEigengenes <- function (expr, colors, impute = TRUE, nPC = 1, align = "
             nb_PrinComps <- cbind(nb_PrinComps,nb_PCA$x[,1:nb_nPCs])
             colnames(nb_PrinComps)[(ncol(nb_PrinComps)-nb_nPCs+1):ncol(nb_PrinComps)] <- paste0(moduleColor.getMEprefix(), modlevels[i],"_pc",1:nb_nPCs)
             rotation[[i]] <- nb_PCA$rotation[,1:nb_nPCs]
+            colnames(rotation[[i]]) <- paste0(moduleColor.getMEprefix(), modlevels[i],"_pc",1:nb_nPCs)
             ae = try({
                 if (isPC[i]) 
                   scaledExpr = scale(t(datModule))
