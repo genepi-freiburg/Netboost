@@ -91,7 +91,7 @@ netboost <- function(datan = NULL,
   message("Netboost: Finished clustering step.")
   
   message("Netboost: Finished Netboost.")
-  return(results)
+  invisible(results)
 }
 
 #' Calculate network adjacencies for filter
@@ -413,6 +413,7 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
   for (tree in 1:length(clust_res)) {
     res$dendros[[tree]] <- clust_res[[tree]]$dendro
     res$names <- c(res$names, clust_res[[tree]]$names)
+    res$rotation_no_format_2 <- c(res$rotation_no_format_2,clust_res[[tree]]$rotation)
     tmp.col <- clust_res[[tree]]$colors
     tmp.col.new <- tmp.col
     tmp_MEs <- clust_res[[tree]]$MEs
@@ -446,20 +447,13 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
   rownames(res$varExplained)<- paste0("PC",1:nrow(res$varExplained))
   colnames(res$varExplained)<- unique(unlist(lapply(strsplit(split="_pc",colnames(res$MEs)),FUN=function(x){x[1]})))
 
+  res$rotation_no_format <- res$rotation
   res$rotation <- do.call("cbind",lapply(res$rotation,FUN=function(x){
-    if(is.null(dim(x))){
-      y <- matrix(0,nrow=length(res$names),ncol=1)
-      rownames(y) <- res$names
-      y[names(x),] <- x
- #     colnames(y) <- 
-      return(y)
-    }else{
       y <- matrix(0,nrow=length(res$names),ncol=ncol(x))
       rownames(y) <- res$names
       y[rownames(x),] <- x
       colnames(y) <- colnames(x)
       return(y)
-    }
    }))
 
   cat("\nNetboost detected ",
