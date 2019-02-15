@@ -866,8 +866,8 @@ nb_moduleEigengenes <- function (expr, colors, impute = TRUE, nPC = 1, align = "
             nb_nPCs <- min(c(which(cumsum(varExpl[c(1:min(n, p, nVarExplained)), i])>nb_min_varExpl),nVarExplained))
             nb_PrinComps <- cbind(nb_PrinComps,nb_PCA$x[,1:nb_nPCs])
             colnames(nb_PrinComps)[(ncol(nb_PrinComps)-nb_nPCs+1):ncol(nb_PrinComps)] <- paste0(moduleColor.getMEprefix(), modlevels[i],"_pc",1:nb_nPCs)
+            colnames(nb_PCA$rotation)[1:nb_nPCs] <- paste0(moduleColor.getMEprefix(), modlevels[i],"_pc",1:nb_nPCs)
             rotation[[i]] <- nb_PCA$rotation[,1:nb_nPCs]
-            colnames(rotation[[i]]) <- paste0(moduleColor.getMEprefix(), modlevels[i],"_pc",1:nb_nPCs)
             ae = try({
                 if (isPC[i]) 
                   scaledExpr = scale(t(datModule))
