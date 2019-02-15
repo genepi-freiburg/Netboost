@@ -36,8 +36,9 @@ library(parallel)
 #' @return names    A vector of feature names.
 #' @return colors   A vector of numeric color coding in matching order of names and module eigengene names (color = 3 -> variable in ME3).
 #' @return MEs      Aggregated module measures (Module eigengenes).
-#' @return varExplained  Proportion of variance explained per module eigengene.
+#' @return varExplained  Proportion of variance explained per module eigengene per principal component (max nPC principal components are listed).
 #' @return dendros  A list of dendrograms. For each fully separate part of the network an individual dendrogram.
+#' @return rotation Matrix of variable loadings divided by their singular values. datan %*% rotation = MEs (with datan potentially scaled)
 #' @export
 netboost <- function(datan = NULL,
                      stepno = 20L, until = 0L,
@@ -280,7 +281,7 @@ tree_dendro <- function(tree=NULL, datan=NULL, forest=NULL) {
 #' @param plot      Logical. Should plots be created?
 #' @param nPC        Number of principal components and variance explained entries to be calculated. The number of returned variance explained entries is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is issued.
 #' @param nb_min_varExpl        Minimum proportion of variance explained for returned module eigengenes. The number of PCs is capped at nPC.
-#' @return Object of class hclust
+#' @return List
 cut_dendro <- function(tree_dendro=NULL, minClusterSize= 2L, 
                        datan=NULL, MEDissThres = NULL,
                        name_of_tree="", plot = TRUE, nPC = 1, nb_min_varExpl = 0.5) {
@@ -324,7 +325,11 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 2L,
     }else{cat("\nOnly two elements in the one module in ",name_of_tree," (no plot generated).\n")}
   }
   cat("\nNetboost extracted",length(table(mergedColors)),"modules (including background) with an average size of",mean(table(mergedColors)[-1])," (excluding background) from ",substr(name_of_tree,start=1,stop=(nchar(name_of_tree)-1)),".\n")
-  return(list(colors=mergedColors,MEs=MEs,varExplained=MEList$varExplained,nb_rotations=MEList$nb_rotations,sev_PCs = MEList$eigengenes))
+  return(list(colors=mergedColors,
+              MEs=MEs,
+              varExplained=MEList$varExplained,
+#              svd_PCs = MEList$eigengenes,
+              rotation=MEList$rotation))
 }
 
 #' Module detection for the results from a nb_mcupgma call
@@ -357,9 +362,9 @@ cut_trees <- function(trees=NULL,
     cut_dendro <- netboost:::cut_dendro(tree_dendro=tree_dendro, minClusterSize = minClusterSize, datan=datan, MEDissThres = MEDissThres,name_of_tree = paste0("Tree ",i,":"), plot = plot, nPC = nPC, nb_min_varExpl = nb_min_varExpl)
     res[[i]][["colors"]] <- cut_dendro$colors
     res[[i]][["MEs"]] <- cut_dendro$MEs
-    res[[i]][["sev_PCs"]] <- cut_dendro$sev_PCs
+    # res[[i]][["svd_PCs"]] <- cut_dendro$svd_PCs
     res[[i]][["varExplained"]] <- cut_dendro$varExplained
-    res[[i]][["nb_rotations"]] <- cut_dendro$nb_rotations
+    res[[i]][["rotation"]] <- cut_dendro$rotation
     i <- i+1
   }
   return(res)
@@ -426,8 +431,8 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
     }
     res$colors <- c(res$colors, tmp.col.new)
     if("MEs" %in% names(res)){res$MEs <- cbind(res$MEs, tmp_MEs_new)}else{res$MEs <- tmp_MEs_new}
-    if("nb_rotations" %in% names(res)){res$nb_rotations <- c(res$nb_rotations, clust_res[[tree]]$nb_rotations)}else{res$nb_rotations <- clust_res[[tree]]$nb_rotations}
-    if("sev_PCs" %in% names(res)){res$sev_PCs <- cbind(res$sev_PCs, clust_res[[tree]]$sev_PCs)}else{res$sev_PCs <- clust_res[[tree]]$sev_PCs}
+    if("rotation" %in% names(res)){res$rotation <- c(res$rotation, clust_res[[tree]]$rotation)}else{res$rotation <- clust_res[[tree]]$rotation}
+    # if("svd_PCs" %in% names(res)){res$svd_PCs <- cbind(res$svd_PCs, clust_res[[tree]]$svd_PCs)}else{res$svd_PCs <- clust_res[[tree]]$svd_PCs}
     if("varExplained" %in% names(res)){
       res$varExplained <- cbind(res$varExplained , clust_res[[tree]]$varExplained)
     }else{
@@ -731,7 +736,7 @@ nb_moduleEigengenes <- function (expr, colors, impute = TRUE, nPC = 1, align = "
         ncol = length(modlevels)))
     nb_PrinComps <- data.frame(matrix(NA, nrow = dim(expr)[[1]], 
         ncol = 0))
-    nb_rotations <- vector("list", length(modlevels))
+    rotation <- vector("list", length(modlevels))
     averExpr = data.frame(matrix(NA, nrow = dim(expr)[[1]], ncol = length(modlevels)))
     varExpl = data.frame(matrix(NA, nrow = nVarExplained, ncol = length(modlevels)))
     validMEs = rep(TRUE, length(modlevels))
@@ -849,7 +854,7 @@ nb_moduleEigengenes <- function (expr, colors, impute = TRUE, nPC = 1, align = "
             nb_nPCs <- min(c(which(cumsum(varExpl[c(1:min(n, p, nVarExplained)), i])>nb_min_varExpl),nVarExplained))
             nb_PrinComps <- cbind(nb_PrinComps,nb_PCA$x[,1:nb_nPCs])
             colnames(nb_PrinComps)[(ncol(nb_PrinComps)-nb_nPCs+1):ncol(nb_PrinComps)] <- paste0(moduleColor.getMEprefix(), modlevels[i],"_pc",1:nb_nPCs)
-            nb_rotations[[i]] <- nb_PCA$rotations[,1:nb_nPCs]
+            rotation[[i]] <- nb_PCA$rotation[,1:nb_nPCs]
             ae = try({
                 if (isPC[i]) 
                   scaledExpr = scale(t(datModule))
@@ -897,5 +902,5 @@ nb_moduleEigengenes <- function (expr, colors, impute = TRUE, nPC = 1, align = "
     list(eigengenes = PrinComps, averageExpr = averExpr, varExplained = varExpl, 
         nPC = nPC, validMEs = validMEs, validColors = validColors, 
         allOK = allOK, allPC = allPC, isPC = isPC, isHub = isHub, 
-        validAEs = validAEs, allAEOK = allAEOK,nb_eigengenes=nb_PrinComps,nb_rotations=nb_rotations)
+        validAEs = validAEs, allAEOK = allAEOK,nb_eigengenes=nb_PrinComps,rotation=rotation)
 }
