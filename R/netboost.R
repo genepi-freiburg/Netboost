@@ -324,7 +324,7 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 2L,
     }else{cat("\nOnly two elements in the one module in ",name_of_tree," (no plot generated).\n")}
   }
   cat("\nNetboost extracted",length(table(mergedColors)),"modules (including background) with an average size of",mean(table(mergedColors)[-1])," (excluding background) from ",substr(name_of_tree,start=1,stop=(nchar(name_of_tree)-1)),".\n")
-  return(list(colors=mergedColors,MEs=MEs,varExplained=MEList$varExplained))
+  return(list(colors=mergedColors,MEs=MEs,varExplained=MEList$varExplained,nb_rotations=MEList$nb_rotations))
 }
 
 #' Module detection for the results from a nb_mcupgma call
@@ -358,6 +358,7 @@ cut_trees <- function(trees=NULL,
     res[[i]][["colors"]] <- cut_dendro$colors
     res[[i]][["MEs"]] <- cut_dendro$MEs
     res[[i]][["varExplained"]] <- cut_dendro$varExplained
+    res[[i]][["nb_rotations"]] <- cut_dendro$nb_rotations
     i <- i+1
   }
   return(res)
