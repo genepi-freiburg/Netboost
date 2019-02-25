@@ -81,9 +81,10 @@ try{
    thicken_edges(tree.sizes,weSet,args_info.missing_val_arg);
 
    //   if (VERBOSE) {clog << "fin thicken_edges(..)" <<endl; }
-} catch (std::bad_alloc e) {
-	 cerr << "caught std::bad_alloc" << endl;
-	 cerr << e.what() << endl;
+//} catch (std::bad_alloc e) {
+} catch (const std::bad_alloc&) {  // CHG jo 25.2.19
+  cerr << "caught std::bad_alloc" << endl;
+//	 cerr << e.what() << endl;
 	 die_exit("FATAL ERROR: Seems like we're out of memory, try to split the input into smaller chunks.",201);	
 }
    return 0;

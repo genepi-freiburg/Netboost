@@ -18,18 +18,19 @@ nb_example <- function(cores = getOption("mc.cores", 2L),
                        keep = FALSE) {
   # cores = getOption("mc.cores", 2L)
   # keep = FALSE
+  exaEnv <- new.env()
   
   # load data
   # methylation and RNA data
   data("tcga_aml_meth_rna_chr18",  # 180 patients x 5283 features
        package="netboost",
-       envir = environment())
+       envir = exaEnv)
   
   pdfFile = file.path(tempdir(), "results_netboost.pdf")
   
 #  pdf(file=file.path(getwd(), "results_netboost.pdf"), width = 30)
   pdf(file=pdfFile, width = 30)
-  results <- netboost(datan = tcga_aml_meth_rna_chr18,
+  results <- netboost(datan = exaEnv$tcga_aml_meth_rna_chr18,
                       stepno = 20L,
                       softPower = 3L,
                       minClusterSize = 10L, nPC = 2,scale=TRUE,
@@ -47,9 +48,10 @@ nb_example <- function(cores = getOption("mc.cores", 2L),
   }
   
   ### Transfer results to the same data (bug check)
-  tmp <-  nb_transfer(nb_summary = results, new_data = tcga_aml_meth_rna_chr18,scale=TRUE)
+  tmp <- nb_transfer(nb_summary = results, new_data = exaEnv$tcga_aml_meth_rna_chr18,scale=TRUE)
 
   ## Check transfer of data
+  ## @TODO @Pascal: ??
   sum(round(results$MEs,12) != round(tmp,12))
   sum(round(results$MEs,12) == round(tmp,12))
 
@@ -61,5 +63,3 @@ nb_example <- function(cores = getOption("mc.cores", 2L),
   
   invisible(results)
 }
-
-
