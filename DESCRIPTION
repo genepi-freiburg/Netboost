@@ -1,24 +1,27 @@
 Package: netboost
 Type: Package
-Title: Netboost: Network analysis supported by boosting
-Version: 1.030.0
-Date: 2019-01-04
+Title: Network Analysis Supported by Boosting
+Version: 1.30.1
+Date: 2019-02-24
 Authors@R: c(person("Pascal", "Schlosser", role = c("aut", "cre"),
                     email = "pascal.schlosser@uniklinik-freiburg.de"),
              person("Jochen", "Knaus", role = c("aut", "ctb"),
                     email = "jo@imbi.uni-freiburg.de"),
              person("Yaniv", "Loewenstein", role = c("aut")))
 Maintainer: Pascal Schlosser <pascal.schlosser@uniklinik-freiburg.de>
-Description: Netboost: Network analysis supported by boosting
+Description: Boosting supported network analysis for high-dimensional omics applications. 
     This package comes bundled with the MC-UPGMA clustering package by Yaniv Loewenstein.
 Depends:
-  R (>= 3.5.2),
-  parallel,
-  colorspace,
-  WGCNA
+  R (>= 3.5.0)
+biocViews:
 Imports:
   Rcpp,
-  RcppParallel
+  RcppParallel,
+  parallel,
+  colorspace,
+  WGCNA,
+  impute,
+  dynamicTreeCut
 LinkingTo:
   Rcpp,
   RcppParallel
@@ -33,4 +36,5 @@ NeedsCompilation: yes
 License: GPL-3
 URL: https://github.com/genepi-freiburg/Netboost
 BugReports: https://github.com/genepi-freiburg/Netboost/issues
-RoxygenNote: 6.1.0
+Encoding: UTF-8
+RoxygenNote: 6.1.1

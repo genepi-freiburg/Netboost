@@ -1,17 +1,17 @@
 # Netboost
-Netboost: Boosting supported network analysis for high-dimensional omics applications
+Boosting supported network analysis for high-dimensional omics applications.
 
 # Installation
 ```
-install.packages("devtools")  # Skip if already installed
+# Skip if already installed
+install.packages("devtools")      # Install from Github
+install.packages("BiocManager")   # Bioconductor installer
 
-# Install dependency from Bioconductor
-source("https://bioconductor.org/biocLite.R")
-biocLite("WGCNA")
+# Install dependencies from Bioconductor
+BiocManager::install("WGCNA")
 
 # Install netboost
-library(devtools)
-install_github("genepi-freiburg/netboost")
+devtools::install_github("genepi-freiburg/netboost")
 ```
 
 # Example

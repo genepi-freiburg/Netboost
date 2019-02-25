@@ -21,10 +21,10 @@ nb_example <- function(cores = getOption("mc.cores", 2L),
   
   # load data
   # methylation and RNA data
-    data("tcga_aml_meth_rna_chr18",  # 180 patients x 5283 features
+  data("tcga_aml_meth_rna_chr18",  # 180 patients x 5283 features
        package="netboost",
        envir = environment())
-
+  
   pdfFile = file.path(tempdir(), "results_netboost.pdf")
   
 #  pdf(file=file.path(getwd(), "results_netboost.pdf"), width = 30)

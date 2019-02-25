@@ -15,11 +15,13 @@
 #' @importFrom parallel mclapply
 #'
 #' @importFrom grDevices dev.off gray pdf rainbow
-#' @importFrom graphics abline layout par
-#' @importFrom stats as.dendrogram as.dist cor hclust order.dendrogram
+#' @importFrom graphics abline layout par plot
+#' @importFrom stats as.dendrogram as.dist cor cov prcomp hclust order.dendrogram
 #' @importFrom utils data packageDescription read.table write.table
+#' @importFrom dynamicTreeCut cutreeDynamic indentSpaces printFlush
 #' 
-#' @importFrom WGCNA allowWGCNAThreads
+#' @importFrom impute impute.knn
+#' @importFrom WGCNA allowWGCNAThreads mergeCloseModules plotDendroAndColors moduleColor.getMEprefix pickSoftThreshold
 #'
 #' @useDynLib netboost
 #'
@@ -71,6 +73,7 @@
 
   ## If this file is not existing in this location, this is no working installation
   ## (may happen during build and included test-loads)
+  ## (writeLines throws warning in R CMD check, but we do valid stuff here)
   if (file.exists(mcupgma_install)) {
 #    print(paste("Modified:", mcupgma_install))
     filew <-file(mcupgma_install, open="w")
@@ -84,6 +87,7 @@
 }
 
 #' If package detached, clean up temporary folders.
+#' @param libpath Library path (unused)
 .onDetach <- function(libpath) {
   netboostTmpCleanup()
 }
@@ -127,6 +131,7 @@ nb_set_tempdir <- function(tmp = NULL) {
 }
 
 #' Cleans the netboost temporary folder.
+#' @param verbose Show information about cleanup.
 netboostTmpCleanup <- function(verbose = FALSE) {
   folder <- netboostTmpPath(nostop=TRUE)
 
