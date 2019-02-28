@@ -29,7 +29,8 @@ SystemRequirements:
   GNU make,
   Bash,
   Perl,
-  Gzip
+  Gzip,
+  gengetopt
 OS_type: unix
 ByteCompile: yes
 NeedsCompilation: yes

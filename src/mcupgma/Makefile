@@ -16,13 +16,16 @@
 # - No automatic unpacking in targets (due to overwrite issue on rebuild)
 # - Addded "clean" target
 # - No architecture specific directories
+# Modifications Feb 2019 (version 1.0.2)
+# - Some changes to comply R package buildings.
+# - TGZ is not build anymore.
 ##########################################################################
 
 ###############################################
 ##### MC-UPGMA INSTALLER - MAKEFILE ###########
 ###############################################
 
-DISTRIBUTION_VERSION  := 1.0.1
+DISTRIBUTION_VERSION  := 1.0.2
 
 ################################################
 ####### VARIABLES ##############################
@@ -70,7 +73,8 @@ DISTRIBUTION_FILENAME := mcupgma_$(DISTRIBUTION_VERSION).tar.gz
 ######## TARGETS ###############################
 ################################################
 # CHG jo 28.2.19: clean before build and clean after install to reduce installed package size.
-all:	install_util install_clustering tarball_clustering tarball_util
+all:	install_util install_clustering
+# tarball_clustering tarball_util
 install:	install_util install_clustering clean
 configure: update_path_definitions
 test: test_install 
@@ -85,6 +89,7 @@ $(SCRIPTS_DIR)/install_path.mk: FORCE
 install_util: 
 #	@echo "==== extracting $(CLUSTERING_UTIL_DIR) sources (external merging programs)"
 #	tar -xvzf  $(CLUSTERING_UTIL_DIR).tar.gz
+
 	@echo "==== compiling $(CLUSTERING_UTIL_DIR) sources using external Makefile ($(CLUSTERING_UTIL_DIR)/Makefile) recursively "
 	$(MAKE) -C $(CLUSTERING_UTIL_DIR)  -f Makefile mcupgma_install
 

@@ -59,7 +59,7 @@ print(paste("SHLIB_EXT", SHLIB_EXT))
 ## mcupgma lying in src folder
 src_mcupgma  <- file.path(R_PACKAGE_SOURCE, 'src', 'mcupgma')
 
-## Destination path of R package
+# Destination path of R package
 dest_lib <- file.path(R_PACKAGE_DIR, paste0('libs', R_ARCH))
 
 ## MCUPGMA folder (binaries, scripts and additional files)
@@ -146,7 +146,6 @@ for (path in c(file.path('clustering_round', 'bin'),
 }
 
 files <- Sys.glob(paste0(dest_mcupgma, "/*"))
-#print(paste("HAVE:", files))
 
 ## Copy own (non-mcugpma) libraries (basically only netboost.so) to dest.
 ## Basically the code from R manual

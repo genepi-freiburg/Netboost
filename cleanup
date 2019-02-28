@@ -1,0 +1,10 @@
+#!/bin/sh
+
+echo "CLEANUP cleanup"
+rm -f src/Makevars src/mcupgma/clustering_util/Makefile
+
+make -C src -f Makefile clean
+make -C src/mcupgma -f Makefile clean
+
+find src -name '*.tar.gz' -delete -print
+find src -name '*.o' -delete -print

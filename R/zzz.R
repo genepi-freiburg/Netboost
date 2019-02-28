@@ -28,7 +28,6 @@
 #' @examples 
 #'\dontrun{nb_example()}
 
-
 #' @param libname Path to R installation (base package dir)
 #' @param pkgname Package name (should be "netboost")
 .onAttach <- function(libname, pkgname) {
