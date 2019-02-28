@@ -1,7 +1,9 @@
 #!/bin/sh
 
+# Called in the beginning of the build.
+
 echo "CLEANUP cleanup"
-rm -f src/Makevars src/mcupgma/clustering_util/Makefile
+rm -fv src/Makevars src/mcupgma/clustering_util/Makefile
 
 make -C src -f Makefile clean
 make -C src/mcupgma -f Makefile clean

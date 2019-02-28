@@ -4,7 +4,7 @@ CXX_STD=CXX11
 AVX=-mavx
 
 # AVX flag will be added for Linux/MacOS (and therefore GCC/Clang) by configure.
-PKG_CXXFLAGS=`${R_HOME}/bin/Rscript -e "Rcpp:::CxxFlags()"` ${AVX} -mnative
+PKG_CXXFLAGS=`${R_HOME}/bin/Rscript -e "Rcpp:::CxxFlags()"` ${AVX}
 # /arch:AVX
 
 # Strip debugging symbols (should work GCC/Clang)
