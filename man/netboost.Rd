@@ -64,3 +64,7 @@ Next, pairwise distances are calculated.
 Last, clustering is performed.
 For details see Schlosser et al. doi...
 }
+\examples{
+\donttest{ nb_example() }
+
+}

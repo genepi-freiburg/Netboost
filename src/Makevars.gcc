@@ -1,7 +1,8 @@
 # C++11 required.
 CXX_STD = CXX11
 
-# Also, AVX(1) is mandatory (and no portable R definition found)
+# AVX flag will be added for Linux/MacOS (and therefore GCC/Clang) by configure.
 PKG_CXXFLAGS=`${R_HOME}/bin/Rscript -e "Rcpp:::CxxFlags()"` -mavx
+# /arch:AVX
 
 PKG_LIBS=`${R_HOME}/bin/Rscript -e "Rcpp:::LdFlags()"`

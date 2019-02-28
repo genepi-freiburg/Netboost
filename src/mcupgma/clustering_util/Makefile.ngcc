@@ -30,7 +30,7 @@
 #									 #
 #
 # CHG jo Oct 2017:
-# - added  -Wno-deprecated for GCC
+# - added  -Wno-deprecated for GCC (Problem: non portable)
 #########################################################################
 
 
@@ -49,7 +49,10 @@ PERFORM = 1
 
 ifdef COMPILE
 #CXX = /cs/phd/ofirpele/utils/stl_decrypt/gfilt -Wall
-CXXFLAGS +=  -Wall -Wno-deprecated
+CXXFLAGS +=  -Wall
+
+# Only to comply R package guidelines.
+#-Wno-deprecated
 endif
 
 ifdef RUNTIME

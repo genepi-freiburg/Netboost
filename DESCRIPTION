@@ -1,8 +1,8 @@
 Package: netboost
 Type: Package
 Title: Network Analysis Supported by Boosting
-Version: 1.30.2
-Date: 2019-02-24
+Version: 1.30.4
+Date: 2019-02-27
 Authors@R: c(person("Pascal", "Schlosser", role = c("aut", "cre"),
                     email = "pascal.schlosser@uniklinik-freiburg.de"),
              person("Jochen", "Knaus", role = c("aut", "ctb"),
@@ -33,6 +33,7 @@ SystemRequirements:
 OS_type: unix
 ByteCompile: yes
 NeedsCompilation: yes
+LazyData: true
 License: GPL-3
 URL: https://github.com/genepi-freiburg/Netboost
 BugReports: https://github.com/genepi-freiburg/Netboost/issues

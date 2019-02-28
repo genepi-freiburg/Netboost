@@ -69,8 +69,9 @@ DISTRIBUTION_FILENAME := mcupgma_$(DISTRIBUTION_VERSION).tar.gz
 ################################################
 ######## TARGETS ###############################
 ################################################
+# CHG jo 28.2.19: clean before build and clean after install to reduce installed package size.
 all:	install_util install_clustering tarball_clustering tarball_util
-install:	install_util install_clustering
+install:	install_util install_clustering clean
 configure: update_path_definitions
 test: test_install 
 FORCE:
@@ -134,3 +135,5 @@ clean:
 #	@rm -rvf --preserve-root $(CLUSTERING_DIR)/obj.$(ARCH)
 	@rm -vf $(CLUSTERING_DIR).tar.gz
 	@rm -vf $(CLUSTERING_UTIL_DIR).tar.gz
+# CHG jo 28.2.19: Makeflie will be "build" in configure.
+#	@rm $(CLUSTERING_UTIL_DIR)/Makefile

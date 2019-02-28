@@ -40,6 +40,10 @@ library(parallel)
 #' @return varExplained  Proportion of variance explained per module eigengene per principal component (max nPC principal components are listed).
 #' @return dendros  A list of dendrograms. For each fully separate part of the network an individual dendrogram.
 #' @return rotation Matrix of variable loadings divided by their singular values. datan %*% rotation = MEs (with datan potentially scaled)
+#'
+#' @examples
+#' \donttest{ nb_example() }
+#'
 #' @export
 netboost <- function(datan = NULL,
                      stepno = 20L, until = 0L,
@@ -361,20 +365,27 @@ cut_trees <- function(trees=NULL,
                       nb_min_varExpl = 0.5) {
   res <- list()
   i <- 1L
+
   for(tree in trees){
-    tree_dendro <- netboost:::tree_dendro(tree=tree,datan=datan,forest=forest)
+    tree_dendro_res <- tree_dendro(tree=tree,datan=datan,forest=forest)
     res[[i]] <- list()
-    res[[i]][["dendro"]] <- tree_dendro$dendro
-    res[[i]][["data"]] <- tree_dendro$data
-    res[[i]][["names"]] <- tree_dendro$names
-    cut_dendro <- netboost:::cut_dendro(tree_dendro=tree_dendro, minClusterSize = minClusterSize, datan=datan, MEDissThres = MEDissThres,name_of_tree = paste0("Tree ",i,":"), plot = plot, nPC = nPC, nb_min_varExpl = nb_min_varExpl)
-    res[[i]][["colors"]] <- cut_dendro$colors
-    res[[i]][["MEs"]] <- cut_dendro$MEs
-    # res[[i]][["svd_PCs"]] <- cut_dendro$svd_PCs
-    res[[i]][["varExplained"]] <- cut_dendro$varExplained
-    res[[i]][["rotation"]] <- cut_dendro$rotation
+    res[[i]][["dendro"]] <- tree_dendro_res$dendro
+    res[[i]][["data"]] <- tree_dendro_res$data
+    res[[i]][["names"]] <- tree_dendro_res$names
+    cut_dendro_res <- cut_dendro(tree_dendro=tree_dendro_res,
+                                 minClusterSize = minClusterSize,
+                                 datan=datan, MEDissThres = MEDissThres,
+                                 name_of_tree = paste0("Tree ",i,":"),
+                                 plot = plot, nPC = nPC,
+                                 nb_min_varExpl = nb_min_varExpl)
+    res[[i]][["colors"]] <- cut_dendro_res$colors
+    res[[i]][["MEs"]] <- cut_dendro_res$MEs
+    # res[[i]][["svd_PCs"]] <- cut_dendro_res$svd_PCs
+    res[[i]][["varExplained"]] <- cut_dendro_res$varExplained
+    res[[i]][["rotation"]] <- cut_dendro_res$rotation
     i <- i+1
   }
+  
   return(res)
 }
 
@@ -403,10 +414,14 @@ nb_clust <- function(filter = NULL,
                      plot = TRUE,
                      nPC = 1,
                      nb_min_varExpl = 0.5) {
-  forest <- netboost:::nb_mcupgma(filter=filter,dist=dist,max_singleton=max_singleton,cores=cores)
-  trees <- netboost:::tree_search(forest)
-  results <- netboost:::cut_trees(trees=trees,datan=datan, forest=forest, minClusterSize = minClusterSize, MEDissThres = MEDissThres, plot = plot, nPC = nPC, nb_min_varExpl = nb_min_varExpl)
-  sum_res <- netboost:::nb_summary(clust_res = results, plot = plot)
+  forest <- nb_mcupgma(filter = filter, dist = dist, max_singleton = max_singleton,
+                       cores = cores)
+  trees <- tree_search(forest)
+  results <- cut_trees(trees=trees, datan=datan, forest=forest,
+                       minClusterSize = minClusterSize, MEDissThres = MEDissThres,
+                       plot = plot, nPC = nPC, nb_min_varExpl = nb_min_varExpl)
+  sum_res <- nb_summary(clust_res = results, plot = plot)
+
   return(sum_res)
 }
 
@@ -680,8 +695,8 @@ nb_plot_dendro <- function(nb_summary = NULL,labels=FALSE,main="",colorsrandom=F
 
 #' Netboost module aggregate extraction.
 #' 
-#' This is a modification of WGCNA:::moduleEigengenes() (version WGCNA_1.66) to include more than the first principal component.
-#' For details see WGCNA:::moduleEigengenes().
+#' This is a modification of WGCNA::moduleEigengenes() (version WGCNA_1.66) to include more than the first principal component.
+#' For details see WGCNA::moduleEigengenes().
 #'
 #' @name nb_moduleEigengenes
 #' @param expr     Expression data for a single set in the form of a data frame where rows are samples and columns are genes (probes).

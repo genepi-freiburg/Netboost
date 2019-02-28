@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# 100% only to comply to R package guidelines
+# Trick from Dirk Eddelbüttel: https://stackoverflow.com/a/46480600
+#!/usr/bin/env bash
+
+rm src/Makevars src/mcupgma/clustering_util/Makefile
+
+if [ "$(uname)" == "Darwin" ]; then
+  cp src/mcupgma/clustering_util/Makefile.gcc src/mcupgma/clustering_util/Makefile
+  cp src/Makevars.gcc src/Makevars
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+  cp src/mcupgma/clustering_util/Makefile.gcc src/mcupgma/clustering_util/Makefile
+  cp src/Makevars.gcc src/Makevars
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+  cp src/mcupgma/clustering_util/Makefile.gcc src/mcupgma/clustering_util/Makefile
+  cp src/Makevars.gcc src/Makevars
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW64_NT" ]; then
+  cp src/mcupgma/clustering_util/Makefile.gcc src/mcupgma/clustering_util/Makefile
+  cp src/Makevars.gcc src/Makevars
+else
+  echo "Sorry, your platform is not supported for build."
+  exit 1;
+fi
+
+#if [[ "${CI}" != "true" ]]; then
+#  echo "** Adding unportable -mavx flag"
+#  sed -i 's|\s*-mavx||' src/Makevars
+#  sed -i 's|\(PKG_CXXFLAGS=.*\)|\1 -mavx|' src/Makevars
+#fi

@@ -182,7 +182,7 @@ private:
     
     return avx_sum;
 #else
-    Rf_error("Calling of AVX function with NO_AVX defined (AVX usage disabled).");
+    Rf_error("Calling of AVX function with NO_AVX defined (AVX usage disabled or not available).");
 #endif
   }
 

@@ -13,11 +13,12 @@ mcupgma_example <- function() {
 #'
 #' @param cores Integer. CPU cores to use.
 #' @param keep Logical. Keep mcupgma intermediate files.
+#' @return Netboost result
+#' 
 #' @export
 nb_example <- function(cores = getOption("mc.cores", 2L),
                        keep = FALSE) {
-  # cores = getOption("mc.cores", 2L)
-  # keep = FALSE
+  # Keep data local.
   exaEnv <- new.env()
   
   # load data

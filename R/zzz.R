@@ -79,11 +79,15 @@
   ## (may happen during build and included test-loads)
   ## (writeLines throws warning in R CMD check, but we do valid stuff here)
   if (file.exists(mcupgma_install)) {
-#    print(paste("Modified:", mcupgma_install))
-    filew <-file(mcupgma_install, open="w")
-    writeLines(con=filew, text=c(paste("export INSTALL_PATH := ", mcupgmaPath)))
-    writeLines(con=filew, text=c(paste("export TMP_PATH := ", netboostTmpPath())))
-    close(filew)
+    # R complains about writeLines (false positive, as not writing to STDOUT).
+    # Replaced with write.table to pass package check.
+    txt <- c(paste("export INSTALL_PATH := ", mcupgmaPath),
+             paste("export TMP_PATH := ", netboostTmpPath()))
+    write.table(file=mcupgma_install, as.data.frame(txt), quote=F, row.names=F, col.names=F, append=F, sep="")
+#    filew <-file(mcupgma_install, open="w")
+#    writeLines(con=filew, text=c(paste("export INSTALL_PATH := ", mcupgmaPath)))
+#    writeLines(con=filew, text=c(paste("export TMP_PATH := ", netboostTmpPath())))
+#    close(filew)
   }
   else {
     warning(paste("File not written (as it does not exist):", mcupgma_install))
