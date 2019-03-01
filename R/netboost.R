@@ -701,7 +701,6 @@ nb_plot_dendro <- function(nb_summary = NULL,labels=FALSE,main="",colorsrandom=F
 #' @name nb_moduleEigengenes
 #' @param expr     Expression data for a single set in the form of a data frame where rows are samples and columns are genes (probes).
 #' @param colors    A vector of the same length as the number of probes in ‘expr’, giving module color for all probes (genes). Color ‘"grey"’ is reserved for unassigned genes.     Expression
-#' @param impute    If ‘TRUE’, expression data will be checked for the presence of ‘NA’ entries and if the latter are present, numerical data will be imputed, using function ‘impute.knn’ and probes from the same module as the missing datum. The function ‘impute.knn’ uses a fixed random seed giving repeatable results.
 #' @param nPC       Number of principal components and variance explained entries to be calculated. The number of returned variance explained entries is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is issued.
 #' @param align     Controls whether eigengenes, whose orientation is undetermined, should be aligned with average expression (‘align = "along average"’, the default) or left as they are (‘align = ""’). Any other value will trigger an error.
 #' @param excludeGrey   Should the improper module consisting of 'grey' genes be excluded from the eigengenes?
@@ -728,7 +727,7 @@ nb_plot_dendro <- function(nb_summary = NULL,labels=FALSE,main="",colorsrandom=F
 #' @return validAEs     Boolean vector. Each component (corresponding to the columns in ‘eigengenes’) is ‘TRUE’ if the corresponding module average expression is valid.
 #' @return allAEOK      Boolean flag signalling whether all returned module average expressions contain valid data. Note that ‘returnValidOnly==TRUE’ does not imply ‘allAEOK==TRUE’: some invalid average expressions may be returned if their corresponding eigengenes have been calculated correctly.
 #' @export
-nb_moduleEigengenes <- function (expr, colors, impute = TRUE, nPC = 1, align = "along average", 
+nb_moduleEigengenes <- function (expr, colors, nPC = 1, align = "along average", 
     excludeGrey = FALSE, grey = if (is.numeric(colors)) 0 else "grey", 
     subHubs = TRUE, trapErrors = FALSE, returnValidOnly = trapErrors, 
     softPower = 6, scale = TRUE, verbose = 0, indent = 0,nb_min_varExpl=0.5) 
@@ -802,30 +801,11 @@ nb_moduleEigengenes <- function (expr, colors, impute = TRUE, nPC = 1, align = "
         restrict1 = as.character(colors) == as.character(modulename)
         if (verbose > 2) 
             printFlush(paste(spaces, " ...", sum(restrict1), 
-                "genes"))
+                "features"))
         datModule = as.matrix(t(expr[, restrict1]))
         n = dim(datModule)[1]
         p = dim(datModule)[2]
         pc = try({
-            if (nrow(datModule) > 1 && impute) {
-                seedSaved = FALSE
-                if (exists(".Random.seed")) {
-                  saved.seed = .Random.seed
-                  seedSaved = TRUE
-                }
-                if (any(is.na(datModule))) {
-                  if (verbose > 5) 
-                    printFlush(paste(spaces, " ...imputing missing data"))
-                  datModule = impute.knn(datModule, k = min(10, 
-                    nrow(datModule) - 1))
-                  try({
-                    if (!is.null(datModule$data)) 
-                      datModule = datModule$data
-                  }, silent = TRUE)
-                }
-                if (seedSaved) 
-                  .Random.seed <<- saved.seed
-            }
             if (verbose > 5) 
                 printFlush(paste(spaces, " ...scaling"))
             if (scale) 
@@ -845,40 +825,6 @@ nb_moduleEigengenes <- function (expr, colors, impute = TRUE, nPC = 1, align = "
                 na.rm = TRUE)
             svd1$v[, 1]
         }, silent = TRUE)
-        if (class(pc) == "try-error") {
-            if ((!subHubs) && (!trapErrors)) 
-                stop(pc)
-            if (subHubs) {
-                if (verbose > 0) {
-                  printFlush(paste(spaces, " ..principal component calculation for module", 
-                    modulename, "failed with the following error:"))
-                  printFlush(paste(spaces, "     ", pc, spaces, 
-                    " ..hub genes will be used instead of principal components."))
-                }
-                isPC[i] = FALSE
-                pc = try({
-                  scaledExpr = scale(t(datModule))
-                  covEx = cov(scaledExpr, use = "p")
-                  covEx[!is.finite(covEx)] = 0
-                  modAdj = abs(covEx)^softPower
-                  kIM = (rowMeans(modAdj, na.rm = TRUE))^3
-                  if (max(kIM, na.rm = TRUE) > 1) 
-                    kIM = kIM - 1
-                  kIM[is.na(kIM)] = 0
-                  hub = which.max(kIM)
-                  alignSign = sign(covEx[, hub])
-                  alignSign[is.na(alignSign)] = 0
-                  isHub[i] = TRUE
-                  pcxMat = scaledExpr * matrix(kIM * alignSign, 
-                    nrow = nrow(scaledExpr), ncol = ncol(scaledExpr), 
-                    byrow = TRUE)/sum(kIM)
-                  pcx = rowMeans(pcxMat, na.rm = TRUE)
-                  varExpl[1, i] = mean(cor(pcx, t(datModule), 
-                    use = "p")^2, na.rm = TRUE)
-                  pcx
-                }, silent = TRUE)
-            }
-        }
         if (class(pc) == "try-error") {
             if (!trapErrors) 
                 stop(pc)
