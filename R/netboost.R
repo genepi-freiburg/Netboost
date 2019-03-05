@@ -900,3 +900,68 @@ nb_moduleEigengenes <- function (expr, colors, nPC = 1, align = "along average",
         allOK = allOK, allPC = allPC, isPC = isPC, isHub = isHub, 
         validAEs = validAEs, allAEOK = allAEOK,nb_eigengenes=nb_PrinComps,rotation=rotation)
 }
+
+
+
+#' Example to get access to the MCUPGMA executables.
+#'
+#' @export
+mcupgma_example <- function() {
+  exec <- netboostMCUPGMAPath()
+  files <- Sys.glob(file.path(exec, '*'))
+  paste("Available MCUPGMA executables and scripts under:", exec)
+  print(sapply(files, basename, USE.NAMES=FALSE))
+}
+
+
+#' Test/example code. Applies netboost to the TCGA-AML CHR18 DNA methylation and gene expression data supplied with the package. 
+#'
+#' @param cores Integer. CPU cores to use.
+#' @param keep Logical. Keep mcupgma intermediate files.
+#' @return Netboost result
+#' 
+#' @export
+nb_example <- function(cores = getOption("mc.cores", 2L),
+                       keep = FALSE) {
+  # Keep data local.
+  exaEnv <- new.env()
+  
+  # load data
+  # methylation and RNA data
+  data("tcga_aml_meth_rna_chr18",  # 180 patients x 5283 features
+       package="netboost",
+       envir = exaEnv)
+  
+  pdfFile = file.path(tempdir(), "results_netboost.pdf")
+  
+#  pdf(file=file.path(getwd(), "results_netboost.pdf"), width = 30)
+  pdf(file=pdfFile, width = 30)
+  results <- netboost(datan = exaEnv$tcga_aml_meth_rna_chr18,
+                      stepno = 20L,
+                      softPower = 3L,
+                      minClusterSize = 10L, nPC = 2,scale=TRUE,
+                      MEDissThres = 0.25)
+  nb_plot_dendro(nb_summary = results,labels=TRUE,colorsrandom=TRUE,seed=123)
+  dev.off()
+  
+  if (file.exists(pdfFile)) {
+    message(paste0("PDF created:", pdfFile))
+    
+    # If default PDF viewer is assigned, try to show PDF.
+    if (!is.null(getOption("pdfviewer"))) {
+      system2(getOption("pdfviewer"), pdfFile)
+    }
+  }
+  
+  ### Transfer results to the same data (bug check)
+  ME_transfer <- nb_transfer(nb_summary = results, new_data = exaEnv$tcga_aml_meth_rna_chr18,scale=TRUE)
+  all(round(results$MEs,12) == round(ME_transfer,12))
+
+  # Cleanup all produced temporary filed (esp. clustering/iteration_*)
+  if (!keep)
+    netboostTmpCleanup()
+  else
+    print(paste("Kept MCUPGMA temporary files in:", netboostTmpPath()))
+  
+  invisible(results)
+}

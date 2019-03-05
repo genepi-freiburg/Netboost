@@ -33,6 +33,7 @@ Let's perform this analysis step by step. First, we import the acute myeloid leu
 
 ```{r load_data}
 data("tcga_aml_meth_rna_chr18", package = "netboost")
+dim(tcga_aml_meth_rna_chr18)
 ```
 
 The `netboost()` function integrates all mayor analysis steps and generates multiple plots. In this step we also set the analysis parameters. `stepno` defines the number of boosting steps taken, `softPower` (if null automatically chosen) the exponent in the transformation of the correlation, `minClusterSize` the minimal size of clusters, `nPC` the number of maximally computed principal components, `scale` if data should be scaled and centered prior to analysis and `MEDissThres` defines the merging threshold for identified clusters. For details on the options please see `?netboost` and the corresponding paper Schlosser et al. 2019 (under review).
@@ -43,6 +44,12 @@ pdf(file = pdfFile, width = 30)
 results <- netboost(datan = tcga_aml_meth_rna_chr18, stepno = 20L, softPower = 3L, minClusterSize = 10L, nPC = 2, scale = TRUE, MEDissThres = 0.25) 
 ```
 
+`results` contains the dendrograms (dendros), feature identifier (names) matched to module assignment (colors), the aggregated dataset (MEs), the rotation matrix to compute the aggregated dataset (rotation) and the proportion of variance explained by the aggregate measures (varExplained).
+
+```{r results}
+names(results)
+```
+
 The final dendrogram can also be plotted including labels for individual features. `colorsrandom` controls if module-color matching should be randomized to get a clearly differentiable pattern of the potentially many modules. 
 
 ```{r plot}
@@ -50,23 +57,22 @@ nb_plot_dendro(nb_summary = results, labels = TRUE, colorsrandom = TRUE, seed = 
 dev.off()
 ```
 
-```{r plot}
-names(results)
-```
+Let's open the graphical representation of the results. For each detected independent tree in the dataset (here one) the first graph shows a dendrogram of initial modules and at which level they are merged, the second graph a module dendrogram after merging and the third the dendrogram of features including the module-color-code. After all trees are plotted an assembly of all feature dendrograms is plotted and finally we added manually the dendrogram including the labels (5283 in this application). Labels are only suitable in applications with few features or with a appropriately large pdf device. 
 
-Let's open the graphical representation of the results.
-
-```{r plot}
+```{r pdf}
     if (file.exists(pdfFile)) {
         message(paste0("PDF created:", pdfFile))
         if (!is.null(getOption("pdfviewer"))) {
             system2(getOption("pdfviewer"), pdfFile)
         }
     }
-    tmp <- nb_transfer(nb_summary = results, new_data = exaEnv$tcga_aml_meth_rna_chr18, 
-        scale = TRUE)
-    sum(round(results$MEs, 12) != round(tmp, 12))
-    sum(round(results$MEs, 12) == round(tmp, 12))
+```
+
+We also implemented a convenience function to transfer a clustering to a new dataset. Here, we transfer the clustering to the same dataset resulting in identical aggregate measures.
+
+```{r pdf}
+    ME_transfer <- nb_transfer(nb_summary = results, new_data = tcga_aml_meth_rna_chr18, scale = TRUE)
+    all(round(results$MEs, 12) == round(ME_transfer, 12))
 ```
 
 
