@@ -433,7 +433,7 @@ nb_clust <- function(filter = NULL,
 #' @return List
 nb_summary <- function(clust_res = NULL, plot = TRUE) {
   res <- vector("list")
-  res$clust_res <- clust_res
+  #res$clust_res <- clust_res
   n_MEs <- 0
   n_MEs_background <- 0
   for (tree in 1:length(clust_res)) {

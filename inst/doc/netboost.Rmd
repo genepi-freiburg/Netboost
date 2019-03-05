@@ -1,0 +1,78 @@
+---
+title: "The Netboost users guide"
+author: "Pascal Schlosser, Jochen Knaus"
+package: "`r pkg_ver('netboost')`"
+output: 
+  BiocStyle::html_document:
+    md_extensions: "-autolink_bare_uris"
+vignette: >
+  %\VignetteIndexEntry{The Netboost users guide}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}  
+---
+
+```{r setup, cache = F, echo = FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+# Introduction
+
+The `r Biocpkg("netboost")` package, implements a three-step dimension reduction technique. First, a boosting-based filter is combined with the topological overlap measure to identify the essential edges of the network. Second, sparse hierarchical clustering is applied on the selected edges to identify modules and finally module information is aggregated by the first principal components. The primary analysis is than carried out on these summary measures instead of the original data.
+
+# Loading an example dataset 
+
+The package comes with an example dataset included and a complete Netboost run on this data is performed by `nb_example()`. 
+
+
+```{r netboost}
+library("netboost")
+nb_example
+```
+
+Let's perform this analysis step by step. First, we import the acute myeloid leukemia patient data from The Cancer Genome Atlas public domain database. The dataset consists of DNA methylation sites on chromosome 18 for 100 patients.   
+
+```{r load_data}
+data("tcga_aml_meth_rna_chr18", package = "netboost")
+```
+
+The `netboost()` function integrates all mayor analysis steps and generates multiple plots. In this step we also set the analysis parameters. `stepno` defines the number of boosting steps taken, `softPower` (if null automatically chosen) the exponent in the transformation of the correlation, `minClusterSize` the minimal size of clusters, `nPC` the number of maximally computed principal components, `scale` if data should be scaled and centered prior to analysis and `MEDissThres` defines the merging threshold for identified clusters. For details on the options please see `?netboost` and the corresponding paper Schlosser et al. 2019 (under review).
+
+```{r netboost_run}
+pdfFile = file.path(tempdir(), "results_netboost.pdf")
+pdf(file = pdfFile, width = 30)
+results <- netboost(datan = tcga_aml_meth_rna_chr18, stepno = 20L, softPower = 3L, minClusterSize = 10L, nPC = 2, scale = TRUE, MEDissThres = 0.25) 
+```
+
+The final dendrogram can also be plotted including labels for individual features. `colorsrandom` controls if module-color matching should be randomized to get a clearly differentiable pattern of the potentially many modules. 
+
+```{r plot}
+nb_plot_dendro(nb_summary = results, labels = TRUE, colorsrandom = TRUE, seed = 123)
+dev.off()
+```
+
+```{r plot}
+names(results)
+```
+
+Let's open the graphical representation of the results.
+
+```{r plot}
+    if (file.exists(pdfFile)) {
+        message(paste0("PDF created:", pdfFile))
+        if (!is.null(getOption("pdfviewer"))) {
+            system2(getOption("pdfviewer"), pdfFile)
+        }
+    }
+    tmp <- nb_transfer(nb_summary = results, new_data = exaEnv$tcga_aml_meth_rna_chr18, 
+        scale = TRUE)
+    sum(round(results$MEs, 12) != round(tmp, 12))
+    sum(round(results$MEs, 12) == round(tmp, 12))
+```
+
+
+# Session Info
+```{r sessionInfo}
+sessionInfo()
+warnings()
+```
+
