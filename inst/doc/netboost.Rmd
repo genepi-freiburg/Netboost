@@ -68,13 +68,13 @@ Let's open the graphical representation of the results. For each detected indepe
     }
 ```
 
+Next the primary analysis on the aggregated dataset (`results$MEs`) can be computed.
 We also implemented a convenience function to transfer a clustering to a new dataset. Here, we transfer the clustering to the same dataset resulting in identical aggregate measures.
 
 ```{r pdf}
     ME_transfer <- nb_transfer(nb_summary = results, new_data = tcga_aml_meth_rna_chr18, scale = TRUE)
     all(round(results$MEs, 12) == round(ME_transfer, 12))
 ```
-
 
 # Session Info
 ```{r sessionInfo}
