@@ -1,0 +1,112 @@
+---
+title: "The Netboost users guide"
+author: "Pascal Schlosser, Jochen Knaus"
+package: "`r pkg_ver('netboost')`"
+output: 
+  BiocStyle::html_document:
+    md_extensions: "-autolink_bare_uris"
+vignette: >
+  %\VignetteIndexEntry{The Netboost users guide}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}  
+---
+
+```{r setup, cache = F, echo = FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+# Introduction
+
+The `r Biocpkg("netboost")` package, implements a three-step dimension reduction technique. First, a boosting-based filter is combined with the topological overlap measure to identify the essential edges of the network. Second, sparse hierarchical clustering is applied on the selected edges to identify modules and finally module information is aggregated by the first principal components. The primary analysis is than carried out on these summary measures instead of the original data.
+
+# Loading an example dataset 
+
+The package comes with an example dataset included and a complete Netboost run on this data is performed by `nb_example()`. 
+
+
+```{r netboost}
+library("netboost")
+nb_example
+```
+
+Let's perform this analysis step by step. First, we import the acute myeloid leukemia patient data from The Cancer Genome Atlas public domain database. The dataset consists of DNA methylation sites and gene expression on chromosome 18 for 100 patients.   
+
+```{r load_data}
+data("tcga_aml_meth_rna_chr18", package = "netboost")
+dim(tcga_aml_meth_rna_chr18)
+```
+
+The `netboost()` function integrates all mayor analysis steps and generates multiple plots. In this step we also set analysis parameters:
+
+ `stepno` defines the number of boosting steps taken
+
+ `softPower` (if null, automatically chosen) the exponent in the transformation of the correlation
+
+ `minClusterSize` the minimal size of clusters, `nPC` the number of maximally computed principal components
+
+ `scale` if data should be scaled and centered prior to analysis
+
+ `MEDissThres` defines the merging threshold for identified clusters. 
+
+ For details on the options please see `?netboost` and the corresponding paper Schlosser et al. 2019 (under review).
+
+```{r netboost_run}
+pdfFile = file.path(tempdir(), "results_netboost.pdf")
+pdf(file = pdfFile, width = 30)
+results <- netboost(datan = tcga_aml_meth_rna_chr18, stepno = 20L, softPower = 3L, minClusterSize = 10L, nPC = 2, scale = TRUE, MEDissThres = 0.25) 
+dev.off()
+```
+
+Let's open the graphical representation of the results. For each detected independent tree in the dataset (here one) the first graph shows a dendrogram of initial modules and at which level they are merged, the second graph a module dendrogram after merging and the third the dendrogram of features including the module-color-code. After all trees are plotted an assembly of all feature dendrograms is plotted.
+
+```{r pdf}
+    if (file.exists(pdfFile)) {
+        message(paste0("PDF created:", pdfFile))
+        if (!is.null(getOption("pdfviewer"))) {
+            system2(getOption("pdfviewer"), pdfFile)
+        }
+    }
+```
+
+`results` contains the dendrograms (dendros), feature identifier (names) matched to module assignment (colors), the aggregated dataset (MEs), the rotation matrix to compute the aggregated dataset (rotation) and the proportion of variance explained by the aggregate measures (varExplained).
+Dependent on the minimum proportion of variance explained set in the `netboost()` call (default 0.5) up to `nPC` principal components are exported.
+
+```{r results}
+names(results)
+colnames(results$MEs)
+```
+
+As you see for most modules the first principal component already explained more than 50% of the variance in the original features of this module. 
+ME0_*X*_pc*Y* denotes the background module (unclustered features) of the independent tree *X*.
+
+Explained variance is reported by a matrix for the first `nPC` principal components. Here we list the first 5 modules:
+
+```{r variance}
+results$varExplained[,1:5]
+```
+
+`results$colors` use a numeric coding for the modules which matches their module name. To list features of module ME10 we can extract them by:
+
+```{r module_members}
+results$names[results$colors==10]
+```
+
+The final dendrogram can also be plotted including labels (`results$names`) for individual features. `colorsrandom` controls if module-color matching should be randomized to get a clearly differentiable pattern of the potentially many modules. Labels are only suitable in applications with few features or with a appropriately large pdf device.
+
+```{r plot}
+nb_plot_dendro(nb_summary = results, labels = FALSE, colorsrandom = TRUE, seed = 123)
+```
+
+Next the primary analysis on the aggregated dataset (`results$MEs`) can be computed.
+We also implemented a convenience function to transfer a clustering to a new dataset. Here, we transfer the clustering to the same dataset resulting in identical aggregate measures.
+
+```{r transfer}
+    ME_transfer <- nb_transfer(nb_summary = results, new_data = tcga_aml_meth_rna_chr18, scale = TRUE)
+    all(round(results$MEs, 12) == round(ME_transfer, 12))
+```
+
+# Session Info
+```{r sessionInfo}
+sessionInfo()
+warnings()
+```

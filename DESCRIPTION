@@ -17,6 +17,7 @@ biocViews:
   StatisticalMethod,
   GraphAndNetwork,
   Network,
+  Software,
   Clustering
 Imports:
   Rcpp,
