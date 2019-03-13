@@ -49,10 +49,8 @@ PERFORM = 1
 
 ifdef COMPILE
 #CXX = /cs/phd/ofirpele/utils/stl_decrypt/gfilt -Wall
-CXXFLAGS +=  -Wall
-
-# Only to comply R package guidelines.
-#-Wno-deprecated
+CXXFLAGS += -Wall @CC_ADD_FLAGS@
+# -Wno-deprecated
 endif
 
 ifdef RUNTIME
@@ -100,6 +98,7 @@ targets := edges2bin bin2edges \
 	hcluster edges2valid_clusters\
 	test_IteratorAdaptor\
 	edge_collator
+
 #	DiskEdgeManager.o
 #	nodes2parents average_edges 
 
