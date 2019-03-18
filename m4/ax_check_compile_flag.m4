@@ -22,7 +22,7 @@
 #   INPUT gives an alternative input source to AC_COMPILE_IFELSE.
 #
 #   NOTE: Implementation based on AX_CFLAGS_GCC_OPTION. Please keep this
-#   macro in sync with AX_CHECK_{PREPROC,LINK}_FLAG.
+#   macro in sync with AX_CHECK_{PREPROC,LINK}_FLAG. 
 #
 # LICENSE
 #

@@ -3,9 +3,14 @@
 # Called in the beginning of the build.
 
 echo "CLEANUP cleanup"
-rm -fv src/Makevars src/mcupgma/clustering_util/Makefile
 
-make -C src -f Makefile clean
+# Autoconf results.
+rm -fv src/Makevars src/mcupgma/clustering_util/Makefile src/config.h
+
+# Build results.
+rm -fv src/*.so src/*.dll
+
+# make -C src -f Makefile clean
 make -C src/mcupgma -f Makefile clean
 
 find src -name '*.tar.gz' -delete -print

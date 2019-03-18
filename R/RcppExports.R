@@ -6,12 +6,14 @@
 #' @param data Matrix
 #' @param stepno Amount of steps
 #' @param mode_ Accelerator mode (0: x86, 1: FMA, 2: AVX)
+#' @return none
 cpp_filter_base <- function(data, stepno = 20L, mode_ = 2L) {
     invisible(.Call('_netboost_filter_base', PACKAGE = 'netboost', data, stepno, mode_))
 }
 
 #' @title Boosting cleanup (required to free memory)
 #' 
+#' @return none
 cpp_filter_end <- function() {
     invisible(.Call('_netboost_filter_end', PACKAGE = 'netboost'))
 }
@@ -21,6 +23,7 @@ cpp_filter_end <- function() {
 #' @details Must be initialised before using @see{filter_base}
 #' 
 #' @param col_y Row in data matrix
+#' @return integer vector
 cpp_filter_step <- function(col_y) {
     .Call('_netboost_rcpp_filter_step', PACKAGE = 'netboost', col_y)
 }
@@ -33,7 +36,7 @@ cpp_filter_step <- function(col_y) {
 #'
 #' @param filter Filter matrix
 #' @param adjacency Vector
-#' @return Vector
+#' @return numeric vector
 cpp_dist_tom <- function(filter, adjacency) {
     .Call('_netboost_dist_tom', PACKAGE = 'netboost', filter, adjacency)
 }
@@ -47,6 +50,7 @@ cpp_dist_tom <- function(filter, adjacency) {
 #' @backref src/tree_sort.cpp 
 #'
 #' @param netboost_forest Input-matrix (4 columns, ids in colum 0,1,3)
+#' @return List
 #'
 cpp_tree_search <- function(netboost_forest) {
     .Call('_netboost_tree_search', PACKAGE = 'netboost', netboost_forest)

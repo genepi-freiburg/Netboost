@@ -271,7 +271,7 @@ struct Distance_Parallel : public RcppParallel::Worker {
 //'
 //' @param filter Filter matrix
 //' @param adjacency Vector
-//' @return Vector
+//' @return numeric vector
 // [[Rcpp::export(name = "cpp_dist_tom")]]
 NumericVector dist_tom(const IntegerMatrix &filter,
                        const NumericVector &adjacency) {

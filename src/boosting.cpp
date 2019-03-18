@@ -7,7 +7,14 @@
  *  - NO_AVX   -- disable AVX code
  *  - NO_FMA   -- disable FMA code  (completely removed anyway atm)
  *
- * Code currently only tested on GCC 4.7 - 6.0 & Clang 3.7
+ * Flags with autotools:
+ *  - HAVE_AVX
+ *  - HAVE_FMA
+ *
+ * Intrinsics are only used if both AVX/FMA are available in compiler, else
+ * compilation may fail.
+ *
+ * Code currently only tested on GCC 4.7 - 7.0 & Clang 3.7
  *
  * Portability:
  *  - "__restrict" used. Non-standard, but supported by GCC, Clang, MSVC, Intel
@@ -34,9 +41,32 @@
 #include <vector>
 #include <limits>
 
+// Base flags from autotools.
+#include "config.h"
+
+// If PACKAGE_NAME is defined, complete autotools build is assumed.
+#ifdef PACKAGE_NAME
+  #ifndef HAVE_AVX
+    #define NO_AVX
+  #endif
+  #ifndef HAVE_FMA3
+    #define NO_FMA
+  #endif
+// "Traditional" build, using NO_AVX/NO_FMA flags.
+#else
+  #ifdef NO_AVX
+    #undef HAVE_AVX
+  #endif
+  #ifdef NO_FMA
+    #undef HAVE_FMA3
+  #endif
+#endif
+
 // GCC includes all AVX/SSE intrinsics
 // @TODO Recheck MSVC & Intel for their names.
-#include <immintrin.h>
+#if defined(HAVE_AVX) && defined(HAVE_FMA3)
+  #include <immintrin.h>
+#endif
 
 using namespace Rcpp;
 using namespace std;
@@ -141,7 +171,7 @@ private:
    */
   inline double vecmul_sum_avx(const double* __restrict a, const double* __restrict b,
                                const size_t len) {
-#ifndef NO_AVX
+#ifdef HAVE_AVX
     double avx_sum = 0;
     
     // AVX only comes into account if more than 4 doubles are around.
@@ -182,7 +212,7 @@ private:
     
     return avx_sum;
 #else
-    Rf_error("Calling of AVX function with NO_AVX defined (AVX usage disabled or not available).");
+    Rf_error("Calling of AVX function without compiler support defined (AVX usage disabled or not available).");
 #endif
   }
 
@@ -211,7 +241,7 @@ private:
   //  double vecmul_sum_avx_aligned(double *a, double *b, const size_t len) __attribute__ ((__option__("avx")));
   double vecmul_sum_avx_aligned(double * __restrict ar, double * __restrict br,
                                 const size_t len) {
-#ifndef NO_AVX
+#ifdef HAVE_AVX
     __m256d sum = _mm256_setzero_pd();
     
     // Using GCC the compiler can be informed data is aligned (may help on auto
@@ -280,7 +310,7 @@ private:
     
     return sum_memory;
 #else
-    Rf_error("Calling of AVX function with NO_AVX defined (AVX usage disabled).");
+    Rf_error("Calling of AVX function without compiler support or AVX disabled.");
 #endif
   }
   
@@ -652,11 +682,12 @@ int mode = 0;
 //' @param data Matrix
 //' @param stepno Amount of steps
 //' @param mode_ Accelerator mode (0: x86, 1: FMA, 2: AVX)
+//' @return none
 // [[Rcpp::export(name=cpp_filter_base)]]
 void filter_base(const NumericMatrix &data, unsigned int stepno = 20,
                  int mode_ = 2) {
   // If AVX is switched off, mode is always 0.
-#ifdef NO_AVX
+#ifndef HAVE_AVX
   mode = 0;
 #else
   mode = mode_;
@@ -668,6 +699,7 @@ void filter_base(const NumericMatrix &data, unsigned int stepno = 20,
 
 //' @title Boosting cleanup (required to free memory)
 //' 
+//' @return none
 // [[Rcpp::export(name=cpp_filter_end)]]
 void filter_end() {
   if (boost != nullptr)
@@ -681,6 +713,7 @@ void filter_end() {
 //' @details Must be initialised before using @see{filter_base}
 //' 
 //' @param col_y Row in data matrix
+//' @return integer vector
 // [[Rcpp::export(name=cpp_filter_step)]]
 IntegerVector rcpp_filter_step(size_t col_y) {
   if (boost == nullptr)

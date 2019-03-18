@@ -657,7 +657,8 @@ nb_filter <- function(datan, stepno=20L, until=0L,
 #' @param colorsrandom TRUE/FALSE indicator of whether module colors should be shuffeled.
 #' @param seed Seed for shuffeling of module colors.
 #' @export
-nb_plot_dendro <- function(nb_summary = NULL,labels=FALSE,main="",colorsrandom=FALSE,seed=NULL){
+nb_plot_dendro <- function(nb_summary = NULL, labels = FALSE, main="",
+                           colorsrandom = FALSE, seed = NULL){
   if (!exists("nb_summary"))
     stop("Netboost output (nb_summary) must be provided.")
   
@@ -827,7 +828,8 @@ nb_moduleEigengenes <- function (expr, colors, nPC = 1, align = "along average",
                 na.rm = TRUE)
             svd1$v[, 1]
         }, silent = TRUE)
-        if (class(pc) == "try-error") {
+
+        if (is(pc, "try-error")) {
             if (!trapErrors) 
                 stop(pc)
             if (verbose > 0) {
@@ -867,7 +869,7 @@ nb_moduleEigengenes <- function (expr, colors, nPC = 1, align = "along average",
                 }
                 0
             }, silent = TRUE)
-            if (class(ae) == "try-error") {
+            if (is(ae, "try-error")) {
                 if (!trapErrors) 
                   stop(ae)
                 if (verbose > 0) {
@@ -880,9 +882,10 @@ nb_moduleEigengenes <- function (expr, colors, nPC = 1, align = "along average",
                   modulename, "failed with the following error \n     ", 
                   ae, "The returned average expression vector will be invalid.\n"))
             }
-            validAEs[i] = !(class(ae) == "try-error")
+            validAEs[i] = !is(ae, "try-error")
         }
     }
+    
     allOK = (sum(!validMEs) == 0)
     if (returnValidOnly && sum(!validMEs) > 0) {
         PrinComps = PrinComps[, validMEs]
@@ -893,6 +896,7 @@ nb_moduleEigengenes <- function (expr, colors, nPC = 1, align = "along average",
         isHub = isHub[validMEs]
         validAEs = validAEs[validMEs]
     }
+    
     allPC = (sum(!isPC) == 0)
     allAEOK = (sum(!validAEs) == 0)
     list(eigengenes = PrinComps, averageExpr = averExpr, varExplained = varExpl, 

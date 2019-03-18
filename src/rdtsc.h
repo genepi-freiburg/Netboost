@@ -153,7 +153,7 @@ inline uint64_t cycles()
           return _rdtsc();
         #else
           return _rdtscp();
-	#endif
+	      #endif
       #else
         #error "Dead end in compiler selection building rdtsc()"
       #endif

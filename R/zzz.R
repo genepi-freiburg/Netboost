@@ -27,7 +27,7 @@
 #'
 #' @examples 
 #'\dontrun{nb_example()}
-
+#' @return none
 #' @param libname Path to R installation (base package dir)
 #' @param pkgname Package name (should be "netboost")
 .onAttach <- function(libname, pkgname) {
@@ -82,7 +82,9 @@
     # Replaced with write.table to pass package check.
     txt <- c(paste("export INSTALL_PATH := ", mcupgmaPath),
              paste("export TMP_PATH := ", netboostTmpPath()))
-    write.table(file=mcupgma_install, as.data.frame(txt), quote=F, row.names=F, col.names=F, append=F, sep="")
+    write.table(file = mcupgma_install, as.data.frame(txt),
+                quote = FALSE, row.names = FALSE,
+                col.names = FALSE, append = FALSE, sep="")
 #    filew <-file(mcupgma_install, open="w")
 #    writeLines(con=filew, text=c(paste("export INSTALL_PATH := ", mcupgmaPath)))
 #    writeLines(con=filew, text=c(paste("export TMP_PATH := ", netboostTmpPath())))
@@ -94,6 +96,7 @@
 }
 
 #' If package detached, clean up temporary folders.
+#' @return none
 #' @param libpath Library path (unused)
 .onDetach <- function(libpath) {
   netboostTmpCleanup()
@@ -102,6 +105,7 @@
 #' Assigns temporary path for internal use (esp. mcupgma)
 #' 
 #' @param tmp Directory (Default: R temporary folder)
+#' @return none
 #' @export
 nb_set_tempdir <- function(tmp = NULL) {
   # TODO Cleanup maybe currently existing temporary folder.
@@ -139,8 +143,9 @@ nb_set_tempdir <- function(tmp = NULL) {
 
 #' Cleans the netboost temporary folder.
 #' @param verbose Show information about cleanup.
+#' @return none
 netboostTmpCleanup <- function(verbose = FALSE) {
-  folder <- netboostTmpPath(nostop=TRUE)
+  folder <- netboostTmpPath(nostop = TRUE)
 
   if (folder == "") return()
 
@@ -158,7 +163,7 @@ netboostTmpCleanup <- function(verbose = FALSE) {
 #'
 #' @param  nostop   Return on error (default: stop)
 #' @return Absolute path for "exec" folder
-netboostTmpPath <- function(nostop=FALSE) {
+netboostTmpPath <- function(nostop = FALSE) {
   if (exists("temp_dir", envir = .netboostInternal)) {
     return(get("temp_dir", envir = .netboostInternal))
   }

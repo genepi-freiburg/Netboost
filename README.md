@@ -11,11 +11,7 @@ Required for building are C/C++ compilers, GNU make, GZIP, Perl.
 # Installation
 ```
 # Skip if already installed
-install.packages("devtools")      # Install from Github
-install.packages("BiocManager")   # Bioconductor installer
-
-# Install dependencies from Bioconductor
-BiocManager::install("WGCNA")
+#install.packages("devtools")      # Install from Github
 
 # Install netboost
 devtools::install_github("genepi-freiburg/netboost")

@@ -20,7 +20,7 @@
 #include <algorithm>
 #include <memory>
 
-#include "./rdtsc.h"             // Simple cycle counter
+// #include "./rdtsc.h"             // Simple cycle counter
 
 // Using the Rcpp namespace, Rcpp::NumericVector can be written as NumericVector
 using namespace Rcpp;
@@ -30,7 +30,8 @@ constexpr bool DEBUG = false;    // Debugging output
 
 template <typename T> class Tree;
 
-using STORAGE_INT = int;         // Type of indexing integers. May exceed 32-bit.
+// @TODO: Long for large trees?
+using STORAGE_INT = int;         // Type of indexing integers.
 
 /**
  * Storage type for IDs: either set or vector. Cache class has specialisation
@@ -361,10 +362,11 @@ template<typename T> unsigned int Tree<T>::trees = 0;
 //' @backref src/tree_sort.cpp 
 //'
 //' @param netboost_forest Input-matrix (4 columns, ids in colum 0,1,3)
+//' @return List
 //'
 // [[Rcpp::export(name = "cpp_tree_search")]]
 Rcpp::List tree_search(const IntegerMatrix &netboost_forest) {
-  auto start = cycles();
+//  auto start = cycles();
   
   // Get max. value inside the three number colums.
   auto max1 = std::max_element(netboost_forest.column(0).begin(),
