@@ -768,7 +768,7 @@ nb_filter <- function(datan, stepno=20L, until=0L,
 #' \donttest{ 
 #' data("tcga_aml_meth_rna_chr18",  package="netboost")
 #' results <- netboost(datan = tcga_aml_meth_rna_chr18,stepno = 20L,softPower = 3L, minClusterSize = 10L, nPC = 2, scale=TRUE, MEDissThres = 0.25, plot=FALSE)
-#' set.seed(1234)
+#' set.seed(1234) # reproducible but shuffled color-module matching 
 #' nb_plot_dendro(nb_summary = results, labels = FALSE, main="Test", colorsrandom = TRUE)
 #' }
 #'
