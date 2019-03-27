@@ -779,7 +779,7 @@ nb_plot_dendro <- function(nb_summary = NULL, labels = FALSE, main="",
     stop("Netboost output (nb_summary) must be provided.")
   
   colorHeight = 0.2
-  layout(matrix(seq(from=1,to=(2 * length(nb_summary$dendros)),by=1)), nrow = 2), heights = c(1 - colorHeight, colorHeight))
+  layout(matrix(seq(from=1,to=(2 * length(nb_summary$dendros)),by=1), nrow = 2), heights = c(1 - colorHeight, colorHeight))
   
   last_col <- 0
   n_colors <- length(unique(nb_summary$colors))
