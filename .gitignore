@@ -7,7 +7,6 @@ src/*.o
 src/*.so
 src/*.dll
 src/doc/*
-man/*
 *~
 *#
 src/mcupgma/clustering_round/bin/
