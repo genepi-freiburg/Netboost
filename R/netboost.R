@@ -172,7 +172,6 @@ nb_dist <- function(filter=NULL,
 #' @return Raw dendrogram to be processed by tree_search and tree_dendro.
 #'
 #' @examples
-#' \donttest{ 
 #' data("tcga_aml_meth_rna_chr18",  package="netboost")
 #'  cores <- as.integer(getOption("mc.cores", 2))
 #'  datan <- as.data.frame(scale(tcga_aml_meth_rna_chr18,center=TRUE,scale=TRUE))	
@@ -181,7 +180,6 @@ nb_dist <- function(filter=NULL,
 #'  max_singleton = dim(tcga_aml_meth_rna_chr18)[2]
 #'  forest <- nb_mcupgma(filter=filter,dist=dist,max_singleton=max_singleton,cores=cores)
 #'  head(forest)
-#'  }
 #'  
 #' @export
 nb_mcupgma <- function(filter = NULL,
@@ -253,7 +251,6 @@ nb_mcupgma <- function(filter = NULL,
 #' @return List
 #' 
 #' @examples
-#' \donttest{ 
 #' data("tcga_aml_meth_rna_chr18",  package="netboost")
 #'  cores <- as.integer(getOption("mc.cores", 2))
 #'  datan <- as.data.frame(scale(tcga_aml_meth_rna_chr18,center=TRUE,scale=TRUE))	
@@ -264,7 +261,6 @@ nb_mcupgma <- function(filter = NULL,
 #'  trees <- tree_search(forest)
 #'  length(trees)
 #'  trees[[2]]
-#'  }
 #'
 #' @export
 tree_search <- function(forest=NULL) {
@@ -398,7 +394,6 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 2L,
 #' @return List
 #'
 #' @examples
-#' \donttest{ 
 #' data("tcga_aml_meth_rna_chr18",  package="netboost")
 #'  cores <- as.integer(getOption("mc.cores", 2))
 #'  datan <- as.data.frame(scale(tcga_aml_meth_rna_chr18,center=TRUE,scale=TRUE))	
@@ -408,7 +403,6 @@ cut_dendro <- function(tree_dendro=NULL, minClusterSize= 2L,
 #'  forest <- nb_mcupgma(filter=filter,dist=dist,max_singleton=max_singleton,cores=cores)
 #'  trees <- tree_search(forest)
 #'  results <- cut_trees(trees=trees,datan=datan, forest=forest, minClusterSize = 10L, MEDissThres = 0.25, plot = TRUE)
-#' }
 #' 
 #' @export
 cut_trees <- function(trees=NULL,
@@ -461,7 +455,6 @@ cut_trees <- function(trees=NULL,
 #' @return List
 #'
 #' @examples
-#' \donttest{ 
 #' data("tcga_aml_meth_rna_chr18",  package="netboost")
 #'  cores <- as.integer(getOption("mc.cores", 2))
 #'  datan <- as.data.frame(scale(tcga_aml_meth_rna_chr18,center=TRUE,scale=TRUE))	
@@ -469,7 +462,6 @@ cut_trees <- function(trees=NULL,
 #'  dist <- nb_dist(datan=datan, filter=filter, softPower=3L, cores=cores)
 #'  max_singleton = dim(tcga_aml_meth_rna_chr18)[2]
 #'  sum_res <- nb_clust(filter=filter, dist=dist, datan=datan, max_singleton=max_singleton, minClusterSize = 10L, MEDissThres = 0.25, cores = cores, plot = TRUE, nPC = 2L, nb_min_varExpl = 0.5)
-#' }
 #' 
 #' @export
 nb_clust <- function(filter = NULL,
@@ -501,7 +493,6 @@ nb_clust <- function(filter = NULL,
 #' @return List
 #'
 #' @examples
-#' \donttest{ 
 #' data("tcga_aml_meth_rna_chr18",  package="netboost")
 #'  cores <- as.integer(getOption("mc.cores", 2))
 #'  datan <- as.data.frame(scale(tcga_aml_meth_rna_chr18,center=TRUE,scale=TRUE))	
@@ -512,7 +503,6 @@ nb_clust <- function(filter = NULL,
 #'  trees <- tree_search(forest)
 #'  results <- cut_trees(trees=trees,datan=datan, forest=forest, minClusterSize = 10L, MEDissThres = 0.25, plot = FALSE)
 #'  sum_res <- nb_summary(clust_res = results, plot = TRUE)
-#' }
 #' 
 #' @export
 nb_summary <- function(clust_res = NULL, plot = TRUE) {
@@ -607,12 +597,10 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
 #' @return List
 #'
 #' @examples
-#' \donttest{ 
 #' data("tcga_aml_meth_rna_chr18",  package="netboost")
 #' results <- netboost(datan = tcga_aml_meth_rna_chr18, stepno = 20L, softPower = 3L, minClusterSize = 10L, nPC = 2, scale=TRUE, MEDissThres = 0.25, plot=FALSE)
 #' ME_transfer <- nb_transfer(nb_summary = results, new_data = tcga_aml_meth_rna_chr18, scale=TRUE)
 #' all(round(results$MEs,12) == round(ME_transfer,12))
-#' }
 #' 
 #' @export
 nb_transfer <- function(nb_summary = NULL, new_data = NULL, scale = FALSE,onlyModuleMembership=FALSE){
@@ -666,14 +654,12 @@ nb_transfer <- function(nb_summary = NULL, new_data = NULL, scale = FALSE,onlyMo
 #' 
 #'
 #' @examples
-#' \donttest{ 
 #' data("tcga_aml_meth_rna_chr18",  package="netboost")
 #'  cores <- as.integer(getOption("mc.cores", 2))
 #'  datan <- as.data.frame(scale(tcga_aml_meth_rna_chr18,center=TRUE,scale=TRUE))	
 #'  filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L, cores=cores,mode=2L)
 #'  head(filter)
 #'  nrow(filter)/(ncol(datan)*(ncol(datan)-1)/2) # proportion of potential undirected edges 
-#' }
 #' 
 #' @export
 nb_filter <- function(datan, stepno=20L, until=0L,
@@ -761,12 +747,10 @@ nb_filter <- function(datan, stepno=20L, until=0L,
 #' @param colorsrandom TRUE/FALSE indicator of whether module colors should be shuffeled.
 #'
 #' @examples
-#' \donttest{ 
 #' data("tcga_aml_meth_rna_chr18",  package="netboost")
 #' results <- netboost(datan = tcga_aml_meth_rna_chr18,stepno = 20L,softPower = 3L, minClusterSize = 10L, nPC = 2, scale=TRUE, MEDissThres = 0.25, plot=FALSE)
 #' set.seed(1234) # reproducible but shuffled color-module matching 
 #' nb_plot_dendro(nb_summary = results, labels = FALSE, main="Test", colorsrandom = TRUE)
-#' }
 #'
 #' @export
 nb_plot_dendro <- function(nb_summary = NULL, labels = FALSE, main="",
@@ -1015,7 +999,6 @@ nb_moduleEigengenes <- function (expr, colors, nPC = 1, align = "along average",
 
 #' Example to get access to the MCUPGMA executables.
 #'
-#' @export
 mcupgma_example <- function() {
   exec <- netboostMCUPGMAPath()
   files <- Sys.glob(file.path(exec, '*'))
@@ -1031,7 +1014,7 @@ mcupgma_example <- function() {
 #' @return Netboost result
 #' 
 #' @examples
-#' \donttest{ nb_example()}
+#' nb_example()
 #' 
 #' @export
 nb_example <- function(cores = getOption("mc.cores", 2L),
