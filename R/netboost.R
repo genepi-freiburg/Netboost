@@ -1060,7 +1060,8 @@ nb_example <- function(cores = getOption("mc.cores", 2L),
                       softPower = 3L,
                       minClusterSize = 10L, nPC = 2,scale=TRUE,
                       MEDissThres = 0.25)
-  nb_plot_dendro(nb_summary = results,labels=TRUE,colorsrandom=TRUE,seed=123)
+  set.seed(1234)
+  nb_plot_dendro(nb_summary = results,labels=TRUE,colorsrandom=TRUE)
   dev.off()
   
   if (file.exists(pdfFile)) {
