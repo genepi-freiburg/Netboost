@@ -43,10 +43,8 @@ library(parallel)
 #'
 #'
 #' @examples
-#' \donttest{ 
 #' data("tcga_aml_meth_rna_chr18",  package="netboost")
 #' results <- netboost(datan = tcga_aml_meth_rna_chr18,stepno = 20L,softPower = 3L, minClusterSize = 10L, nPC = 2, scale=TRUE, MEDissThres = 0.25, plot=TRUE)
-#' }
 #'
 #' @export
 netboost <- function(datan = NULL,
@@ -130,14 +128,12 @@ calculate_adjacency <- function(datan=NULL,filter=NULL,softPower=2) {
 #' @return Vector with distances.
 #'
 #' @examples
-#' \donttest{ 
 #'  data("tcga_aml_meth_rna_chr18",  package="netboost")
 #'  cores <- as.integer(getOption("mc.cores", 2))
 #'  datan <- as.data.frame(scale(tcga_aml_meth_rna_chr18,center=TRUE,scale=TRUE))	
 #'  filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L, cores=cores,mode=2L)
 #'  dist <- nb_dist(datan=datan, filter=filter, softPower=3L, cores=cores)
 #'  summary(dist)
-#' }
 #' 
 #' @export
 nb_dist <- function(filter=NULL,
