@@ -65,6 +65,9 @@ Last, clustering is performed.
 For details see Schlosser et al. doi...
 }
 \examples{
-\donttest{ nb_example() }
+\donttest{ 
+data("tcga_aml_meth_rna_chr18",  package="netboost")
+results <- netboost(datan = tcga_aml_meth_rna_chr18,stepno = 20L,softPower = 3L, minClusterSize = 10L, nPC = 2, scale=TRUE, MEDissThres = 0.25, plot=TRUE)
+}
 
 }
