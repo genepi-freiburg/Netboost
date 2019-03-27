@@ -111,7 +111,7 @@ netboost <- function(datan = NULL,
 #' @param softPower Integer. Exponent of the transformation. Set automatically based on the scale free topology criterion if unspecified.
 #' @return Vector with adjacencies for the filter
 calculate_adjacency <- function(datan=NULL,filter=NULL,softPower=2) {
-  return(sapply(1:nrow(filter),
+  return(sapply(seq(from=1,to=nrow(filter),by=1),
                 function(i) {
                   abs(WGCNA::cor(datan[,filter[i,1]],datan[,filter[i,2]]))^softPower
                 }))
@@ -316,7 +316,7 @@ tree_dendro <- function(tree=NULL, datan=NULL, forest=NULL) {
   dendro$merge[dendro$merge>0] <- dendro$merge[dendro$merge>0]-cutpoint
   dendro$merge <-  apply(dendro$merge,c(1,2),function(x){(as.integer(x))})
   dendro$height <- tree_cluster[,3]
-  dendro$order <- 1:cutpoint
+  dendro$order <- seq(from=1,to=cutpoint,by=1)
   dendro$labels <- colnames_tree
   class(dendro) <- "hclust"
   b <- as.dendrogram(dendro)
@@ -524,7 +524,7 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
   #res$clust_res <- clust_res
   n_MEs <- 0
   n_MEs_background <- 0
-  for (tree in 1:length(clust_res)) {
+  for (tree in seq(from=1,to=length(clust_res),by=1)) {
     res$dendros[[tree]] <- clust_res[[tree]]$dendro
     res$names <- c(res$names, clust_res[[tree]]$names)
     tmp.col <- clust_res[[tree]]$colors
@@ -564,7 +564,7 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
         res$varExplained <-  clust_res[[tree]]$varExplained
     }
   }
-  rownames(res$varExplained)<- paste0("PC",1:nrow(res$varExplained))
+  rownames(res$varExplained)<- paste0("PC",seq(from=1,to=nrow(res$varExplained),by=1))
   colnames(res$varExplained)<- unique(unlist(lapply(strsplit(split="_pc",colnames(res$MEs)),FUN=function(x){x[1]})))
 
   res$rotation <- do.call("cbind",lapply(res$rotation,FUN=function(x){
@@ -744,14 +744,14 @@ nb_filter <- function(datan, stepno=20L, until=0L,
   ## Important!: stop (free memory, else suitable memory is still blocked)
   cpp_filter_end();
   
-  filter <- do.call("rbind", lapply(1:length(boosting_filter), function(x) {
+  filter <- do.call("rbind", lapply(seq(from=1,to=length(boosting_filter),by=1), function(x) {
     return(as.data.frame(cbind(as.integer(boosting_filter[[x]]),
                                as.integer(rep(x,length(boosting_filter[[x]]))))))
   }))
   
   filter <- unique(t(apply(filter,1,sort)))
   colnames(filter) <- c("cluster_id1","cluster_id2")
-  rownames(filter) <- 1:nrow(filter)
+  rownames(filter) <- seq(from=1,to=nrow(filter),by=1)
   
   return(filter)
 }
@@ -779,9 +779,7 @@ nb_plot_dendro <- function(nb_summary = NULL, labels = FALSE, main="",
     stop("Netboost output (nb_summary) must be provided.")
   
   colorHeight = 0.2
-  layout(matrix(c(1:(
-    2 * length(nb_summary$dendros)
-  )), nrow = 2), heights = c(1 - colorHeight, colorHeight))
+  layout(matrix(seq(from=1,to=(2 * length(nb_summary$dendros)),by=1)), nrow = 2), heights = c(1 - colorHeight, colorHeight))
   
   last_col <- 0
   n_colors <- length(unique(nb_summary$colors))
@@ -789,22 +787,22 @@ nb_plot_dendro <- function(nb_summary = NULL, labels = FALSE, main="",
   if(colorsrandom){
     shuffel_index <- sample(x = n_colors,size = n_colors)
   }else{
-    shuffel_index <- 1:n_colors
+    shuffel_index <- seq(from=1,to=n_colors,by=1)
   }
-  shuffel_index <- c(shuffel_index[(2*middle+1)][(2*middle+1)==n_colors],rbind(shuffel_index[1:middle],shuffel_index[(middle+1):(2*middle)]))
+  shuffel_index <- c(shuffel_index[(2*middle+1)][(2*middle+1)==n_colors],rbind(shuffel_index[seq(from=1,to=middle,by=1)],shuffel_index[seq(from=(middle+1),to=(2*middle),by=1)]))
   plot_colors <- colorspace::rainbow_hcl(n = (length(unique(nb_summary$colors))))[shuffel_index][as.factor(nb_summary$colors)]
   plot_colors[nb_summary$colors <= 0] <- gray(level = 0.7)
-  for (tree in 1:length(nb_summary$dendros)) {
+  for (tree in seq(from=1,to=length(nb_summary$dendros),by=1)) {
     par(mar = c(0, 4, 8, 4))
     first_col <- last_col + 1
     last_col <- last_col + length(nb_summary$dendros[[tree]]$labels)
     if(labels){
-      plot(nb_summary$dendros[[tree]],labels=nb_summary$names[first_col:last_col],main=main)
+      plot(nb_summary$dendros[[tree]],labels=nb_summary$names[seq(from=first_col,to=last_col,by=1)],main=main)
     }else{
       plot(nb_summary$dendros[[tree]],labels=FALSE,main=main)
     }
     par(mar = c(4, 4, 0, 4))
-    WGCNA::plotColorUnderTree(nb_summary$dendros[[tree]], colors=plot_colors[first_col:last_col],rowLabels="")
+    WGCNA::plotColorUnderTree(nb_summary$dendros[[tree]], colors=plot_colors[seq(from=first_col,to=last_col,by=1)],rowLabels="")
   }
 }
 
@@ -908,7 +906,7 @@ nb_moduleEigengenes <- function (expr, colors, nPC = 1, align = "along average",
     names(PrinComps) = paste(moduleColor.getMEprefix(), modlevels, 
         sep = "")
     names(averExpr) = paste("AE", modlevels, sep = "")
-    for (i in c(1:length(modlevels))) {
+    for (i in seq(from=1,to=length(modlevels),by=1)) {
         if (verbose > 1) 
             printFlush(paste(spaces, "moduleEigengenes : Working on ME for module", 
                 modlevels[i]))
@@ -934,9 +932,9 @@ nb_moduleEigengenes <- function (expr, colors, nPC = 1, align = "along average",
             nb_PCA$rotation <- t(t(nb_PCA$rotation)/svd1$d)
             if (verbose > 5) 
                 printFlush(paste(spaces, " ...calculating PVE"))
-            veMat = cor(svd1$v[, c(1:min(n, p, nVarExplained))], 
+            veMat = cor(svd1$v[,seq(from=1,to=min(n, p, nVarExplained),by=1)], 
                 t(datModule), use = "p")
-            varExpl[c(1:min(n, p, nVarExplained)), i] = rowMeans(veMat^2, 
+            varExpl[seq(from=1,to=min(n, p, nVarExplained),by=1), i] = rowMeans(veMat^2, 
                 na.rm = TRUE)
             svd1$v[, 1]
         }, silent = TRUE)
@@ -960,11 +958,11 @@ nb_moduleEigengenes <- function (expr, colors, nPC = 1, align = "along average",
         }
         else {
             PrinComps[, i] = pc
-            nb_nPCs <- min(c(which(cumsum(varExpl[c(1:min(n, p, nVarExplained)), i])>nb_min_varExpl),nVarExplained))
-            nb_PrinComps <- cbind(nb_PrinComps,nb_PCA$x[,1:nb_nPCs])
-            colnames(nb_PrinComps)[(ncol(nb_PrinComps)-nb_nPCs+1):ncol(nb_PrinComps)] <- paste0(moduleColor.getMEprefix(), modlevels[i],"_pc",1:nb_nPCs)
-            colnames(nb_PCA$rotation)[1:nb_nPCs] <- paste0(moduleColor.getMEprefix(), modlevels[i],"_pc",1:nb_nPCs)
-            rotation[[i]] <- nb_PCA$rotation[,1:nb_nPCs,drop=FALSE]
+            nb_nPCs <- min(c(which(cumsum(varExpl[seq(from=1,to=min(n, p, nVarExplained),by=1), i])>nb_min_varExpl),nVarExplained))
+            nb_PrinComps <- cbind(nb_PrinComps,nb_PCA$x[,seq(from=1,to=nb_nPCs,by=1)])
+            colnames(nb_PrinComps)[seq(from=(ncol(nb_PrinComps)-nb_nPCs+1),to=ncol(nb_PrinComps),by=1)] <- paste0(moduleColor.getMEprefix(), modlevels[i],"_pc",seq(from=1,to=nb_nPCs,by=1))
+            colnames(nb_PCA$rotation)[seq(from=1,to=nb_nPCs,by=1)] <- paste0(moduleColor.getMEprefix(), modlevels[i],"_pc",seq(from=1,to=nb_nPCs,by=1))
+            rotation[[i]] <- nb_PCA$rotation[,seq(from=1,to=nb_nPCs,by=1),drop=FALSE]
             ae = try({
                 if (isPC[i]) 
                   scaledExpr = scale(t(datModule))
