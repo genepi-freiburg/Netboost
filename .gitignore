@@ -24,8 +24,8 @@ src/Makevars
 src/mcupgma/clustering_util/Makefile
 aclocal.m4
 compile
-config.guess
-config.sub
+# config.guess
+# config.sub
 # install-sh
 missing
 config.status
