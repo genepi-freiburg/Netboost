@@ -18,15 +18,19 @@ List
 Summarize results from a forest. Plot trees together.
 }
 \examples{
-data("tcga_aml_meth_rna_chr18",  package="netboost")
- cores <- as.integer(getOption("mc.cores", 2))
- datan <- as.data.frame(scale(tcga_aml_meth_rna_chr18,center=TRUE,scale=TRUE))	
- filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L, cores=cores,mode=2L)
+data('tcga_aml_meth_rna_chr18',  package='netboost')
+ cores <- as.integer(getOption('mc.cores', 2))
+ datan <- as.data.frame(scale(tcga_aml_meth_rna_chr18, center=TRUE,
+ scale=TRUE))
+ filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L,
+ cores=cores,mode=2L)
  dist <- nb_dist(datan=datan, filter=filter, softPower=3L, cores=cores)
  max_singleton = dim(tcga_aml_meth_rna_chr18)[2]
- forest <- nb_mcupgma(filter=filter,dist=dist,max_singleton=max_singleton,cores=cores)
+ forest <- nb_mcupgma(filter=filter,dist=dist,max_singleton=max_singleton,
+ cores=cores)
  trees <- tree_search(forest)
- results <- cut_trees(trees=trees,datan=datan, forest=forest, minClusterSize = 10L, MEDissThres = 0.25, plot = FALSE)
- sum_res <- nb_summary(clust_res = results, plot = TRUE)
+ results <- cut_trees(trees=trees,datan=datan, forest=forest,
+ minClusterSize=10L, MEDissThres=0.25, plot=FALSE)
+ sum_res <- nb_summary(clust_res=results, plot=TRUE)
 
 }

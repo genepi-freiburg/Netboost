@@ -15,3 +15,6 @@ none
 \description{
 Assigns temporary path for internal use (esp. mcupgma)
 }
+\examples{
+nb_set_tempdir()
+}

@@ -9,21 +9,28 @@ cut_dendro(tree_dendro = NULL, minClusterSize = 2L, datan = NULL,
   nb_min_varExpl = 0.5)
 }
 \arguments{
-\item{tree_dendro}{List of tree specific objects including dendrogram, tree data and features originating from the tree_dendro function.}
+\item{tree_dendro}{List of tree specific objects including dendrogram, tree
+data and features originating from the tree_dendro function.}
 
 \item{minClusterSize}{Integer. The minimum number of features in one module.}
 
-\item{datan}{Data frame were rows correspond to samples and columns to features.}
+\item{datan}{Data frame were rows correspond to samples and columns to
+features.}
 
-\item{MEDissThres}{Numeric. Module Eigengene Dissimilarity Threshold for merging close modules.}
+\item{MEDissThres}{Numeric. Module Eigengene Dissimilarity Threshold for
+merging close modules.}
 
 \item{name_of_tree}{String. Annotating plots and messages.}
 
 \item{plot}{Logical. Should plots be created?}
 
-\item{nPC}{Number of principal components and variance explained entries to be calculated. The number of returned variance explained entries is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is issued.}
+\item{nPC}{Number of principal components and variance explained
+entries to be calculated. The number of returned variance explained entries
+is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is
+issued.}
 
-\item{nb_min_varExpl}{Minimum proportion of variance explained for returned module eigengenes. The number of PCs is capped at nPC.}
+\item{nb_min_varExpl}{Minimum proportion of variance explained for
+returned module eigengenes. The number of PCs is capped at nPC.}
 }
 \value{
 List

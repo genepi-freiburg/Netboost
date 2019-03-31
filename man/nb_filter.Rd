@@ -3,37 +3,41 @@
 \name{nb_filter}
 \alias{nb_filter}
 \title{Boosting via C++ function. Parallelisation by R-package parallel with forking
-(overhead of this method does not fall into account as single steps are ~10s).}
+(overhead of this method does not fall into account as single steps are
+~10s).}
 \usage{
 nb_filter(datan, stepno = 20L, until = 0L, progress = 1000L,
   cores = getOption("mc.cores", 2L), mode = 2L)
 }
 \arguments{
-\item{datan}{Data frame were rows correspond to samples and columns to features.}
+\item{datan}{Data frame were rows correspond to samples and columns to
+features.}
 
 \item{stepno}{Integer amount of boosting steps}
 
 \item{until}{Stop at index/column (if 0: iterate through all columns)}
 
-\item{progress}{Integer. If > 0, print progress after every X steps (mind: parallel!)}
+\item{progress}{Integer. If > 0, print progress after every X steps (mind:
+parallel!)}
 
 \item{cores}{Integer. Amount of CPU cores used (<=1 : sequential)}
 
-\item{mode}{Integer. Mode (0: x86, 1: FMA, 2: AVX). Features are only available
-if compiled accordingly and available on the hardware.}
+\item{mode}{Integer. Mode (0: x86, 1: FMA, 2: AVX). Features are only
+available if compiled accordingly and available on the hardware.}
 }
 \value{
-matrix n times 2 matrix with the indicies of the n unique entrees of the filter
+matrix n times 2 matrix with the indicies of the n unique entrees of
+  the filter
 }
 \description{
 Parallelisation via multicore (via 'parallel'-package). So *nix only atm.
 }
 \examples{
-data("tcga_aml_meth_rna_chr18",  package="netboost")
- cores <- as.integer(getOption("mc.cores", 2))
- datan <- as.data.frame(scale(tcga_aml_meth_rna_chr18,center=TRUE,scale=TRUE))	
+data('tcga_aml_meth_rna_chr18',  package='netboost')
+ cores <- as.integer(getOption('mc.cores', 2))
+ datan <- as.data.frame(scale(tcga_aml_meth_rna_chr18,center=TRUE,scale=TRUE))
  filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L, cores=cores,mode=2L)
  head(filter)
- nrow(filter)/(ncol(datan)*(ncol(datan)-1)/2) # proportion of potential undirected edges 
+ nrow(filter)/(ncol(datan)*(ncol(datan)-1)/2) # proportion of potential undirected edges
 
 }

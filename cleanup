@@ -5,7 +5,7 @@
 echo "CLEANUP cleanup"
 
 # Autoconf results.
-rm -fv src/Makevars src/mcupgma/clustering_util/Makefile src/config.h
+rm -fv src/Makevars src/mcupgma/clustering_util/Makefile src/config.h src/stamp-h1
 
 # Build results.
 rm -fv src/*.so src/*.dll

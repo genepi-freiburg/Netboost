@@ -1,12 +1,14 @@
-# Package internal variables (as environment).
+## Package internal variables (as environment).
 .netboostInternal <- new.env(parent = emptyenv())
 
-# Note: here also the setup NAMESPACE directives are set (as Roxygen is creating
-# the namespace, those are given as Roxygen attributes).
-# The importFrom statements are required to instantly load the linked libraries
-# Rcpp and RcppParallel, else loading of the own shared lib would fail (the imported
-# functions do not matter, but for each package at least one import must be present).
+## Note: here also the setup NAMESPACE directives are set (as Roxygen is
+## creating the namespace, those are given as Roxygen attributes). The
+## importFrom statements are required to instantly load the linked libraries
+## Rcpp and RcppParallel, else loading of the own shared lib would fail (the
+## imported functions do not matter, but for each package at least one import
+## must be present).
 
+## Thos are required for CRAN checks but bug out on BiocCheck
 #' Package startup: used to fetch installation path of the own package,
 #' as required for executing binary programs delivered with it.
 #' 
@@ -14,14 +16,16 @@
 #' @importFrom RcppParallel setThreadOptions
 #' @importFrom parallel mclapply
 #'
+#' @importFrom colorspace rainbow_hcl
 #' @importFrom grDevices dev.off gray pdf rainbow
 #' @importFrom graphics abline layout par plot
 #' @importFrom stats as.dendrogram as.dist cor cov prcomp hclust order.dendrogram
-#' @importFrom utils data packageDescription read.table write.table
 #' @importFrom dynamicTreeCut cutreeDynamic indentSpaces printFlush
-#' 
 #' @importFrom impute impute.knn
-#' @importFrom WGCNA allowWGCNAThreads mergeCloseModules plotDendroAndColors moduleColor.getMEprefix pickSoftThreshold
+#' @importFrom WGCNA allowWGCNAThreads mergeCloseModules plotDendroAndColors
+#' @importFrom WGCNA moduleColor.getMEprefix pickSoftThreshold
+#' @importFrom utils data packageDescription read.table write.table
+#' @importFrom methods is
 #'
 #' @useDynLib netboost
 #'
@@ -46,16 +50,24 @@
   }
   
   ## Optional startup message, mainly for development.
-  packageStartupMessage(paste(pkgname,
-                              desc$Version,
-                              "loaded"),
-                              paste("Default CPU cores:",
-                              getOption("mc.cores"),
-                              "\n    _   __     __  __                     __ \n   / | / /__  / /_/ /_  ____  ____  _____/ /_\n  /  |/ / _ \\/ __/ __ \\/ __ \\/ __ \\/ ___/ __/\n / /|  /  __/ /_/ /_/ / /_/ / /_/ (__  ) /_  \n/_/ |_/\\___/\\__/_.___/\\____/\\____/____/\\__/  \n"),
-                              appendLF = TRUE)
+  packageStartupMessage(
+      paste(pkgname,
+            desc$Version,
+            "loaded"),
+      paste(
+          "Default CPU cores:",
+          getOption("mc.cores"),
+          "\n",
+          "    _   __     __  __                     __ \n",
+          "   / | / /__  / /_/ /_  ____  ____  _____/ /_\n",
+          "  /  |/ / _ \\/ __/ __ \\/ __ \\/ __ \\/ ___/ __/\n",
+          " / /|  /  __/ /_/ /_/ / /_/ / /_/ (__  ) /_  \n",
+          "/_/ |_/\\___/\\__/_.___/\\____/\\____/____/\\__/  \n"
+      ),
+      appendLF = TRUE
+  )
   #                              "Loaded from:", libname),
-   
-  
+
   ## Path to "exec"-folder in installed package
   pPath <- file.path(libname, pkgname)
 
@@ -66,17 +78,18 @@
   assign("mcupgma_path", mcupgmaPath, envir = .netboostInternal)
   assign("pkg_path", pPath, envir = .netboostInternal)
 
-  ## Per default, temporary data is written to R tempdir. But as those may become
-  ## large and R normally use /tmp, user must be enabled to change those later.
+  ## Per default, temporary data is written to R tempdir. But as those may
+  ## become large and R normally use /tmp, user must be enabled to change those
+  ## later.
   nb_set_tempdir(file.path(tempdir(), "netboost"))
 
   ## Add the current (real) loading path to MCUPGMA Makefiles (install_path.mk
   ## is loaded by definitions.mk, which is included in all real Makefiles).
   mcupgma_install <- file.path(mcupgmaPath, "install_path.mk")
 
-  ## If this file is not existing in this location, this is no working installation
-  ## (may happen during build and included test-loads)
-  ## (writeLines throws warning in R CMD check, but we do valid stuff here)
+  ## If this file is not existing in this location, this is no working
+  ## installation (may happen during build and included test-loads) (writeLines
+  ## throws warning in R CMD check, but we do valid stuff here)
   if (file.exists(mcupgma_install)) {
     # R complains about writeLines (false positive, as not writing to STDOUT).
     # Replaced with write.table to pass package check.
@@ -85,13 +98,16 @@
     write.table(file = mcupgma_install, as.data.frame(txt),
                 quote = FALSE, row.names = FALSE,
                 col.names = FALSE, append = FALSE, sep="")
-#    filew <-file(mcupgma_install, open="w")
-#    writeLines(con=filew, text=c(paste("export INSTALL_PATH := ", mcupgmaPath)))
-#    writeLines(con=filew, text=c(paste("export TMP_PATH := ", netboostTmpPath())))
-#    close(filew)
+##    filew <-file(mcupgma_install, open="w")
+##    writeLines(con=filew, text=c(paste("export INSTALL_PATH := ",
+##    mcupgmaPath)))
+##    writeLines(con=filew, text=c(paste("export TMP_PATH := ",
+##    netboostTmpPath())))
+##    close(filew)
   }
   else {
-    warning(paste("File not written (as it does not exist):", mcupgma_install))
+    warning(paste("File not written (as it does not exist):",
+                  mcupgma_install))
   }
 }
 
@@ -106,6 +122,8 @@
 #' 
 #' @param tmp Directory (Default: R temporary folder)
 #' @return none
+#' @examples
+#' nb_set_tempdir()
 #' @export
 nb_set_tempdir <- function(tmp = NULL) {
   # TODO Cleanup maybe currently existing temporary folder.
@@ -113,19 +131,23 @@ nb_set_tempdir <- function(tmp = NULL) {
 
   folder <- tmp
 
+  ## Use random file in usual tempdir().
   if (is.null(tmp))
-    folder <- tempdir()
-  
-  if (file.exists(folder) && !dir.exists(folder))
-    stop(paste("Given temporary exists as file:", folder),
-         call.=FALSE)
+    folder <- tempfile()
+##    folder <- tempdir(check = TRUE)
+
+  ## Reuse of existing folder is okay.  
+##  if (file.exists(folder) && !dir.exists(folder))
+##    stop(paste("Given temporary exists as file:", folder),
+##         call.=FALSE)
   
   if (!dir.exists(folder)) {
     if (is.null(tmp))
       message("Using temporary directory:", folder)
-#    else
-#      warning(paste("Given temporary directory not existing. Created:", folder),
-#              call. = FALSE)
+##    else
+##      warning(paste("Given temporary directory not existing. Created:",
+## folder),
+##              call. = FALSE)
     
     if (!dir.create(folder, recursive = TRUE, showWarnings = TRUE))
       stop(paste("Error creating temporary folder:", folder))

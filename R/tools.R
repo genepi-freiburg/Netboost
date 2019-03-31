@@ -1,9 +1,14 @@
 #' Execute a program/script from the installed MCUPGMA suite.
 #'
 #' @param exec    Name of the file of the executable.
-#' @param console Logical. Print output to R console or fetch for return to caller
-#' @param ...  Arguments passed to mcupgma executable in order required by program
-#' @return console=TRUE: exit code (0: no error). console=FALSE: STDOUT/STDERR output
+#' @param console Logical. Print output to R console or fetch for return to
+#'   caller
+#' @param ...  Arguments passed to mcupgma executable in order required by
+#'   program
+#' @return console=TRUE: exit code (0: no error). console=FALSE: STDOUT/STDERR
+#'   output
+#' @examples
+#'   mcupgma_exec(exec="cluster.pl", "--help")
 #' @export
 mcupgma_exec <- function(exec=NULL, ..., console=TRUE) {
   if (is.null(exec)) stop("mcupgma_exec: call without executable")

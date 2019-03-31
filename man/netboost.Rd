@@ -11,30 +11,41 @@ netboost(datan = NULL, stepno = 20L, until = 0L, progress = 1000L,
   scale = TRUE, verbose = getOption("verbose"))
 }
 \arguments{
-\item{datan}{Data frame were rows correspond to samples and columns to features.}
+\item{datan}{Data frame were rows correspond to samples and columns to
+features.}
 
-\item{stepno}{Integer amount of boosting steps applied in the filtering step}
+\item{stepno}{Integer amount of boosting steps applied in the filtering
+step}
 
-\item{until}{Stop at index/column (if 0: iterate through all columns). For testing purposes in large datasets.}
+\item{until}{Stop at index/column (if 0: iterate through all columns).
+For testing purposes in large datasets.}
 
-\item{progress}{Integer. If > 0, print progress after every X steps (mind: parallel!)}
+\item{progress}{Integer. If > 0, print progress after every X steps (mind:
+parallel!)}
 
-\item{mode}{Integer. Mode (0: x86, 1: FMA, 2: AVX). Features are only available
-if compiled accordingly and available on the hardware.}
+\item{mode}{Integer. Mode (0: x86, 1: FMA, 2: AVX). Features are only
+available if compiled accordingly and available on the hardware.}
 
-\item{softPower}{Integer. Exponent of the transformation. Set automatically based on the scale free topology criterion if unspecified.}
+\item{softPower}{Integer. Exponent of the transformation. Set automatically
+based on the scale free topology criterion if unspecified.}
 
-\item{max_singleton}{Integer. The maximal singleton in the clustering. Usually equals the number of features.}
+\item{max_singleton}{Integer. The maximal singleton in the clustering.
+Usually equals the number of features.}
 
 \item{plot}{Logical. Should plots be created?}
 
 \item{minClusterSize}{Integer. The minimum number of features in one module.}
 
-\item{MEDissThres}{Numeric. Module Eigengene Dissimilarity Threshold for merging close modules.}
+\item{MEDissThres}{Numeric. Module Eigengene Dissimilarity Threshold for
+merging close modules.}
 
-\item{nPC}{Number of principal components and variance explained entries to be calculated. The number of returned variance explained entries is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is issued.}
+\item{nPC}{Number of principal components and variance explained
+entries to be calculated. The number of returned variance explained entries
+is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is
+issued.}
 
-\item{nb_min_varExpl}{Minimum proportion of variance explained for returned module eigengenes. The number of PCs is capped at nPC.}
+\item{nb_min_varExpl}{Minimum proportion of variance explained for
+returned module eigengenes. The number of PCs is capped at nPC.}
 
 \item{cores}{Integer. Amount of CPU cores used (<=1 : sequential)}
 
@@ -43,29 +54,35 @@ if compiled accordingly and available on the hardware.}
 \item{verbose}{Additional diagnostic messages.}
 }
 \value{
-dendros  A list of dendrograms. For each fully separate part of the network an individual dendrogram.
+dendros  A list of dendrograms. For each fully separate part of the
+  network an individual dendrogram.
 
 names    A vector of feature names.
 
-colors   A vector of numeric color coding in matching order of names and module eigengene names (color = 3 -> variable in ME3).
+colors   A vector of numeric color coding in matching order of names
+  and module eigengene names (color = 3 -> variable in ME3).
 
 MEs      Aggregated module measures (Module eigengenes).
 
-varExplained  Proportion of variance explained per module eigengene per principal component (max nPC principal components are listed).
+varExplained  Proportion of variance explained per module eigengene
+  per principal component (max nPC principal components are listed).
 
-dendros  A list of dendrograms. For each fully separate part of the network an individual dendrogram.
+dendros  A list of dendrograms. For each fully separate part of the
+  network an individual dendrogram.
 
-rotation Matrix of variable loadings divided by their singular values. datan %*% rotation = MEs (with datan potentially scaled)
+rotation Matrix of variable loadings divided by their singular
+  values. datan %*% rotation = MEs (with datan potentially scaled)
 }
 \description{
-The Netboost clustering is performed in three subsequent steps.
-First, a filter of important edges in the network is calculated.
-Next, pairwise distances are calculated.
-Last, clustering is performed.
-For details see Schlosser et al. doi...
+The Netboost clustering is performed in three subsequent steps. First, a
+filter of important edges in the network is calculated. Next, pairwise
+distances are calculated. Last, clustering is performed. For details see
+Schlosser et al. doi...
 }
 \examples{
-data("tcga_aml_meth_rna_chr18",  package="netboost")
-results <- netboost(datan = tcga_aml_meth_rna_chr18,stepno = 20L,softPower = 3L, minClusterSize = 10L, nPC = 2, scale=TRUE, MEDissThres = 0.25, plot=TRUE)
+data('tcga_aml_meth_rna_chr18',  package='netboost')
+results <- netboost(datan=tcga_aml_meth_rna_chr18, stepno=20L,
+   softPower=3L, minClusterSize=10L, nPC=2, scale=TRUE,
+   MEDissThres=0.25, plot=TRUE)
 
 }

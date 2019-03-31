@@ -2,7 +2,8 @@
 % Please edit documentation in R/netboost.R
 \name{nb_example}
 \alias{nb_example}
-\title{Test/example code. Applies netboost to the TCGA-AML CHR18 DNA methylation and gene expression data supplied with the package.}
+\title{Test/example code. Applies netboost to the TCGA-AML CHR18 DNA methylation and
+gene expression data supplied with the package.}
 \usage{
 nb_example(cores = getOption("mc.cores", 2L), keep = FALSE)
 }
@@ -15,9 +16,10 @@ nb_example(cores = getOption("mc.cores", 2L), keep = FALSE)
 Netboost result
 }
 \description{
-Test/example code. Applies netboost to the TCGA-AML CHR18 DNA methylation and gene expression data supplied with the package.
+Test/example code. Applies netboost to the TCGA-AML CHR18 DNA methylation and
+gene expression data supplied with the package.
 }
 \examples{
-nb_example()
+\donttest{nb_example()}
 
 }

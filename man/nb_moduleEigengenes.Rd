@@ -11,60 +11,136 @@ nb_moduleEigengenes(expr, colors, nPC = 1, align = "along average",
   nb_min_varExpl = 0.5)
 }
 \arguments{
-\item{expr}{Expression data for a single set in the form of a data frame where rows are samples and columns are genes (probes).}
+\item{expr}{Expression data for a single set in the form of a data frame
+where rows are samples and columns are genes (probes).}
 
-\item{colors}{A vector of the same length as the number of probes in ‘expr’, giving module color for all probes (genes). Color ‘"grey"’ is reserved for unassigned genes.     Expression}
+\item{colors}{A vector of the same length as the number of probes in
+‘expr’, giving module color for all probes (genes). Color ‘'grey'’ is
+reserved for unassigned genes.     Expression}
 
-\item{nPC}{Number of principal components and variance explained entries to be calculated. The number of returned variance explained entries is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is issued.}
+\item{nPC}{Number of principal components and variance explained
+entries to be calculated. The number of returned variance explained entries
+is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is
+issued.}
 
-\item{align}{Controls whether eigengenes, whose orientation is undetermined, should be aligned with average expression (‘align = "along average"’, the default) or left as they are (‘align = ""’). Any other value will trigger an error.}
+\item{align}{Controls whether eigengenes, whose orientation is
+undetermined, should be aligned with average expression (‘align = 'along
+average'’, the default) or left as they are (‘align = ''’). Any other value
+will trigger an error.}
 
-\item{excludeGrey}{Should the improper module consisting of 'grey' genes be excluded from the eigengenes?}
+\item{excludeGrey}{Should the improper module consisting of 'grey' genes be
+excluded from the eigengenes?}
 
-\item{grey}{Value of ‘colors’ designating the improper module. Note that if ‘colors’ is a factor of numbers, the default value will be incorrect.}
+\item{grey}{Value of ‘colors’ designating the improper module. Note
+that if ‘colors’ is a factor of numbers, the default value will be
+incorrect.}
 
-\item{subHubs}{Controls whether hub genes should be substituted for missing eigengenes. If ‘TRUE’, each missing eigengene (i.e., eigengene whose calculation failed and the error was trapped) will be replaced by a weighted average of the most connected hub genes in the corresponding module. If this calculation fails, or if ‘subHubs==FALSE’, the value of ‘trapErrors’ will determine whether the offending module will be removed or whether the function will issue an error and stop.}
+\item{subHubs}{Controls whether hub genes should be substituted for
+missing eigengenes. If ‘TRUE’, each missing eigengene (i.e., eigengene
+whose calculation failed and the error was trapped) will be replaced by a
+weighted average of the most connected hub genes in the corresponding
+module. If this calculation fails, or if ‘subHubs==FALSE’, the value of
+‘trapErrors’ will determine whether the offending module will be removed or
+whether the function will issue an error and stop.}
 
-\item{trapErrors}{Controls handling of errors from that may arise when there are too many ‘NA’ entries in expression data. If ‘TRUE’, errors from calling these functions will be trapped without abnormal exit.  If ‘FALSE’, errors will cause the function to stop. Note, however, that ‘subHubs’ takes precedence in the sense that if ‘subHubs==TRUE’ and ‘trapErrors==FALSE’, an error will be issued only if both the principal component and the hubgene calculations have failed.}
+\item{trapErrors}{Controls handling of errors from that may arise when
+there are too many ‘NA’ entries in expression data. If ‘TRUE’, errors from
+calling these functions will be trapped without abnormal exit.  If ‘FALSE’,
+errors will cause the function to stop. Note, however, that ‘subHubs’ takes
+precedence in the sense that if ‘subHubs==TRUE’ and ‘trapErrors==FALSE’, an
+error will be issued only if both the principal component and the hubgene
+calculations have failed.}
 
-\item{returnValidOnly}{logical; controls whether the returned data frame of module eigengenes contains columns corresponding only to modules whose eigengenes or hub genes could be calculated correctly (‘TRUE’), or whether the data frame should have columns for each of the input color labels (‘FALSE’).}
+\item{returnValidOnly}{logical; controls whether the returned data frame of
+module eigengenes contains columns corresponding only to modules whose
+eigengenes or hub genes could be calculated correctly (‘TRUE’), or whether
+the data frame should have columns for each of the input color labels
+(‘FALSE’).}
 
-\item{softPower}{The power used in soft-thresholding the adjacency matrix. Only used when the hubgene approximation is necessary because the principal component calculation failed. It must be non-negative. The default value should only be changed if there is a clear indication that it leads to incorrect results.}
+\item{softPower}{The power used in soft-thresholding the adjacency
+matrix. Only used when the hubgene approximation is necessary because the
+principal component calculation failed. It must be non-negative. The
+default value should only be changed if there is a clear indication that it
+leads to incorrect results.}
 
-\item{scale}{logical; can be used to turn off scaling of the expression data before calculating the singular value decomposition. The scaling should only be turned off if the data has been scaled previously, in which case the function can run a bit faster. Note however that the function first imputes, then scales the expression data in each module. If the expression contain missing data, scaling outside of the function and letting the function impute missing data may lead to slightly different results than if the data is scaled within the function.}
+\item{scale}{logical; can be used to turn off scaling of the
+expression data before calculating the singular value decomposition. The
+scaling should only be turned off if the data has been scaled previously,
+in which case the function can run a bit faster. Note however that the
+function first imputes, then scales the expression data in each module. If
+the expression contain missing data, scaling outside of the function and
+letting the function impute missing data may lead to slightly different
+results than if the data is scaled within the function.}
 
-\item{verbose}{Controls verbosity of printed progress messages. 0 means silent, up to (about) 5 the verbosity gradually increases.}
+\item{verbose}{Controls verbosity of printed progress messages. 0 means
+silent, up to (about) 5 the verbosity gradually increases.}
 
-\item{indent}{A single non-negative integer controlling indentation of printed messages. 0 means no indentation, each unit above that adds two spaces.}
+\item{indent}{A single non-negative integer controlling indentation of
+printed messages. 0 means no indentation, each unit above that adds two
+spaces.}
 
-\item{nb_min_varExpl}{Minimum proportion of variance explained for returned module eigengenes. Is capped at nPC.}
+\item{nb_min_varExpl}{Minimum proportion of variance explained for
+returned module eigengenes. Is capped at nPC.}
 }
 \value{
-eigengenes   Module eigengenes in a dataframe, with each column corresponding to one eigengene. The columns are named by the corresponding color with an ‘"ME"’ prepended, e.g., ‘MEturquoise’ etc. If ‘returnValidOnly==FALSE’, module eigengenes whose calculation failed have all components set to ‘NA’.
+eigengenes   Module eigengenes in a dataframe, with each column
+  corresponding to one eigengene. The columns are named by the corresponding
+  color with an ‘'ME'’ prepended, e.g., ‘MEturquoise’ etc. If
+  ‘returnValidOnly==FALSE’, module eigengenes whose calculation failed have
+  all components set to ‘NA’.
 
-averageExpr  If ‘align == "along average"’, a dataframe containing average normalized expression in each module. The columns are named by the corresponding color with an ‘"AE"’ prepended, e.g., ‘AEturquoise’ etc.
+averageExpr  If ‘align == 'along average'’, a dataframe containing
+  average normalized expression in each module. The columns are named by the
+  corresponding color with an ‘'AE'’ prepended, e.g., ‘AEturquoise’ etc.
 
-varExplained A dataframe in which each column corresponds to a module, with the component ‘varExplained[PC, module]’ giving the variance of module ‘module’ explained by the principal component no. ‘PC’. The calculation is exact irrespective of the number of computed principal components. At most 10 variance explained values are recorded in this dataframe.
+varExplained A dataframe in which each column corresponds to a
+  module, with the component ‘varExplained[PC, module]’ giving the variance
+  of module ‘module’ explained by the principal component no. ‘PC’. The
+  calculation is exact irrespective of the number of computed principal
+  components. At most 10 variance explained values are recorded in this
+  dataframe.
 
 nPC          A copy of the input ‘nPC’.
 
-validMEs     A boolean vector. Each component (corresponding to the columns in ‘data’) is ‘TRUE’ if the corresponding eigengene is valid, and ‘FALSE’ if it is invalid. Valid eigengenes include both principal components and their hubgene approximations. When ‘returnValidOnly==FALSE’, by definition all returned eigengenes are valid and the entries of ‘validMEs’ are all ‘TRUE’.
+validMEs     A boolean vector. Each component (corresponding to the
+  columns in ‘data’) is ‘TRUE’ if the corresponding eigengene is valid, and
+  ‘FALSE’ if it is invalid. Valid eigengenes include both principal
+  components and their hubgene approximations. When ‘returnValidOnly==FALSE’,
+  by definition all returned eigengenes are valid and the entries of
+  ‘validMEs’ are all ‘TRUE’.
 
-validColors  A copy of the input colors with entries corresponding to invalid modules set to ‘grey’ if given, otherwise 0 if ‘colors’ is numeric and "grey" otherwise.
+validColors  A copy of the input colors with entries corresponding to
+  invalid modules set to ‘grey’ if given, otherwise 0 if ‘colors’ is numeric
+  and 'grey' otherwise.
 
-allOK        Boolean flag signalling whether all eigengenes have been calculated correctly, either as principal components or as the hubgene average approximation.
+allOK        Boolean flag signalling whether all eigengenes have been
+  calculated correctly, either as principal components or as the hubgene
+  average approximation.
 
-allPC        Boolean flag signalling whether all returned eigengenes are principal components.
+allPC        Boolean flag signalling whether all returned eigengenes
+  are principal components.
 
-isPC         Boolean vector. Each component (corresponding to the columns in ‘eigengenes’) is ‘TRUE’ if the corresponding eigengene is the first principal component and ‘FALSE’ if it is the hubgene approximation or is invalid.
+isPC         Boolean vector. Each component (corresponding to the
+  columns in ‘eigengenes’) is ‘TRUE’ if the corresponding eigengene is the
+  first principal component and ‘FALSE’ if it is the hubgene approximation or
+  is invalid.
 
-isHub        Boolean vector. Each component (corresponding to the columns in ‘eigengenes’) is ‘TRUE’ if the corresponding eigengene is the hubgene approximation and ‘FALSE’ if it is the first principal component or is invalid.
+isHub        Boolean vector. Each component (corresponding to the
+  columns in ‘eigengenes’) is ‘TRUE’ if the corresponding eigengene is the
+  hubgene approximation and ‘FALSE’ if it is the first principal component or
+  is invalid.
 
-validAEs     Boolean vector. Each component (corresponding to the columns in ‘eigengenes’) is ‘TRUE’ if the corresponding module average expression is valid.
+validAEs     Boolean vector. Each component (corresponding to the
+  columns in ‘eigengenes’) is ‘TRUE’ if the corresponding module average
+  expression is valid.
 
-allAEOK      Boolean flag signalling whether all returned module average expressions contain valid data. Note that ‘returnValidOnly==TRUE’ does not imply ‘allAEOK==TRUE’: some invalid average expressions may be returned if their corresponding eigengenes have been calculated correctly.
+allAEOK      Boolean flag signalling whether all returned module
+  average expressions contain valid data. Note that ‘returnValidOnly==TRUE’
+  does not imply ‘allAEOK==TRUE’: some invalid average expressions may be
+  returned if their corresponding eigengenes have been calculated correctly.
 }
 \description{
-This is a modification of WGCNA::moduleEigengenes() (version WGCNA_1.66) to include more than the first principal component.
-For details see WGCNA::moduleEigengenes().
+This is a modification of WGCNA::moduleEigengenes() (version WGCNA_1.66) to
+include more than the first principal component. For details see
+WGCNA::moduleEigengenes().
 }

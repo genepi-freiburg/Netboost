@@ -9,13 +9,19 @@ mcupgma_exec(exec = NULL, ..., console = TRUE)
 \arguments{
 \item{exec}{Name of the file of the executable.}
 
-\item{...}{Arguments passed to mcupgma executable in order required by program}
+\item{...}{Arguments passed to mcupgma executable in order required by
+program}
 
-\item{console}{Logical. Print output to R console or fetch for return to caller}
+\item{console}{Logical. Print output to R console or fetch for return to
+caller}
 }
 \value{
-console=TRUE: exit code (0: no error). console=FALSE: STDOUT/STDERR output
+console=TRUE: exit code (0: no error). console=FALSE: STDOUT/STDERR
+  output
 }
 \description{
 Execute a program/script from the installed MCUPGMA suite.
+}
+\examples{
+  mcupgma_exec(exec="cluster.pl", "--help")
 }
