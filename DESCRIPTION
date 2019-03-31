@@ -1,8 +1,8 @@
 Package: netboost
 Type: Package
 Title: Network Analysis Supported by Boosting
-Version: 1.31.6
-Date: 2019-03-16
+Version: 1.31.7
+Date: 2019-03-31
 Authors@R: c(person("Pascal", "Schlosser", role = c("aut", "cre"),
                     email = "pascal.schlosser@uniklinik-freiburg.de"),
              person("Jochen", "Knaus", role = c("aut", "ctb"),
@@ -30,6 +30,9 @@ Imports:
 LinkingTo:
   Rcpp,
   RcppParallel
+Suggests:
+  knitr
+VignetteBuilder: knitr
 SystemRequirements:
   GNU make,
   Bash,
