@@ -15,9 +15,8 @@
 #' @importFrom Rcpp evalCpp
 #' @importFrom RcppParallel setThreadOptions
 #' @importFrom parallel mclapply
-#'
 #' @importFrom colorspace rainbow_hcl
-#' @importFrom grDevices dev.off gray pdf rainbow
+#' @importFrom grDevices dev.off gray pdf
 #' @importFrom graphics abline layout par plot
 #' @importFrom stats as.dendrogram as.dist cor cov prcomp hclust order.dendrogram
 #' @importFrom dynamicTreeCut cutreeDynamic indentSpaces printFlush

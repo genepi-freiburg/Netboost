@@ -1,7 +1,8 @@
-Changes in version 1.35.7 (2019-03-31)
-+ Preparations to submit to Bioconductor
+Changes in version 1.31.9 (2019-04-01)
++ Examples.
++ More tweaks according to package guidelines.
 
-Changes in version 1.35.2 (2019-03-16)
+Changes in version 1.31.2 (2019-03-16)
 + Tweaks accordings to package guidelines:
   o Code format policies
   o Functional tweaks

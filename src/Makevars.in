@@ -5,8 +5,12 @@ CXX_STD=CXX11
 PKG_CXXFLAGS=`${R_HOME}/bin/Rscript -e "Rcpp:::CxxFlags()"` @SIMD_FLAGS@
 # /arch:AVX
 
-# Strip debugging symbols (should work GCC/Clang)
+# Prefered would be stripping debugging symbols
+# -Wl,--strip-debug (not working with BSD linker).
 PKG_LIBS=`${R_HOME}/bin/Rscript -e "Rcpp:::LdFlags()"`
-# -Wl,-strip-debug
-# Sadly not working with Clang LD.
-# ,--strip-debug
+
+# As linker symbol stripping is not working, use "strip" tool
+strip:	$(SHLIB)
+		@STRIP@ --strip-debug $(SHLIB)
+
+.PHONY:	strip

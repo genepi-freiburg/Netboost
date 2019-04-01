@@ -10,6 +10,14 @@ rm -fv src/Makevars src/mcupgma/clustering_util/Makefile src/config.h src/stamp-
 # Build results.
 rm -fv src/*.so src/*.dll
 
+# mcupgma binaries
+rm -fv src/mcupgma/clustering_round/bin/*
+rm -fv src/mcupgma/clustering_util/bin/*
+rm -fvr src/mcupgma/clustering_util/obj.*
+rm -fvr src/mcupgma/clustering_util/dep.*
+rm -fvr src/mcupgma/clustering_round/dep.*
+rm -fvr src/mcupgma/clustering_round/obj.*
+
 # make -C src -f Makefile clean
 make -C src/mcupgma -f Makefile clean
 

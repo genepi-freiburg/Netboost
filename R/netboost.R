@@ -496,14 +496,14 @@ cut_dendro <-
         if (length(MEDiss) > 1) {
             METree <- hclust(as.dist(MEDiss), method = "average")
             if (plot == TRUE) {
-                plot(
+                graphics::plot(
                     METree,
                     main = paste0(name_of_tree,
                                   "Clustering of module eigengenes"),
                     xlab = "",
                     sub = ""
                 )
-                abline(h = MEDissThres, col = "red")
+                graphics::abline(h = MEDissThres, col = "red")
             }
             
             merged <-
@@ -528,7 +528,7 @@ cut_dendro <-
                 METree <- hclust(as.dist(MEDiss), method = "average")
                 if (plot == TRUE &
                     length(tree_dendro$dendro$labels) > 2) {
-                    plot(
+                    graphics::plot(
                         METree,
                         main = paste0(
                             name_of_tree,
@@ -554,7 +554,7 @@ cut_dendro <-
             mergedColors <- dynamicMods
             if (length(tree_dendro$dendro$labels) > 2) {
                 if (plot == TRUE) {
-                    plot(
+                    graphics::plot(
                         tree_dendro$dendro,
                         main = paste0(
                             name_of_tree,
@@ -827,7 +827,8 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
             if (col == 0 & length(unique(tmp.col)) != 1) {
                 n_MEs_background <- n_MEs_background + 1
                 tmp.col.new[tmp.col == col] <- -n_MEs_background
-                colnames(tmp_MEs_new)[grepl(pattern = "ME0_", colnames(tmp_MEs))] <-
+                colnames(tmp_MEs_new)[grepl(pattern = "ME0_",
+                                            colnames(tmp_MEs))] <-
                     gsub(
                         pattern = "ME0_",
                         replacement = paste0("ME0_", n_MEs_background, "_"),
@@ -856,7 +857,8 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
             res$rotation <- list(tmp_rotation_new)
         }
         ## if('svd_PCs' %in% names(res)){res$svd_PCs <- cbind(res$svd_PCs,
-        ## clust_res[[tree]]$svd_PCs)}else{res$svd_PCs <- clust_res[[tree]]$svd_PCs}
+        ## clust_res[[tree]]$svd_PCs)}else{res$svd_PCs <-
+        ## clust_res[[tree]]$svd_PCs}
         if ("varExplained" %in% names(res)) {
             res$varExplained <-
                 cbind(res$varExplained, clust_res[[tree]]$varExplained)
@@ -902,8 +904,8 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
         ncol(res$MEs),
         " aggreagate measures.\n"
     )
-    cat("Average size of the modules was ", mean(table(res$colors[!(res$colors <=
-                                                                        0)])), ".\n")
+    cat("Average size of the modules was ",
+        mean(table(res$colors[!(res$colors <= 0)])), ".\n")
     cat(
         sum(res$colors <= 0),
         " of ",
@@ -957,13 +959,14 @@ nb_transfer <-
             stop("new_data must be a data frame with dim() > (0,0).")
         
         if (length(nb_summary$colors) != ncol(new_data)) {
-            stop("The number of features in new_data must correspond to the number in nb_summary.")
+            stop(paste("The number of features in new_data must",
+                       "correspond to the number in nb_summary."))
         }
         
         if (!identical(sort(nb_summary$names), sort(colnames(new_data)))) {
-            stop(
-                "The features in new_data (colnames) must correspond to the features in nb_summary (nb_summary$names)."
-            )
+            stop(paste("The features in new_data (colnames) must", 
+                       "correspond to the features in nb_summary",
+                       "(nb_summary$names)."))
         }
         
         new_data <- new_data[, nb_summary$names]
@@ -1013,8 +1016,10 @@ nb_transfer <-
 #' @examples
 #' data('tcga_aml_meth_rna_chr18',  package='netboost')
 #'  cores <- as.integer(getOption('mc.cores', 2))
-#'  datan <- as.data.frame(scale(tcga_aml_meth_rna_chr18,center=TRUE,scale=TRUE))
-#'  filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L, cores=cores,mode=2L)
+#'  datan <- as.data.frame(scale(tcga_aml_meth_rna_chr18, center=TRUE,
+#'  scale=TRUE))
+#'  filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L,
+#'  cores=cores,mode=2L)
 #'  head(filter)
 #'  nrow(filter)/(ncol(datan)*(ncol(datan)-1)/2) # proportion of potential undirected edges
 #'
@@ -1139,7 +1144,7 @@ nb_plot_dendro <-
             stop("Netboost output (nb_summary) must be provided.")
         
         colorHeight <- 0.2
-        layout(matrix(seq(
+        graphics::layout(matrix(seq(
             from = 1,
             to = (2 * length(nb_summary$dendros)),
             by = 1
@@ -1167,26 +1172,26 @@ nb_plot_dendro <-
             colorspace::rainbow_hcl(n = (length(unique(
                 nb_summary$colors
             ))))[shuffel_index][as.factor(nb_summary$colors)]
-        plot_colors[nb_summary$colors <= 0] <- gray(level = 0.7)
+        plot_colors[nb_summary$colors <= 0] <- grDevices::gray(level = 0.7)
         for (tree in seq(from = 1,
                          to = length(nb_summary$dendros),
                          by = 1)) {
-            par(mar = c(0, 4, 8, 4))
+            graphics::par(mar = c(0, 4, 8, 4))
             first_col <- last_col + 1
             last_col <-
                 last_col + length(nb_summary$dendros[[tree]]$labels)
             if (labels) {
-                plot(nb_summary$dendros[[tree]],
+                graphics::plot(nb_summary$dendros[[tree]],
                      labels = nb_summary$names[seq(from = first_col,
                                                    to = last_col,
                                                    by = 1)],
                      main = main)
             } else {
-                plot(nb_summary$dendros[[tree]],
+                graphics::plot(nb_summary$dendros[[tree]],
                      labels = FALSE,
                      main = main)
             }
-            par(mar = c(4, 4, 0, 4))
+            graphics::par(mar = c(4, 4, 0, 4))
             WGCNA::plotColorUnderTree(nb_summary$dendros[[tree]],
                                       colors = plot_colors[seq(from = first_col,
                                                                to = last_col,

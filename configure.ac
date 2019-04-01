@@ -18,6 +18,8 @@ AX_EXT
 CC_ADD_FLAGS=""
 AX_CHECK_COMPILE_FLAG(-Wno-deprecated, CC_ADD_FLAGS="$CC_ADD_FLAGS -Wno-deprecated", [])
 
+AC_CHECK_TOOL([STRIP],[strip])
+
 AC_SUBST(CC_ADD_FLAGS)
 
 AC_CONFIG_FILES([src/Makevars src/mcupgma/clustering_util/Makefile])
