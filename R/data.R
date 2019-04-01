@@ -3,6 +3,6 @@
 #'   patients.
 #' @docType data
 #' @usage tcga_aml_meth_rna_chr18
-#' @format A data frame with 45 rows (patients) and 5283 variables (features).
+#' @format A data frame with 100 rows (patients) and 2000 variables (features).
 #' @source \url{https://portal.gdc.cancer.gov/}
 NULL
