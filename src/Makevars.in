@@ -6,4 +6,5 @@ PKG_CXXFLAGS=`${R_HOME}/bin/Rscript -e "Rcpp:::CxxFlags()"` @SIMD_FLAGS@
 # /arch:AVX
 
 # Strip debugging symbols (should work GCC/Clang)
-PKG_LIBS=`${R_HOME}/bin/Rscript -e "Rcpp:::LdFlags()"` -Wl,-strip-debug
+PKG_LIBS=`${R_HOME}/bin/Rscript -e "Rcpp:::LdFlags()"` -Wl
+# ,-strip-debug
