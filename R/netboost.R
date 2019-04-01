@@ -173,15 +173,16 @@ calculate_adjacency <-
     function(datan = NULL,
              filter = NULL,
              softPower = 2) {
-        return(sapply(seq(
+        return(vapply(X=seq(
             from = 1,
             to = nrow(filter),
             by = 1
         ),
-        function(i) {
+        FUN=function(i) {
             abs(WGCNA::cor(datan[, filter[i, 1]],
                            datan[, filter[i, 2]])) ^ softPower
-        }))
+        },
+        FUN.VALUE=1))
     }
 
 #' Calculate distance (external wrapper for internal C++ function)
@@ -371,8 +372,7 @@ nb_mcupgma <-
 #'    forest <- nb_mcupgma(filter=filter, dist=dist,
 #'                         max_singleton=max_singleton, cores=cores)
 #'    trees <- tree_search(forest)
-#'    length(trees)
-##  #'    trees[[2]]
+#'    str(trees[[length(trees)]])
 #'
 #' @export
 tree_search <- function(forest = NULL) {
@@ -695,7 +695,7 @@ cut_trees <-
 #' @return List
 #'
 #' @examples
-#' data('tcga_aml_meth_rna_chr18',  package='netboost')
+#'  data('tcga_aml_meth_rna_chr18',  package='netboost')
 #'  cores <- as.integer(getOption('mc.cores', 2))
 #'  datan <- as.data.frame(scale(tcga_aml_meth_rna_chr18, center=TRUE, 
 #'  scale=TRUE))
@@ -703,10 +703,11 @@ cut_trees <-
 #'  cores=cores,mode=2L)
 #'  dist <- nb_dist(datan=datan, filter=filter, softPower=3L, cores=cores)
 #'  max_singleton = dim(tcga_aml_meth_rna_chr18)[2]
+#'  pdf("test.pdf",width=30)
 #'  sum_res <- nb_clust(filter=filter, dist=dist, datan=datan,
 #'  max_singleton=max_singleton, minClusterSize=10L, MEDissThres=0.25,
-#'  cores=cores, plot=FALSE, nPC=2L, nb_min_varExpl=0.5)
-#'
+#'  cores=cores, plot=TRUE, nPC=2L, nb_min_varExpl=0.5)
+#'  dev.off()
 #' @export
 nb_clust <-
     function(filter = NULL,
@@ -1659,7 +1660,6 @@ nb_moduleEigengenes <-
 ##     paste("Available MCUPGMA executables and scripts under:", exec)
 ##     print(sapply(files, basename, USE.NAMES = FALSE))
 ## }
-
 
 #' Test/example code. Applies netboost to the TCGA-AML CHR18 DNA methylation and
 #' gene expression data supplied with the package.
