@@ -44,7 +44,7 @@ List
 Netboost clustering step
 }
 \examples{
-data('tcga_aml_meth_rna_chr18',  package='netboost')
+ data('tcga_aml_meth_rna_chr18',  package='netboost')
  cores <- as.integer(getOption('mc.cores', 2))
  datan <- as.data.frame(scale(tcga_aml_meth_rna_chr18, center=TRUE, 
  scale=TRUE))
@@ -52,8 +52,9 @@ data('tcga_aml_meth_rna_chr18',  package='netboost')
  cores=cores,mode=2L)
  dist <- nb_dist(datan=datan, filter=filter, softPower=3L, cores=cores)
  max_singleton = dim(tcga_aml_meth_rna_chr18)[2]
+ pdf("test.pdf",width=30)
  sum_res <- nb_clust(filter=filter, dist=dist, datan=datan,
  max_singleton=max_singleton, minClusterSize=10L, MEDissThres=0.25,
- cores=cores, plot=FALSE, nPC=2L, nb_min_varExpl=0.5)
-
+ cores=cores, plot=TRUE, nPC=2L, nb_min_varExpl=0.5)
+ dev.off()
 }

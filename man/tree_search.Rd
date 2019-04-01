@@ -29,6 +29,6 @@ internal C++ function)
    forest <- nb_mcupgma(filter=filter, dist=dist,
                         max_singleton=max_singleton, cores=cores)
    trees <- tree_search(forest)
-   length(trees)
+   str(trees[[length(trees)]])
 
 }
