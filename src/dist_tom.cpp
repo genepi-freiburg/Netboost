@@ -153,9 +153,9 @@ template <typename T>
 struct Distance_Parallel : public RcppParallel::Worker {
   // Input matrix (from R program): will be only read, so does not have to be
   // transformed to synchronized versions
-  NumericVector adjacency;
   IntegerMatrix filter;
-  
+  NumericVector adjacency;
+    
   // Caches for left and right values
   std::vector<cache<T>> all_i;
   std::vector<cache<T>> all_j;
