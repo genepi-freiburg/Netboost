@@ -23,3 +23,6 @@ make -C src/mcupgma -f Makefile clean
 
 find src -name '*.tar.gz' -delete -print
 find src -name '*.o' -delete -print
+
+# Xcode on MacOS creates those on stripping.
+find src -name '*.dSYM*' -delete -print
