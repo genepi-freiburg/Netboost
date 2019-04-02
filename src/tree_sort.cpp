@@ -178,9 +178,9 @@ public:
    * @param[in] row Row number in original data matrix
    */
   Tree(T id1, T id2, T id3, T row) :
+    id(++Tree::id_running),      // Set ID (and increment globally)
     ids({id1, id2, id3}),       // Add all IDs to set
-    rows({row + 1}),            // Directly to 1-based
-    id(++Tree::id_running)      // Set ID (and increment globally)
+    rows({row + 1})            // Directly to 1-based
   {
     auto cache = Node_Cache<STORAGE_TYPE>::instance();
 
