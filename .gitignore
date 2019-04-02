@@ -32,3 +32,4 @@ config.log
 config.cache
 config.h
 autom4te.cache/*
+src/symbols.rds

@@ -362,7 +362,7 @@ public:
         stepno(stepno_),
         nu(nu_),
         ncol(rdata.ncol()),
-        row(rdata.nrow()) {
+        nrow(rdata.nrow()) {
     // In the copies space must be reserved for pointer alignments (of the column
     // vectors).
     const size_t size_aligned_copy = ncol * (nrow + (ALIGN_BYTES/sizeof(double)) + 1);
