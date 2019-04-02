@@ -165,10 +165,10 @@ public:
    * -- so making them unique afterwards is not required.
    * (as this is a binary tree, much faster search).
    */
-  STORAGETYPE ids;
   // std::set<T> rows;    // Mind: 0/1 based. || @todo As each rowno is unique, could be vector
   std::vector<T> rows;    // Mind: 0/1 based. || @todo As each rowno is unique, could be vector
-
+  STORAGETYPE ids;
+    
   /*!
    * Constructor: MUST be unique, so no merge.
    *

@@ -94,12 +94,11 @@ private:
   
   std::vector<double *> data_cols;  //!< Pointers to columns in data
   std::vector<double *> Z_cols;     //!< Pointers to columns in z_means
-  
-  const size_t ncol;                //!< Input matrix columns
-  const size_t nrow;                //!< Input matrix row
-  
+
   const unsigned int stepno;        //!< Boosting steps
   const double nu;                  //!< Constant (update)
+  const size_t ncol;                //!< Input matrix columns
+  const size_t nrow;                //!< Input matrix row
   
   // Lambda/function for arrays manual delete is required (for smart pointers
   // to allocated arrays).
@@ -178,7 +177,7 @@ private:
     if ((len / AVX_UNROLL) > 0 ) {
       // Clear result register (YMM)
       __m256d sum = _mm256_setzero_pd();
-      __m256d x, y, xy;
+      __m256d x, y;
       
       for (auto i = (len / AVX_UNROLL); i > 0 ; i--, a += AVX_UNROLL, b += AVX_UNROLL) {
         // Fetch 32 bytes from both vectors. Read unaligned (loadu)
@@ -360,8 +359,10 @@ public:
    * optimized.
    */
   Boosting(const NumericMatrix &rdata, unsigned int stepno_ = 20, double nu_ = 0.1) :
-        stepno(stepno_), nu(nu_),
-        ncol(rdata.ncol()), nrow(rdata.nrow()) {
+        stepno(stepno_),
+        nu(nu_),
+        ncol(rdata.ncol()),
+        row(rdata.nrow()) {
     // In the copies space must be reserved for pointer alignments (of the column
     // vectors).
     const size_t size_aligned_copy = ncol * (nrow + (ALIGN_BYTES/sizeof(double)) + 1);
