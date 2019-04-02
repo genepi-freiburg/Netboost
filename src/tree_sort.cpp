@@ -166,8 +166,8 @@ public:
    * (as this is a binary tree, much faster search).
    */
   // std::set<T> rows;    // Mind: 0/1 based. || @todo As each rowno is unique, could be vector
-  std::vector<T> rows;    // Mind: 0/1 based. || @todo As each rowno is unique, could be vector
   STORAGETYPE ids;
+  std::vector<T> rows;    // Mind: 0/1 based. || @todo As each rowno is unique, could be vector
     
   /*!
    * Constructor: MUST be unique, so no merge.
