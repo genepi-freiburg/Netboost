@@ -11,6 +11,6 @@ PKG_LIBS=`${R_HOME}/bin/Rscript -e "Rcpp:::LdFlags()"`
 
 # As linker symbol stripping is not working, use "strip" tool
 strip:	$(SHLIB)
-		@STRIP@ --strip-debug $(SHLIB)
+		@STRIP@ -S $(SHLIB)
 
 .PHONY:	strip
