@@ -35,8 +35,10 @@ Parallelisation via multicore (via 'parallel'-package). So *nix only atm.
 \examples{
 data('tcga_aml_meth_rna_chr18',  package='netboost')
  cores <- as.integer(getOption('mc.cores', 2))
- datan <- as.data.frame(scale(tcga_aml_meth_rna_chr18,center=TRUE,scale=TRUE))
- filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L, cores=cores,mode=2L)
+ datan <- as.data.frame(scale(tcga_aml_meth_rna_chr18, center=TRUE,
+ scale=TRUE))
+ filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L,
+ cores=cores,mode=2L)
  head(filter)
  nrow(filter)/(ncol(datan)*(ncol(datan)-1)/2) # proportion of potential undirected edges
 
