@@ -18,7 +18,12 @@ biocViews:
   GraphAndNetwork,
   Network,
   Software,
-  Clustering
+  Clustering,
+  DimensionReduction,
+  BiomedicalInformatics,
+  Epigenetics,
+  Metabolomics,
+  Transcriptomics
 Imports:
   Rcpp,
   RcppParallel,
