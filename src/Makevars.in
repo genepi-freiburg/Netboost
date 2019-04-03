@@ -2,7 +2,8 @@
 CXX_STD=CXX11
 
 # AVX flag will be added for Linux/MacOS (and therefore GCC/Clang) by configure. ${AVX}
-PKG_CXXFLAGS=`${R_HOME}/bin/Rscript -e "Rcpp:::CxxFlags()"` @SIMD_FLAGS@ -Wsign-compare -Wall
+PKG_CXXFLAGS=`${R_HOME}/bin/Rscript -e "Rcpp:::CxxFlags()"` @SIMD_FLAGS@
+# -Wsign-compare -Wall
 # /arch:AVX
 
 # Prefered would be stripping debugging symbols
@@ -12,5 +13,9 @@ PKG_LIBS=`${R_HOME}/bin/Rscript -e "Rcpp:::LdFlags()"`
 # As linker symbol stripping is not working, use "strip" tool
 strip:	$(SHLIB)
 		@STRIP@ -S $(SHLIB)
+		# Somehow on BioC "Netboost.so" is build, but R still want
+		# "netboost.so", so duplicate those.
+		# @TODO This is only a workaround...
+		cp -uv $(SHLIB) `echo $(SHLIB) | tr 'A-Z' 'a-z'`
 
 .PHONY:	strip
