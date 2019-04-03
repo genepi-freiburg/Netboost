@@ -64,9 +64,13 @@
 
 // GCC includes all AVX/SSE intrinsics
 // @TODO Recheck MSVC & Intel for their names.
-#if defined(HAVE_AVX) && defined(HAVE_FMA3)
-  #include <immintrin.h>
+// GCC/Clang: #include <x86intrin.h> include all available.
+#if defined(HAVE_AVX) or defined(HAVE_FMA3)
+// Contains FMA commands if FMA is available.
+// #include <immintrin.h>
+#include <x86intrin.h>
 #endif
+
 
 using namespace Rcpp;
 using namespace std;

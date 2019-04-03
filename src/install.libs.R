@@ -152,6 +152,7 @@ files <- Sys.glob(paste0(dest_mcupgma, "/*"))
 dir.create(dest_lib, recursive = TRUE, showWarnings = FALSE)
 files <- Sys.glob(paste0("*", SHLIB_EXT))
 file.copy(files, dest_lib, overwrite = TRUE)
+print(files)
 
 if(file.exists("symbols.rds"))
   file.copy("symbols.rds", dest_lib, overwrite = TRUE)
