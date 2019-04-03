@@ -145,7 +145,18 @@ for (path in c(file.path('clustering_round', 'bin'),
   }
 }
 
+# @TODO Unused?
 files <- Sys.glob(paste0(dest_mcupgma, "/*"))
+
+# This fix should be in Makevars, but as Gnu make syntax only allowed on
+# Windows, it hastingly added here...
+# @TODO Remove
+sapply(Sys.glob(paste0("*", SHLIB_EXT)), function(file) {
+    if (file != tolower(file)) {
+#        print(paste("Create:", tolower(file), "from", file))
+        file.copy(c(file), c(tolower(file)), overwrite = TRUE)
+    }
+})
 
 ## Copy own (non-mcugpma) libraries (basically only netboost.so) to dest.
 ## Basically the code from R manual

@@ -13,9 +13,5 @@ PKG_LIBS=`${R_HOME}/bin/Rscript -e "Rcpp:::LdFlags()"`
 # As linker symbol stripping is not working, use "strip" tool
 strip:	$(SHLIB)
 		@STRIP@ -S $(SHLIB)
-		# Somehow on BioC "Netboost.so" is build, but R still want
-		# "netboost.so", so duplicate those.
-		# @TODO This is only a workaround...
-		cp -uv $(SHLIB) `echo $(SHLIB) | tr 'A-Z' 'a-z'`
 
 .PHONY:	strip
