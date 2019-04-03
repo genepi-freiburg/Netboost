@@ -387,8 +387,9 @@ Rcpp::List tree_search(const IntegerMatrix &netboost_forest) {
 //  std::list<std::unique_ptr<Tree>> trees;
   std::list<TREE_ST*> trees;
   
-  const auto type_in = netboost_forest(0,0);
-
+  //const auto type_in = netboost_forest(0,0);
+  netboost_forest(0,0);    // @TODO Check if required.
+  
   unsigned int merge_delete = 0;
   
   // Init Node cache (basically an array with [0,max] elements).

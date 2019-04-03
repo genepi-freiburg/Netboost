@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // filter_base
 void filter_base(const NumericMatrix& data, unsigned int stepno, int mode_);
-RcppExport SEXP _netboost_filter_base(SEXP dataSEXP, SEXP stepnoSEXP, SEXP mode_SEXP) {
+RcppExport SEXP _Netboost_filter_base(SEXP dataSEXP, SEXP stepnoSEXP, SEXP mode_SEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const NumericMatrix& >::type data(dataSEXP);
@@ -19,7 +19,7 @@ END_RCPP
 }
 // filter_end
 void filter_end();
-RcppExport SEXP _netboost_filter_end() {
+RcppExport SEXP _Netboost_filter_end() {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     filter_end();
@@ -28,7 +28,7 @@ END_RCPP
 }
 // rcpp_filter_step
 IntegerVector rcpp_filter_step(size_t col_y);
-RcppExport SEXP _netboost_rcpp_filter_step(SEXP col_ySEXP) {
+RcppExport SEXP _Netboost_rcpp_filter_step(SEXP col_ySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -39,7 +39,7 @@ END_RCPP
 }
 // dist_tom
 NumericVector dist_tom(const IntegerMatrix& filter, const NumericVector& adjacency);
-RcppExport SEXP _netboost_dist_tom(SEXP filterSEXP, SEXP adjacencySEXP) {
+RcppExport SEXP _Netboost_dist_tom(SEXP filterSEXP, SEXP adjacencySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -51,7 +51,7 @@ END_RCPP
 }
 // tree_search
 Rcpp::List tree_search(const IntegerMatrix& netboost_forest);
-RcppExport SEXP _netboost_tree_search(SEXP netboost_forestSEXP) {
+RcppExport SEXP _Netboost_tree_search(SEXP netboost_forestSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -62,15 +62,15 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_netboost_filter_base", (DL_FUNC) &_netboost_filter_base, 3},
-    {"_netboost_filter_end", (DL_FUNC) &_netboost_filter_end, 0},
-    {"_netboost_rcpp_filter_step", (DL_FUNC) &_netboost_rcpp_filter_step, 1},
-    {"_netboost_dist_tom", (DL_FUNC) &_netboost_dist_tom, 2},
-    {"_netboost_tree_search", (DL_FUNC) &_netboost_tree_search, 1},
+    {"_Netboost_filter_base", (DL_FUNC) &_Netboost_filter_base, 3},
+    {"_Netboost_filter_end", (DL_FUNC) &_Netboost_filter_end, 0},
+    {"_Netboost_rcpp_filter_step", (DL_FUNC) &_Netboost_rcpp_filter_step, 1},
+    {"_Netboost_dist_tom", (DL_FUNC) &_Netboost_dist_tom, 2},
+    {"_Netboost_tree_search", (DL_FUNC) &_Netboost_tree_search, 1},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_netboost(DllInfo *dll) {
+RcppExport void R_init_Netboost(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

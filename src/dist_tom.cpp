@@ -55,15 +55,15 @@ inline double calc_distance(const vector<Rint> &i1i2,
   double prodsum = 0;
   
   if (merges.size() > 0) {
-    double adja_pos_i;
-    double adja_pos_j;
+    double adja_pos_i = .0;
+    double adja_pos_j = .0;
     
     for (auto merge: merges) {
       // @todo In the given data, no duplicates of "merge" in i_partners are
       //       existing, but this may be the cause for other datasets
       //       Solve with stored indexes and loop until one of the arrays is
       //       looped through.
-      for (int idx = 0; idx < i_partners.size(); idx++) {
+      for (decltype(i_partners.size()) idx = 0; idx < i_partners.size(); idx++) {
         if (i_partners[idx] == merge) {
           adja_pos_i = adjacency[i1i2[idx]];
           break;
@@ -74,7 +74,7 @@ inline double calc_distance(const vector<Rint> &i1i2,
         }
       }
       
-      for (int idx = 0; idx < j_partners.size(); idx++) {
+      for (decltype(j_partners.size()) idx = 0; idx < j_partners.size(); idx++) {
         if (j_partners[idx] == merge) {
           adja_pos_j = adjacency[j1j2[idx]];
           break;
@@ -292,7 +292,7 @@ NumericVector dist_tom(const IntegerMatrix &filter,
   // and also save the accordings partners.
   // With this cache later the required information for calculating can be
   // restored much faster.
-  for (size_t r = 0; r < filter.nrow(); r++) {
+  for (decltype(filter.nrow()) r = 0; r < filter.nrow(); r++) {
     auto col_1 = filter(r, 0);
     auto col_2 = filter(r, 1);
     

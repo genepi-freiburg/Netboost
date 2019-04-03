@@ -1,8 +1,8 @@
-Package: netboost
+Package: Netboost
 Type: Package
 Title: Network Analysis Supported by Boosting
-Version: 1.31.10
-Date: 2019-04-02
+Version: 1.31.11
+Date: 2019-04-03
 Authors@R: c(person("Pascal", "Schlosser", role = c("aut", "cre"),
                     email = "pascal.schlosser@uniklinik-freiburg.de"),
              person("Jochen", "Knaus", role = c("aut", "ctb"),
@@ -14,10 +14,16 @@ Description: Boosting supported network analysis for high-dimensional omics appl
 Depends:
   R (>= 3.6.0)
 biocViews:
+  Software,
   StatisticalMethod,
   GraphAndNetwork,
   Network,
-  Clustering
+  Clustering,
+  DimensionReduction,
+  BiomedicalInformatics,
+  Epigenetics,
+  Metabolomics,
+  Transcriptomics
 Imports:
   Rcpp,
   RcppParallel,
@@ -55,4 +61,3 @@ RoxygenNote: 6.1.1
 Author: Pascal Schlosser [aut, cre],
   Jochen Knaus [aut, ctb],
   Yaniv Loewenstein [aut]
-

@@ -2,7 +2,7 @@
 CXX_STD=CXX11
 
 # AVX flag will be added for Linux/MacOS (and therefore GCC/Clang) by configure. ${AVX}
-PKG_CXXFLAGS=`${R_HOME}/bin/Rscript -e "Rcpp:::CxxFlags()"` @SIMD_FLAGS@
+PKG_CXXFLAGS=`${R_HOME}/bin/Rscript -e "Rcpp:::CxxFlags()"` @SIMD_FLAGS@ -Wsign-compare -Wall
 # /arch:AVX
 
 # Prefered would be stripping debugging symbols

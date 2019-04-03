@@ -339,7 +339,7 @@ private:
     
     // If pointer was unaligned, zero space until aligned.
     if (misaligned_bytes > 0) {
-      for (auto i = 0; i < (((1<<ALIGNBIT) - misaligned_bytes) / sizeof(T)); i++) {
+      for (T i = 0; i < (((1<<ALIGNBIT) - misaligned_bytes) / sizeof(T)); i++) {
         *src++ = 0;
       }
     }
@@ -386,7 +386,7 @@ public:
     
     // Copy data with aligned columns.
     // Build Z = data - colMeans(data). Store aligned.
-    for (auto col=0; col < ncol; col++) {
+    for (size_t col=0; col < ncol; col++) {
       data_cols[col] = seq_data;
       Z_cols[col] = seq_z_means;
       
@@ -395,7 +395,7 @@ public:
       
       double col_sum = 0;           // Column sum for mean
       
-      for (auto row=0; row < nrow; row++)
+      for (size_t row=0; row < nrow; row++)
         col_sum += *seq_data++;
       
       // Mean
@@ -404,7 +404,7 @@ public:
       auto tmp_seq_data = data_cols[col];
       
       // Z[,col] = data[,col] - mean(data[,col])
-      for (auto row=0; row < nrow; row++)
+      for (size_t row=0; row < nrow; row++)
         *seq_z_means++ = *tmp_seq_data++ - col_mean;
       
       if (DEBUG)
@@ -488,7 +488,7 @@ public:
     // Should not be required, as no memory allocated with new/malloc
     // But as those pointers are pointing inside of another structure, ensure
     // they are not freed.
-    for (auto col = 0; col < ncol; col++ ) {
+    for (size_t col = 0; col < ncol; col++ ) {
       data_cols[col] = nullptr;
       Z_cols[col] = nullptr;
     }
@@ -531,7 +531,7 @@ public:
     // NOTE: matrix X is only "created" by skipping column from data.
     auto y = data_cols[col_y];
     
-    for (auto col = 0; col < ncol; col++) {
+    for (size_t col = 0; col < ncol; col++) {
       // Skip column if it is y.
       if (col == col_y) {
         offset = 1;
@@ -569,14 +569,14 @@ public:
     // VALUE: Actual beta-value. May be updated several times
     std::map<decltype(col_y),double> beta_selected;
 
-    for (auto bstep=0; bstep < stepno; bstep++) {
+    for (unsigned int bstep=0; bstep < stepno; bstep++) {
       if (bstep > 0) {
         auto offset = (actual_sel >= col_y) ? 1 : 0;
         
         auto yy = Z_cols[actual_sel + offset];
         
         // R: actual.nom <- actual.nom - actual.update*cov(yy,x)
-        for (auto col = 0, offset = 0; col < (ncol - 0); col++) {
+        for (size_t col = 0, offset = 0; col < (ncol - 0); col++) {
           if (col == col_y) {
             offset = 1;
             continue;
@@ -614,7 +614,7 @@ public:
       
       // Note: search is in actual_nom, which has length ncol - 1,
       // so indizes are not equal to those in data for index > col_y
-      for (auto col = 0; col < ncol - 1; col++, seq++) {
+      for (size_t col = 0; col < ncol - 1; col++, seq++) {
         double seq_pow2 = *seq * *seq;
         
         // ^2 is actually faster than using abs()
