@@ -3,6 +3,7 @@ AM_INIT_AUTOMAKE([1.9 foreign])
 
 AC_CONFIG_MACRO_DIR([m4])
 
+# M4 macros for checking of CPU features.
 m4_include([m4/ax_gcc_x86_avx_xgetbv.m4])
 m4_include([m4/ax_gcc_x86_cpuid.m4])
 m4_include([m4/ax_check_compile_flag.m4])

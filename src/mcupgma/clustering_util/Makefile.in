@@ -218,8 +218,6 @@ $(BINDIR)/edges2valid_clusters:  HashingMergerMain.cpp  $(OBJDIR)/HashingMergerM
 #average_edges: average_edges.cpp  Definitions.hpp Edge.hpp
 #	$(CXX_EXEC) -o $@ $< 
 
-
-
 ########################################################
 ## command line options parsers by gengetopt 	      ##
 ########################################################
@@ -228,7 +226,8 @@ $(BINDIR)/edges2valid_clusters:  HashingMergerMain.cpp  $(OBJDIR)/HashingMergerM
 $(OBJDIR)/%.cmdline.o: %.cmdline.c %.cmdline.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-%.cmdline.h %.cmdline.c:%.ggo
-	gengetopt < $< --file-name=$*.cmdline
+# 190404 jo: Removed, as now static for sure.
+# %.cmdline.h %.cmdline.c:%.ggo
+#	gengetopt < $< --file-name=$*.cmdline
 
 ######## EOF ############################################################################

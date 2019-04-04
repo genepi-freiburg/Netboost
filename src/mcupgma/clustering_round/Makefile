@@ -148,8 +148,9 @@ $(DEPDIR)/%.d: %.cpp $(DEPDIR)
 # rules for making %.cmdline.h files
 # these files are created using getgetopt from %.ggo files
 # the command also generates the %.cmdline.c files
-%.cmdline.c %.cmdline.h: %.ggo
-	gengetopt -i $< -F $*.cmdline
+# 190404 jo: Removed, as now static for sure.
+# %.cmdline.c %.cmdline.h: %.ggo
+# 	gengetopt -i $< -F $*.cmdline
 
 # rules for making executables from object files and static libraries
 $(EXEC): %:

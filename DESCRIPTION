@@ -1,8 +1,8 @@
-Package: Netboost
+Package: netboost
 Type: Package
 Title: Network Analysis Supported by Boosting
-Version: 1.31.12
-Date: 2019-04-03
+Version: 1.31.13
+Date: 2019-04-04
 Authors@R: c(person("Pascal", "Schlosser", role = c("aut", "cre"),
                     email = "pascal.schlosser@uniklinik-freiburg.de"),
              person("Jochen", "Knaus", role = c("aut", "ctb"),
@@ -47,8 +47,7 @@ SystemRequirements:
   GNU make,
   Bash,
   Perl,
-  Gzip,
-  gengetopt
+  Gzip
 OS_type: unix
 ByteCompile: yes
 NeedsCompilation: yes
