@@ -1674,7 +1674,7 @@ nb_moduleEigengenes <-
 #' @return Netboost result
 #'
 #' @examples
-#' \donttest{nb_example()}
+#' nb_example()
 #'
 #' @export
 nb_example <-
@@ -1713,7 +1713,7 @@ nb_example <-
             
             # If default PDF viewer is assigned, try to show PDF.
             if (!is.null(getOption("pdfviewer"))) {
-                system2(getOption("pdfviewer"), pdfFile)
+      #          system2(getOption("pdfviewer"), pdfFile)
             }
         }
         
@@ -1725,7 +1725,6 @@ nb_example <-
                 scale = TRUE
             )
         
-        ## stopifnot()?
         all(round(results$MEs, 12) == round(ME_transfer, 12))
         
         # Cleanup all produced temporary filed (esp. clustering/iteration_*)
