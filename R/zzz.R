@@ -41,7 +41,7 @@
     # logical = FALSE is not working correctly if CPU has logical cores, which
     # are disabled (at least Linux).
     # Means: if CPU has logical cores, core count should be set manually.
-    cores <- parallel::detectCores()
+    # cores <- parallel::detectCores() # Bioconductor does not like this
     
     if (is.na(cores)) cores <- 1
     
