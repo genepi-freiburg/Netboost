@@ -33,3 +33,5 @@ config.cache
 config.h
 autom4te.cache/*
 src/symbols.rds
+man/.Rapp.history
+netboost.Rproj
