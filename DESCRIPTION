@@ -1,7 +1,7 @@
 Package: netboost
 Type: Package
 Title: Network Analysis Supported by Boosting
-Version: 1.31.16
+Version: 0.99.0
 Date: 2019-04-04
 Authors@R: c(person("Pascal", "Schlosser", role = c("aut", "cre"),
                     email = "pascal.schlosser@uniklinik-freiburg.de"),
@@ -57,6 +57,3 @@ URL: https://github.com/PascalSchlosser/netboost
 BugReports: https://github.com/PascalSchlosser/netboost/issues
 Encoding: UTF-8
 RoxygenNote: 6.1.1
-Author: Pascal Schlosser [aut, cre],
-  Jochen Knaus [aut, ctb],
-  Yaniv Loewenstein [aut]
