@@ -331,7 +331,7 @@ nb_mcupgma <-
                 "-output_tree_file",
                 file_dist_tree,
                 "-split_unmodified_edges",
-                cores,
+                max(cores,2L),
                 file_dist_edges,
                 console = FALSE
             )
