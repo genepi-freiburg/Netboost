@@ -42,6 +42,7 @@
     # are disabled (at least Linux).
     # Means: if CPU has logical cores, core count should be set manually.
     # cores <- parallel::detectCores() # Bioconductor does not like this
+    cores <- NA
     
     if (is.na(cores)) cores <- 1
     
