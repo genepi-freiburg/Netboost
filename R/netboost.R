@@ -98,10 +98,8 @@ netboost <-
 
         if (ncol(datan) > 5e+06) {
             stop(
-                paste(
                     "A bug in sparse UPGMA currently prevents analyses",
-                    "with more than 5 million features."
-                )
+                    " with more than 5 million features."
             )
         }
         
@@ -286,15 +284,15 @@ nb_mcupgma <-
         netboostTmpCleanup()
         
         if (max_singleton > 5e+06) {
-            stop(paste("A bug in sparse UPGMA currently prevents analyses",
-                       "with more than 5 million features."))
+            stop("A bug in sparse UPGMA currently prevents analyses",
+                       " with more than 5 million features.")
         }
         
         if (!dir.create(file.path(netboostTmpPath(), "clustering")))
-            stop(paste(
-                "Unable to create:",
+            stop(
+                "Unable to create: ",
                 file.path(netboostTmpPath(), "clustering")
-            ))
+            )
         
         file_dist_edges <-
             file.path(netboostTmpPath(), "clustering", "dist.edges")
@@ -969,14 +967,14 @@ nb_transfer <-
             stop("new_data must be a data frame with dim() > (0,0).")
         
         if (length(nb_summary[["colors"]]) != ncol(new_data)) {
-            stop(paste("The number of features in new_data must",
-                       "correspond to the number in nb_summary."))
+            stop("The number of features in new_data must ",
+                       "correspond to the number in nb_summary.")
         }
         
         if (!identical(sort(nb_summary[["names"]]), sort(colnames(new_data)))) {
-            stop(paste("The features in new_data (colnames) must", 
-                       "correspond to the features in nb_summary",
-                       "(nb_summary$names)."))
+            stop("The features in new_data (colnames) must ", 
+                       "correspond to the features in nb_summary ",
+                       "(nb_summary$names).")
         }
         
         new_data <- new_data[, nb_summary[["names"]]]
@@ -1064,8 +1062,8 @@ nb_filter <-
         }
         
         if (ncol(datan) > 5e+06) {
-            stop(paste("A bug in sparse UPGMA currently prevents analyses",
-                       "with more than 5 million features."))
+            stop("A bug in sparse UPGMA currently prevents analyses ",
+                       "with more than 5 million features.")
         }
         
         message(paste("Netboost: Filtering"))
@@ -1367,10 +1365,8 @@ nb_moduleEigengenes <-
             nlDrop <- nlevels(colors[, drop = TRUE])
             if (nl > nlDrop)
                 stop(
-                    paste(
                         "Argument 'colors' contains unused levels (empty modules). ",
                         "Use colors[, drop=TRUE] to get rid of them."
-                    )
                 )
         }
         
@@ -1406,10 +1402,8 @@ nb_moduleEigengenes <-
                     modlevels[as.character(modlevels) != as.character(grey)]
             } else {
                 stop(
-                    paste(
                         "Color levels are empty. Possible reason: the only color is grey",
-                        "and grey module is excluded from the calculation."
-                    )
+                        " and grey module is excluded from the calculation."
                 )
             }
         
