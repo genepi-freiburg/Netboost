@@ -22,7 +22,7 @@ technique. First, a boosting-based filter is combined with the topological
 overlap measure to identify the essential edges of the network. Second, sparse 
 hierarchical clustering is applied on the selected edges to identify modules
 and finally module information is aggregated by the first principal 
-components. The primary analysis is than carried out on these summary measures
+components. The primary analysis is then carried out on these summary measures
 instead of the original data.
 
 # Loading an example dataset 
