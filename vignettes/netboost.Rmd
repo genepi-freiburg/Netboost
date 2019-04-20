@@ -79,15 +79,6 @@ dendrogram after merging and the third the dendrogram of features including the
 module-color-code. After all trees are plotted an assembly of all feature 
 dendrograms is plotted.
 
-```{r pdf}
-    if (file.exists(pdfFile)) {
-        message(paste0("PDF created:", pdfFile))
-        if (!is.null(getOption("pdfviewer"))) {
-            system2(getOption("pdfviewer"), pdfFile)
-        }
-    }
-```
-
 `results` contains the dendrograms (dendros), feature identifier (names) matched 
 to module assignment (colors), the aggregated dataset (MEs), the rotation matrix 
 to compute the aggregated dataset (rotation) and the proportion of variance 
