@@ -81,7 +81,7 @@ dendrograms is plotted.
 `results` contains the dendrograms (dendros), feature identifier (names) matched 
 to module assignment (colors), the aggregated dataset (MEs), the rotation matrix 
 to compute the aggregated dataset (rotation) and the proportion of variance 
-explained by the aggregate measures (varExplained).
+explained by the aggregate measures (var_explained).
 Dependent on the minimum proportion of variance explained set in the 
 `netboost()` call (default 0.5) up to `n_pc` principal components are exported.
 
@@ -99,7 +99,7 @@ Explained variance is reported by a matrix for the first `n_pc` principal
 components. Here we list the first 5 modules:
 
 ```{r variance}
-results$varExplained[,1:5]
+results$var_explained[,1:5]
 ```
 
 `results$colors` use a numeric coding for the modules which matches their module 

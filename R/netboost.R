@@ -51,10 +51,8 @@ Sys.unsetenv("ALLOW_WGCNA_THREADS")
 #' @return colors   A vector of numeric color coding in matching order of names
 #'   and module eigengene names (color = 3 -> variable in ME3).
 #' @return MEs      Aggregated module measures (Module eigengenes).
-#' @return varExplained  Proportion of variance explained per module eigengene
+#' @return var_explained  Proportion of variance explained per module eigengene
 #'   per principal component (max n_pc principal components are listed).
-#' @return dendros  A list of dendrograms. For each fully separate part of the
-#'   network an individual dendrogram.
 #' @return rotation Matrix of variable loadings divided by their singular
 #'   values. datan %*% rotation = MEs (with datan potentially scaled)
 #'
@@ -585,7 +583,7 @@ cut_dendro <-
             list(
                 colors = mergedColors,
                 MEs = MEs,
-                varExplained = MEList$varExplained,
+                var_explained = MEList$var_explained,
                 rotation = MEList$rotation
             )
         )
@@ -663,8 +661,8 @@ cut_trees <-
             res[[i]][["colors"]] <- cut_dendro_res$colors
             res[[i]][["MEs"]] <- cut_dendro_res$MEs
             # res[[i]][['svd_PCs']] <- cut_dendro_res$svd_PCs
-            res[[i]][["varExplained"]] <-
-                cut_dendro_res$varExplained
+            res[[i]][["var_explained"]] <-
+                cut_dendro_res$var_explained
             res[[i]][["rotation"]] <- cut_dendro_res$rotation
             i <- i + 1
         }
@@ -859,20 +857,20 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
         ## if('svd_PCs' %in% names(res)){res$svd_PCs <- cbind(res$svd_PCs,
         ## clust_res[[tree]]$svd_PCs)}else{res$svd_PCs <-
         ## clust_res[[tree]]$svd_PCs}
-        if ("varExplained" %in% names(res)) {
-            res$varExplained <-
-                cbind(res$varExplained, clust_res[[tree]]$varExplained)
+        if ("var_explained" %in% names(res)) {
+            res$var_explained <-
+                cbind(res$var_explained, clust_res[[tree]]$var_explained)
         } else {
-            res$varExplained <- clust_res[[tree]]$varExplained
+            res$var_explained <- clust_res[[tree]]$var_explained
         }
     }
-    rownames(res$varExplained) <-
+    rownames(res$var_explained) <-
         paste0("PC", seq(
             from = 1,
-            to = nrow(res$varExplained),
+            to = nrow(res$var_explained),
             by = 1
         ))
-    colnames(res$varExplained) <-
+    colnames(res$var_explained) <-
         unique(unlist(lapply(
             strsplit(split = "_pc",
                      colnames(res$MEs)),
@@ -1275,8 +1273,8 @@ nb_plot_dendro <-
 #' @return averageExpr  If ‘align == 'along average'’, a dataframe containing
 #'   average normalized expression in each module. The columns are named by the
 #'   corresponding color with an ‘'AE'’ prepended, e.g., ‘AEturquoise’ etc.
-#' @return varExplained A dataframe in which each column corresponds to a
-#'   module, with the component ‘varExplained[PC, module]’ giving the variance
+#' @return var_explained A dataframe in which each column corresponds to a
+#'   module, with the component ‘var_explained[PC, module]’ giving the variance
 #'   of module ‘module’ explained by the principal component no. ‘PC’. The
 #'   calculation is exact irrespective of the number of computed principal
 #'   components. At most 10 variance explained values are recorded in this
@@ -1639,7 +1637,7 @@ nb_moduleEigengenes <-
         list(
             eigengenes = PrinComps,
             averageExpr = averExpr,
-            varExplained = varExpl,
+            var_explained = varExpl,
             n_pc = n_pc,
             validMEs = validMEs,
             validColors = validColors,
