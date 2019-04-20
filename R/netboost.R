@@ -4,11 +4,11 @@
 ## Load WGCNA, try to hide the welcome-message (only a try as it is printed...)
 ## Workaround using environment to force WGCNA skipping it's welcome-message.
 Sys.setenv(ALLOW_WGCNA_THREADS = 1)
-suppressPackageStartupMessages(library(WGCNA))
+suppressPackageStartupMessages(require(WGCNA))
 Sys.unsetenv("ALLOW_WGCNA_THREADS")
 
-## library(colorspace)
-## library(parallel)
+## require(colorspace)
+## require(parallel)
 
 #' Netboost clustering.
 #'
