@@ -84,6 +84,18 @@ netboost <-
         if (cores > 1)
             WGCNA::allowWGCNAThreads(nThreads = as.numeric(cores))
         
+        if (is.null(datan) || !is.data.frame(datan))
+            stop("netboost: Error: datan must be a data.frame.")
+
+        if (is.null(stepno) || !is.integer(stepno))
+            stop("netboost: Error: stepno must be an integer.")
+
+        if (is.null(min_cluster_size) || !is.integer(min_cluster_size))
+            stop("netboost: Error: min_cluster_size must be an integer.")
+
+        if (is.null(ME_diss_thres) || !is.numeric(ME_diss_thres))
+            stop("netboost: Error: ME_diss_thres must be numeric.")
+
         if (ncol(datan) > 5e+06) {
             stop(
                 paste(
