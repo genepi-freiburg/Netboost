@@ -106,12 +106,12 @@ netboost <-
         }
         
         if (scale) {
-            message("Netboost: Scaling and centering data.")
+            if(verbose>=1){message("Netboost: Scaling and centering data.")}
             datan <-
                 as.data.frame(scale(datan, center = TRUE, scale = TRUE))
         }
         
-        message("Netboost: Initialising filter step.")
+        if(verbose>=1){message("Netboost: Initialising filter step.")}
         filter <-
             nb_filter(
                 datan = datan,
@@ -122,7 +122,7 @@ netboost <-
                 mode = mode
             )
         
-        message("Netboost: Finished filter step.")
+        if(verbose>=1){message("Netboost: Finished filter step.")}
         
         if (is.null(soft_power)) {
             # Random subset out of allocation
@@ -131,16 +131,16 @@ netboost <-
             # Call the network topology analysis function
             sft <- pickSoftThreshold(datan[, random_features])
             soft_power <- sft$powerEstimate
-            message(
+            if(verbose>=0){message(
                 paste0(
                     "Netboost: soft_power was set to ",
                     soft_power,
                     " based on the scale free topology criterion."
                 )
-            )
+            )}
         }
         
-        message("Netboost: Initialising distance calculation.")
+        if(verbose>=1){message("Netboost: Initialising distance calculation.")}
         dist <-
             nb_dist(
                 datan = datan,
@@ -148,9 +148,9 @@ netboost <-
                 soft_power = soft_power,
                 cores = cores
             )
-        message("Netboost: Finished distance calculation.")
+        if(verbose>=1){message("Netboost: Finished distance calculation.")}
         
-        message("Netboost: Initialising clustering step.")
+        if(verbose>=1){message("Netboost: Initialising clustering step.")}
         results <-
             nb_clust(
                 datan = datan,
@@ -164,9 +164,9 @@ netboost <-
                 cores = cores,
                 plot = plot
             )
-        message("Netboost: Finished clustering step.")
+        if(verbose>=1){message("Netboost: Finished clustering step.")}
         
-        message("Netboost: Finished Netboost.")
+        if(verbose>=1){message("Netboost: Finished Netboost.")}
         invisible(results)
     }
 
