@@ -351,7 +351,7 @@ nb_mcupgma <-
         
         if (!file.exists(file_dist_tree) ||
             file.info(file_dist_tree)[["size"]] == 0)
-            stop("No output file created. mcupgma error :(")
+            stop("No output file created. mcupgma error.")
         
         return(as.matrix(
             read.table(
@@ -1101,11 +1101,7 @@ nb_filter <-
         cpp_filter_end()
         
         filter <-
-            do.call("rbind", lapply(seq(
-                from = 1,
-                to = length(boosting_filter),
-                by = 1
-            ), function(x) {
+            do.call("rbind", lapply(seq_along(boosting_filter), function(x) {
                 return(as.data.frame(cbind(
                     as.integer(boosting_filter[[x]]),
                     as.integer(rep(x,
@@ -1183,9 +1179,7 @@ nb_plot_dendro <-
                 nb_summary[["colors"]]
             ))))[shuffel_index][as.factor(nb_summary[["colors"]])]
         plot_colors[nb_summary[["colors"]] <= 0] <- grDevices::gray(level = 0.7)
-        for (tree in seq(from = 1,
-                         to = length(nb_summary[["dendros"]]),
-                         by = 1)) {
+        for (tree in seq_along(nb_summary[["dendros"]])) {
             graphics::par(mar = c(0, 4, 8, 4))
             first_col <- last_col + 1
             last_col <-
@@ -1438,9 +1432,7 @@ nb_moduleEigengenes <-
         names(PrinComps) <-
             paste(moduleColor.getMEprefix(), modlevels, sep = "")
         names(averExpr) <- paste("AE", modlevels, sep = "")
-        for (i in seq(from = 1,
-                      to = length(modlevels),
-                      by = 1)) {
+        for (i in seq_along(modlevels)) {
             if (verbose > 1)
                 message(paste(
                     spaces,
