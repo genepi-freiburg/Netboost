@@ -71,7 +71,7 @@ netboost <-
              progress = 1000L,
              mode = 2L,
              soft_power = NULL,
-             max_singleton = dim(datan)[2],
+             max_singleton = ncol(datan),
              plot = TRUE,
              min_cluster_size = 2L,
              ME_diss_thres = 0.25,
