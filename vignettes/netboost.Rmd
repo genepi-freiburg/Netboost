@@ -50,15 +50,15 @@ multiple plots. In this step we also set analysis parameters:
 
  `stepno` defines the number of boosting steps taken
 
- `softPower` (if null, automatically chosen) the exponent in the transformation
+ `soft_power` (if null, automatically chosen) the exponent in the transformation
 of the correlation
 
- `minClusterSize` the minimal size of clusters, `nPC` the number of maximally 
+ `min_cluster_size` the minimal size of clusters, `n_pc` the number of maximally 
 computed principal components
 
  `scale` if data should be scaled and centered prior to analysis
 
- `MEDissThres` defines the merging threshold for identified clusters. 
+ `ME_diss_thres` defines the merging threshold for identified clusters. 
 
  For details on the options please see `?netboost` and the corresponding paper
 Schlosser et al. 2019 (under review).
@@ -67,7 +67,7 @@ Schlosser et al. 2019 (under review).
 pdfFile = file.path(tempdir(), "results_netboost.pdf")
 pdf(file = pdfFile, width = 30)
 results <- netboost(datan = tcga_aml_meth_rna_chr18, stepno = 20L, 
-softPower = 3L, minClusterSize = 10L, nPC = 2, scale = TRUE, MEDissThres = 0.25) 
+soft_power = 3L, min_cluster_size = 10L, n_pc = 2, scale = TRUE, ME_diss_thres = 0.25) 
 dev.off()
 ```
 
@@ -83,7 +83,7 @@ to module assignment (colors), the aggregated dataset (MEs), the rotation matrix
 to compute the aggregated dataset (rotation) and the proportion of variance 
 explained by the aggregate measures (varExplained).
 Dependent on the minimum proportion of variance explained set in the 
-`netboost()` call (default 0.5) up to `nPC` principal components are exported.
+`netboost()` call (default 0.5) up to `n_pc` principal components are exported.
 
 ```{r results}
 names(results)
@@ -95,7 +95,7 @@ than 50% of the variance in the original features of this module.
 ME0_*X*_pc*Y* denotes the background module (unclustered features) of the 
 independent tree *X*.
 
-Explained variance is reported by a matrix for the first `nPC` principal 
+Explained variance is reported by a matrix for the first `n_pc` principal 
 components. Here we list the first 5 modules:
 
 ```{r variance}

@@ -28,23 +28,23 @@ Sys.unsetenv("ALLOW_WGCNA_THREADS")
 #' Progress might not be reported 100% accurate due to parallel execution)
 #' @param mode      Integer. Mode (0: x86, 1: FMA, 2: AVX). Features are only
 #'   available if compiled accordingly and available on the hardware.
-#' @param softPower Integer. Exponent of the transformation. Set automatically
+#' @param soft_power Integer. Exponent of the transformation. Set automatically
 #'   based on the scale free topology criterion if unspecified.
 #' @param max_singleton   Integer. The maximal singleton in the clustering.
 #'   Usually equals the number of features.
 #' @param plot      Logical. Should plots be created?
-#' @param minClusterSize  Integer. The minimum number of features in one module.
-#' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for
+#' @param min_cluster_size  Integer. The minimum number of features in one module.
+#' @param ME_diss_thres Numeric. Module Eigengene Dissimilarity Threshold for
 #'   merging close modules.
 #' @param cores     Integer. Amount of CPU cores used (<=1 : sequential)
 #' @param scale     Logical. Should data be scaled and centered?
 #' @param verbose   Additional diagnostic messages.
-#' @param nPC        Number of principal components and variance explained
+#' @param n_pc        Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained entries
-#'   is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is
+#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
 #'   issued.
 #' @param nb_min_varExpl        Minimum proportion of variance explained for
-#'   returned module eigengenes. The number of PCs is capped at nPC.
+#'   returned module eigengenes. The number of PCs is capped at n_pc.
 #' @return dendros  A list of dendrograms. For each fully separate part of the
 #'   network an individual dendrogram.
 #' @return names    A vector of feature names.
@@ -52,7 +52,7 @@ Sys.unsetenv("ALLOW_WGCNA_THREADS")
 #'   and module eigengene names (color = 3 -> variable in ME3).
 #' @return MEs      Aggregated module measures (Module eigengenes).
 #' @return varExplained  Proportion of variance explained per module eigengene
-#'   per principal component (max nPC principal components are listed).
+#'   per principal component (max n_pc principal components are listed).
 #' @return dendros  A list of dendrograms. For each fully separate part of the
 #'   network an individual dendrogram.
 #' @return rotation Matrix of variable loadings divided by their singular
@@ -62,8 +62,8 @@ Sys.unsetenv("ALLOW_WGCNA_THREADS")
 #' @examples
 #' data('tcga_aml_meth_rna_chr18',  package='netboost')
 #' results <- netboost(datan=tcga_aml_meth_rna_chr18, stepno=20L,
-#'    softPower=3L, minClusterSize=10L, nPC=2, scale=TRUE,
-#'    MEDissThres=0.25, plot=TRUE)
+#'    soft_power=3L, min_cluster_size=10L, n_pc=2, scale=TRUE,
+#'    ME_diss_thres=0.25, plot=TRUE)
 #'
 #' @export
 netboost <-
@@ -72,12 +72,12 @@ netboost <-
              until = 0L,
              progress = 1000L,
              mode = 2L,
-             softPower = NULL,
+             soft_power = NULL,
              max_singleton = dim(datan)[2],
              plot = TRUE,
-             minClusterSize = 2L,
-             MEDissThres = 0.25,
-             nPC = 1,
+             min_cluster_size = 2L,
+             ME_diss_thres = 0.25,
+             n_pc = 1,
              nb_min_varExpl = 0.5,
              cores = as.integer(getOption("mc.cores", 2)),
              scale = TRUE,
@@ -114,17 +114,17 @@ netboost <-
         
         message("Netboost: Finished filter step.")
         
-        if (is.null(softPower)) {
+        if (is.null(soft_power)) {
             # Random subset out of allocation
             random_features <-
                 sample(ncol(datan), min(c(10000, ncol(datan))))
             # Call the network topology analysis function
             sft <- pickSoftThreshold(datan[, random_features])
-            softPower <- sft$powerEstimate
+            soft_power <- sft$powerEstimate
             message(
                 paste0(
-                    "Netboost: softPower was set to ",
-                    softPower,
+                    "Netboost: soft_power was set to ",
+                    soft_power,
                     " based on the scale free topology criterion."
                 )
             )
@@ -135,7 +135,7 @@ netboost <-
             nb_dist(
                 datan = datan,
                 filter = filter,
-                softPower = softPower,
+                soft_power = soft_power,
                 cores = cores
             )
         message("Netboost: Finished distance calculation.")
@@ -146,9 +146,9 @@ netboost <-
                 datan = datan,
                 filter = filter,
                 dist = dist,
-                minClusterSize = minClusterSize,
-                MEDissThres = MEDissThres,
-                nPC = nPC,
+                min_cluster_size = min_cluster_size,
+                ME_diss_thres = ME_diss_thres,
+                n_pc = n_pc,
                 nb_min_varExpl = nb_min_varExpl,
                 max_singleton = max_singleton,
                 cores = cores,
@@ -166,13 +166,13 @@ netboost <-
 #' @param datan     Data frame were rows correspond to samples and columns to
 #'   features.
 #' @param filter    Filter-Matrix as generated by the nb_filter function.
-#' @param softPower Integer. Exponent of the transformation. Set automatically
+#' @param soft_power Integer. Exponent of the transformation. Set automatically
 #'   based on the scale free topology criterion if unspecified.
 #' @return Vector with adjacencies for the filter
 calculate_adjacency <-
     function(datan = NULL,
              filter = NULL,
-             softPower = 2) {
+             soft_power = 2) {
         return(vapply(X=seq(
             from = 1,
             to = nrow(filter),
@@ -180,7 +180,7 @@ calculate_adjacency <-
         ),
         FUN=function(i) {
             abs(WGCNA::cor(datan[, filter[i, 1]],
-                           datan[, filter[i, 2]])) ^ softPower
+                           datan[, filter[i, 2]])) ^ soft_power
         },
         FUN.VALUE=1))
     }
@@ -192,7 +192,7 @@ calculate_adjacency <-
 #' @param filter    Filter-Matrix as generated by the nb_filter function.
 #' @param datan     Data frame were rows correspond to samples and columns to
 #'   features.
-#' @param softPower Integer. Exponent of the transformation. Set automatically
+#' @param soft_power Integer. Exponent of the transformation. Set automatically
 #'   based on the scale free topology criterion if unspecified.
 #' @param cores     Integer. Amount of CPU cores used (<=1 : sequential).
 #' @param verbose   Additional diagnostic messages.
@@ -205,14 +205,14 @@ calculate_adjacency <-
 #'  scale=TRUE))
 #'  filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L,
 #'  cores=cores,mode=2L)
-#'  dist <- nb_dist(datan=datan, filter=filter, softPower=3L, cores=cores)
+#'  dist <- nb_dist(datan=datan, filter=filter, soft_power=3L, cores=cores)
 #'  summary(dist)
 #'
 #' @export
 nb_dist <-
     function(filter = NULL,
              datan = NULL,
-             softPower = 2,
+             soft_power = 2,
              cores = getOption("mc.cores", 2L),
              verbose = getOption("verbose")) {
         # if (is.null(filter) || is.null(adjacency)) stop('Both filter and
@@ -234,7 +234,7 @@ nb_dist <-
             calculate_adjacency(
                 datan = datan,
                 filter = filter,
-                softPower = softPower
+                soft_power = soft_power
             )
         ))
     }
@@ -258,7 +258,7 @@ nb_dist <-
 #'    center=TRUE, scale=TRUE))
 #'    filter <- nb_filter(datan=datan, stepno=20L, until=0L,
 #'                        progress=1000L, cores=cores, mode=2L)
-#'    dist <- nb_dist(datan=datan, filter=filter, softPower=3L, cores=cores)
+#'    dist <- nb_dist(datan=datan, filter=filter, soft_power=3L, cores=cores)
 #'    max_singleton = dim(tcga_aml_meth_rna_chr18)[2]
 #'    forest <- nb_mcupgma(filter=filter, dist=dist,
 #'                         max_singleton=max_singleton, cores=cores)
@@ -367,7 +367,7 @@ nb_mcupgma <-
 #'                                 scale=TRUE))
 #'    filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L,
 #'                        cores=cores,mode=2L)
-#'    dist <- nb_dist(datan=datan, filter=filter, softPower=3L, cores=cores)
+#'    dist <- nb_dist(datan=datan, filter=filter, soft_power=3L, cores=cores)
 #'    max_singleton = dim(tcga_aml_meth_rna_chr18)[2]
 #'    forest <- nb_mcupgma(filter=filter, dist=dist,
 #'                         max_singleton=max_singleton, cores=cores)
@@ -451,42 +451,42 @@ tree_dendro <- function(tree = NULL,
 #' @name cut_dendro
 #' @param tree_dendro List of tree specific objects including dendrogram, tree
 #'   data and features originating from the tree_dendro function.
-#' @param minClusterSize  Integer. The minimum number of features in one module.
+#' @param min_cluster_size  Integer. The minimum number of features in one module.
 #' @param datan     Data frame were rows correspond to samples and columns to
 #'   features.
-#' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for
+#' @param ME_diss_thres Numeric. Module Eigengene Dissimilarity Threshold for
 #'   merging close modules.
 #' @param name_of_tree String. Annotating plots and messages.
 #' @param plot      Logical. Should plots be created?
-#' @param nPC        Number of principal components and variance explained
+#' @param n_pc        Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained entries
-#'   is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is
+#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
 #'   issued.
 #' @param nb_min_varExpl        Minimum proportion of variance explained for
-#'   returned module eigengenes. The number of PCs is capped at nPC.
+#'   returned module eigengenes. The number of PCs is capped at n_pc.
 #' @return List
 cut_dendro <-
     function(tree_dendro = NULL,
-             minClusterSize = 2L,
+             min_cluster_size = 2L,
              datan = NULL,
-             MEDissThres = NULL,
+             ME_diss_thres = NULL,
              name_of_tree = "",
              plot = TRUE,
-             nPC = 1,
+             n_pc = 1,
              nb_min_varExpl = 0.5) {
         dynamicMods <-
-            cutreeDynamic(
+            dynamicTreeCut::cutreeDynamic(
                 dendro = tree_dendro$dendro,
                 method = "tree",
                 deepSplit = TRUE,
-                minClusterSize = minClusterSize
+                minClusterSize = min_cluster_size
             )
         ### Merging of Dynamic Modules ### Calculate eigengenes
         MEList <-
             netboost::nb_moduleEigengenes(
                 expr = tree_dendro$data,
                 colors = dynamicMods,
-                nPC = nPC,
+                n_pc = n_pc,
                 nb_min_varExpl = nb_min_varExpl
             )
         MEs <- MEList$nb_eigengenes
@@ -503,14 +503,14 @@ cut_dendro <-
                     xlab = "",
                     sub = ""
                 )
-                graphics::abline(h = MEDissThres, col = "red")
+                graphics::abline(h = ME_diss_thres, col = "red")
             }
             
             merged <-
-                mergeCloseModules(
+                WGCNA::mergeCloseModules(
                     exprData = tree_dendro$data,
                     dynamicMods,
-                    cutHeight = MEDissThres,
+                    cutHeight = ME_diss_thres,
                     verbose = 3
                 )
             mergedColors <- merged$colors
@@ -519,7 +519,7 @@ cut_dendro <-
                 netboost::nb_moduleEigengenes(
                     expr = tree_dendro$data,
                     colors = merged$colors,
-                    nPC = nPC,
+                    n_pc = n_pc,
                     nb_min_varExpl = nb_min_varExpl
                 )
             MEs <- MEList$nb_eigengenes
@@ -537,7 +537,7 @@ cut_dendro <-
                         xlab = "",
                         sub = ""
                     )
-                    plotDendroAndColors(
+                    WGCNA::plotDendroAndColors(
                         dendro = tree_dendro$dendro,
                         colors = mergedColors,
                         "Merged Dynamic",
@@ -599,16 +599,16 @@ cut_dendro <-
 #' @param datan     Data frame were rows correspond to samples and columns to
 #'   features.
 #' @param forest Raw dendrogram-matrix as generated by the nb_mcupgma function.
-#' @param minClusterSize  Integer. The minimum number of features in one module.
-#' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for
+#' @param min_cluster_size  Integer. The minimum number of features in one module.
+#' @param ME_diss_thres Numeric. Module Eigengene Dissimilarity Threshold for
 #'   merging close modules.
 #' @param plot      Logical. Should plots be created?
-#' @param nPC        Number of principal components and variance explained
+#' @param n_pc        Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained entries
-#'   is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is
+#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
 #'   issued.
 #' @param nb_min_varExpl        Minimum proportion of variance explained for
-#'   returned module eigengenes. The number of PCs is capped at nPC.
+#'   returned module eigengenes. The number of PCs is capped at n_pc.
 #' @return List
 #'
 #' @examples
@@ -618,23 +618,23 @@ cut_dendro <-
 #'  scale=TRUE))
 #'  filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L,
 #'  cores=cores,mode=2L)
-#'  dist <- nb_dist(datan=datan, filter=filter, softPower=3L, cores=cores)
+#'  dist <- nb_dist(datan=datan, filter=filter, soft_power=3L, cores=cores)
 #'  max_singleton = dim(tcga_aml_meth_rna_chr18)[2]
 #'  forest <- nb_mcupgma(filter=filter, dist=dist, max_singleton=max_singleton,
 #'  cores=cores)
 #'  trees <- tree_search(forest)
 #'  results <- cut_trees(trees=trees,datan=datan, forest=forest,
-#'  minClusterSize=10L, MEDissThres=0.25, plot=TRUE)
+#'  min_cluster_size=10L, ME_diss_thres=0.25, plot=TRUE)
 #'
 #' @export
 cut_trees <-
     function(trees = NULL,
              datan = NULL,
              forest = NULL,
-             minClusterSize = 2L,
-             MEDissThres = NULL,
+             min_cluster_size = 2L,
+             ME_diss_thres = NULL,
              plot = TRUE,
-             nPC = 1,
+             n_pc = 1,
              nb_min_varExpl = 0.5) {
         res <- list()
         i <- 1L
@@ -651,13 +651,13 @@ cut_trees <-
             cut_dendro_res <-
                 cut_dendro(
                     tree_dendro = tree_dendro_res,
-                    minClusterSize = minClusterSize,
+                    min_cluster_size = min_cluster_size,
                     datan = datan,
-                    MEDissThres = MEDissThres,
+                    ME_diss_thres = ME_diss_thres,
                     name_of_tree = paste0("Tree ",
                                           i, ":"),
                     plot = plot,
-                    nPC = nPC,
+                    n_pc = n_pc,
                     nb_min_varExpl = nb_min_varExpl
                 )
             res[[i]][["colors"]] <- cut_dendro_res$colors
@@ -681,17 +681,17 @@ cut_trees <-
 #'   features.
 #' @param max_singleton   Integer. The maximal singleton in the clustering.
 #'   Usually equals the number of features.
-#' @param minClusterSize  Integer. The minimum number of features in one module.
-#' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for
+#' @param min_cluster_size  Integer. The minimum number of features in one module.
+#' @param ME_diss_thres Numeric. Module Eigengene Dissimilarity Threshold for
 #'   merging close modules.
 #' @param cores     Integer. Amount of CPU cores used (<=1 : sequential)
 #' @param plot Logical. Create plot.
-#' @param nPC        Number of principal components and variance explained
+#' @param n_pc        Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained entries
-#'   is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is
+#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
 #'   issued.
 #' @param nb_min_varExpl        Minimum proportion of variance explained for
-#'   returned module eigengenes. The number of PCs is capped at nPC.
+#'   returned module eigengenes. The number of PCs is capped at n_pc.
 #' @return List
 #'
 #' @examples
@@ -701,12 +701,12 @@ cut_trees <-
 #'  scale=TRUE))
 #'  filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L,
 #'  cores=cores,mode=2L)
-#'  dist <- nb_dist(datan=datan, filter=filter, softPower=3L, cores=cores)
+#'  dist <- nb_dist(datan=datan, filter=filter, soft_power=3L, cores=cores)
 #'  max_singleton = dim(tcga_aml_meth_rna_chr18)[2]
 #'  pdf("test.pdf",width=30)
 #'  sum_res <- nb_clust(filter=filter, dist=dist, datan=datan,
-#'  max_singleton=max_singleton, minClusterSize=10L, MEDissThres=0.25,
-#'  cores=cores, plot=TRUE, nPC=2L, nb_min_varExpl=0.5)
+#'  max_singleton=max_singleton, min_cluster_size=10L, ME_diss_thres=0.25,
+#'  cores=cores, plot=TRUE, n_pc=2L, nb_min_varExpl=0.5)
 #'  dev.off()
 #' @export
 nb_clust <-
@@ -714,11 +714,11 @@ nb_clust <-
              dist = NULL,
              datan = NULL,
              max_singleton = dim(datan)[2],
-             minClusterSize = 2L,
-             MEDissThres = 0.25,
+             min_cluster_size = 2L,
+             ME_diss_thres = 0.25,
              cores = getOption("mc.cores", 2L),
              plot = TRUE,
-             nPC = 1,
+             n_pc = 1,
              nb_min_varExpl = 0.5) {
         forest <-
             nb_mcupgma(
@@ -733,10 +733,10 @@ nb_clust <-
                 trees = trees,
                 datan = datan,
                 forest = forest,
-                minClusterSize = minClusterSize,
-                MEDissThres = MEDissThres,
+                min_cluster_size = min_cluster_size,
+                ME_diss_thres = ME_diss_thres,
                 plot = plot,
-                nPC = nPC,
+                n_pc = n_pc,
                 nb_min_varExpl = nb_min_varExpl
             )
         sum_res <- nb_summary(clust_res = results, plot = plot)
@@ -758,13 +758,13 @@ nb_clust <-
 #'  scale=TRUE))
 #'  filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L,
 #'  cores=cores,mode=2L)
-#'  dist <- nb_dist(datan=datan, filter=filter, softPower=3L, cores=cores)
+#'  dist <- nb_dist(datan=datan, filter=filter, soft_power=3L, cores=cores)
 #'  max_singleton = dim(tcga_aml_meth_rna_chr18)[2]
 #'  forest <- nb_mcupgma(filter=filter,dist=dist,max_singleton=max_singleton,
 #'  cores=cores)
 #'  trees <- tree_search(forest)
 #'  results <- cut_trees(trees=trees,datan=datan, forest=forest,
-#'  minClusterSize=10L, MEDissThres=0.25, plot=FALSE)
+#'  min_cluster_size=10L, ME_diss_thres=0.25, plot=FALSE)
 #'  sum_res <- nb_summary(clust_res=results, plot=TRUE)
 #'
 #' @export
@@ -930,15 +930,15 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
 #' @param new_data Data frame were rows correspond to samples and columns to
 #'   features.
 #' @param scale     Logical. Should data be scaled and centered?
-#' @param onlyModuleMembership     Logical. Should only module memberships be
+#' @param only_module_membership     Logical. Should only module memberships be
 #'   transfered and PCs be newly computed?
 #' @return List
 #'
 #' @examples
 #' data('tcga_aml_meth_rna_chr18',  package='netboost')
 #' results <- netboost(datan = tcga_aml_meth_rna_chr18, stepno = 20L,
-#'     softPower = 3L, minClusterSize = 10L, nPC = 2, scale=TRUE,
-#'     MEDissThres = 0.25, plot=FALSE)
+#'     soft_power = 3L, min_cluster_size = 10L, n_pc = 2, scale=TRUE,
+#'     ME_diss_thres = 0.25, plot=FALSE)
 #' ME_transfer <- nb_transfer(nb_summary = results,
 #'     new_data = tcga_aml_meth_rna_chr18,
 #'     scale = TRUE)
@@ -949,7 +949,7 @@ nb_transfer <-
     function(nb_summary = NULL,
              new_data = NULL,
              scale = FALSE,
-             onlyModuleMembership = FALSE) {
+             only_module_membership = FALSE) {
         if (!exists("new_data"))
             stop("datan must be provided")
         
@@ -976,7 +976,7 @@ nb_transfer <-
                 as.data.frame(scale(new_data, center = TRUE, scale = TRUE))
         }
         
-        if (!onlyModuleMembership) {
+        if (!only_module_membership) {
             MEs <- as.matrix(new_data) %*% nb_summary$rotation
         } else {
             MEs <- netboost::nb_moduleEigengenes(expr = new_data,
@@ -1128,8 +1128,8 @@ nb_filter <-
 #' @examples
 #' data('tcga_aml_meth_rna_chr18',  package='netboost')
 #' results <- netboost(datan = tcga_aml_meth_rna_chr18, stepno = 20L,
-#' softPower = 3L, minClusterSize = 10L, nPC = 2, scale=TRUE,
-#' MEDissThres = 0.25, plot = FALSE)
+#' soft_power = 3L, min_cluster_size = 10L, n_pc = 2, scale=TRUE,
+#' ME_diss_thres = 0.25, plot = FALSE)
 #' set.seed(1234) # reproducible but shuffled color-module matching
 #' nb_plot_dendro(nb_summary = results, labels = FALSE, main = 'Test',
 #' colorsrandom = TRUE)
@@ -1214,15 +1214,15 @@ nb_plot_dendro <-
 #' @param colors    A vector of the same length as the number of probes in
 #'   ‘expr’, giving module color for all probes (genes). Color ‘'grey'’ is
 #'   reserved for unassigned genes.     Expression
-#' @param nPC       Number of principal components and variance explained
+#' @param n_pc       Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained entries
-#'   is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is
+#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
 #'   issued.
 #' @param align     Controls whether eigengenes, whose orientation is
 #'   undetermined, should be aligned with average expression (‘align = 'along
 #'   average'’, the default) or left as they are (‘align = ''’). Any other value
 #'   will trigger an error.
-#' @param excludeGrey   Should the improper module consisting of 'grey' genes be
+#' @param exclude_grey   Should the improper module consisting of 'grey' genes be
 #'   excluded from the eigengenes?
 #' @param grey          Value of ‘colors’ designating the improper module. Note
 #'   that if ‘colors’ is a factor of numbers, the default value will be
@@ -1241,12 +1241,12 @@ nb_plot_dendro <-
 #'   precedence in the sense that if ‘subHubs==TRUE’ and ‘trapErrors==FALSE’, an
 #'   error will be issued only if both the principal component and the hubgene
 #'   calculations have failed.
-#' @param returnValidOnly   logical; controls whether the returned data frame of
+#' @param return_valid_only   logical; controls whether the returned data frame of
 #'   module eigengenes contains columns corresponding only to modules whose
 #'   eigengenes or hub genes could be calculated correctly (‘TRUE’), or whether
 #'   the data frame should have columns for each of the input color labels
 #'   (‘FALSE’).
-#' @param softPower     The power used in soft-thresholding the adjacency
+#' @param soft_power     The power used in soft-thresholding the adjacency
 #'   matrix. Only used when the hubgene approximation is necessary because the
 #'   principal component calculation failed. It must be non-negative. The
 #'   default value should only be changed if there is a clear indication that it
@@ -1265,12 +1265,12 @@ nb_plot_dendro <-
 #'   printed messages. 0 means no indentation, each unit above that adds two
 #'   spaces.
 #' @param nb_min_varExpl        Minimum proportion of variance explained for
-#'   returned module eigengenes. Is capped at nPC.
+#'   returned module eigengenes. Is capped at n_pc.
 #'
 #' @return eigengenes   Module eigengenes in a dataframe, with each column
 #'   corresponding to one eigengene. The columns are named by the corresponding
 #'   color with an ‘'ME'’ prepended, e.g., ‘MEturquoise’ etc. If
-#'   ‘returnValidOnly==FALSE’, module eigengenes whose calculation failed have
+#'   ‘return_valid_only==FALSE’, module eigengenes whose calculation failed have
 #'   all components set to ‘NA’.
 #' @return averageExpr  If ‘align == 'along average'’, a dataframe containing
 #'   average normalized expression in each module. The columns are named by the
@@ -1281,11 +1281,11 @@ nb_plot_dendro <-
 #'   calculation is exact irrespective of the number of computed principal
 #'   components. At most 10 variance explained values are recorded in this
 #'   dataframe.
-#' @return nPC          A copy of the input ‘nPC’.
+#' @return n_pc          A copy of the input ‘n_pc’.
 #' @return validMEs     A boolean vector. Each component (corresponding to the
 #'   columns in ‘data’) is ‘TRUE’ if the corresponding eigengene is valid, and
 #'   ‘FALSE’ if it is invalid. Valid eigengenes include both principal
-#'   components and their hubgene approximations. When ‘returnValidOnly==FALSE’,
+#'   components and their hubgene approximations. When ‘return_valid_only==FALSE’,
 #'   by definition all returned eigengenes are valid and the entries of
 #'   ‘validMEs’ are all ‘TRUE’.
 #' @return validColors  A copy of the input colors with entries corresponding to
@@ -1308,24 +1308,24 @@ nb_plot_dendro <-
 #'   columns in ‘eigengenes’) is ‘TRUE’ if the corresponding module average
 #'   expression is valid.
 #' @return allAEOK      Boolean flag signalling whether all returned module
-#'   average expressions contain valid data. Note that ‘returnValidOnly==TRUE’
+#'   average expressions contain valid data. Note that ‘return_valid_only==TRUE’
 #'   does not imply ‘allAEOK==TRUE’: some invalid average expressions may be
 #'   returned if their corresponding eigengenes have been calculated correctly.
 #' @export
 nb_moduleEigengenes <-
     function(expr,
              colors,
-             nPC = 1,
+             n_pc = 1,
              align = "along average",
-             excludeGrey = FALSE,
+             exclude_grey = FALSE,
              grey = if (is.numeric(colors))
                  0
              else
                  "grey",
              subHubs = TRUE,
              trapErrors = FALSE,
-             returnValidOnly = trapErrors,
-             softPower = 6,
+             return_valid_only = trapErrors,
+             soft_power = 6,
              scale = TRUE,
              verbose = 0,
              indent = 0,
@@ -1370,8 +1370,8 @@ nb_moduleEigengenes <-
                 )
         }
         
-        if (softPower < 0)
-            stop("softPower must be non-negative")
+        if (soft_power < 0)
+            stop("soft_power must be non-negative")
         
         alignRecognizedValues <- c("", "along average")
         
@@ -1390,13 +1390,13 @@ nb_moduleEigengenes <-
         
         maxVarExplained <- 10
         
-        if (nPC > maxVarExplained)
-            warning(paste("Given nPC is too large. Will use value", maxVarExplained))
+        if (n_pc > maxVarExplained)
+            warning(paste("Given n_pc is too large. Will use value", maxVarExplained))
         
-        nVarExplained <- min(nPC, maxVarExplained)
+        nVarExplained <- min(n_pc, maxVarExplained)
         modlevels <- levels(factor(colors))
         
-        if (excludeGrey)
+        if (exclude_grey)
             if (sum(as.character(modlevels) != as.character(grey)) > 0) {
                 modlevels <-
                     modlevels[as.character(modlevels) != as.character(grey)]
@@ -1454,8 +1454,8 @@ nb_moduleEigengenes <-
                     printFlush(paste(spaces, " ...calculating SVD"))
                 svd1 <-
                     svd(datModule,
-                        nu = min(n, p, nPC),
-                        nv = min(n, p, nPC))
+                        nu = min(n, p, n_pc),
+                        nv = min(n, p, n_pc))
                 nb_PCA <-
                     stats::prcomp(
                         x = t(datModule),
@@ -1519,7 +1519,7 @@ nb_moduleEigengenes <-
                 validColors[restrict1] <- grey
             } else {
                 PrinComps[, i] <- pc
-                nb_nPCs <-
+                nb_n_pcs <-
                     min(c(which(
                         cumsum(varExpl[seq(
                             from = 1,
@@ -1530,10 +1530,10 @@ nb_moduleEigengenes <-
                     ), nVarExplained))
                 nb_PrinComps <-
                     base::cbind(nb_PrinComps, nb_PCA$x[, seq(from = 1,
-                                                       to = nb_nPCs,
+                                                       to = nb_n_pcs,
                                                        by = 1)])
                 colnames(nb_PrinComps)[seq(
-                    from = (ncol(nb_PrinComps) - nb_nPCs + 1),
+                    from = (ncol(nb_PrinComps) - nb_n_pcs + 1),
                     to = ncol(nb_PrinComps),
                     by = 1
                 )] <- paste0(
@@ -1542,25 +1542,25 @@ nb_moduleEigengenes <-
                     "_pc",
                     seq(
                         from = 1,
-                        to = nb_nPCs,
+                        to = nb_n_pcs,
                         by = 1
                     )
                 )
                 colnames(nb_PCA$rotation)[seq(from = 1,
-                                              to = nb_nPCs,
+                                              to = nb_n_pcs,
                                               by = 1)] <- paste0(
                                                   moduleColor.getMEprefix(),
                                                   modlevels[i],
                                                   "_pc",
                                                   seq(
                                                       from = 1,
-                                                      to = nb_nPCs,
+                                                      to = nb_n_pcs,
                                                       by = 1
                                                   )
                                               )
                 rotation[[i]] <-
                     nb_PCA$rotation[, seq(from = 1,
-                                          to = nb_nPCs,
+                                          to = nb_n_pcs,
                                           by = 1),
                                     drop = FALSE]
                 ae <- try({
@@ -1624,7 +1624,7 @@ nb_moduleEigengenes <-
         }
         
         allOK <- (sum(!validMEs) == 0)
-        if (returnValidOnly && sum(!validMEs) > 0) {
+        if (return_valid_only && sum(!validMEs) > 0) {
             PrinComps <- PrinComps[, validMEs]
             averExpr <- averExpr[, validMEs]
             varExpl <- varExpl[, validMEs]
@@ -1640,7 +1640,7 @@ nb_moduleEigengenes <-
             eigengenes = PrinComps,
             averageExpr = averExpr,
             varExplained = varExpl,
-            nPC = nPC,
+            n_pc = n_pc,
             validMEs = validMEs,
             validColors = validColors,
             allOK = allOK,
@@ -1681,12 +1681,12 @@ nb_example <-
     function(cores = getOption("mc.cores", 2L),
              keep = FALSE) {
         # Keep data local.
-        exaEnv <- new.env()
+        exa_env <- new.env()
         
         # load data methylation and RNA data 180 patients x 5283 features
         data("tcga_aml_meth_rna_chr18",
              package = "netboost",
-             envir = exaEnv)
+             envir = exa_env)
         
         pdfFile <- file.path(tempdir(), "results_netboost.pdf")
         
@@ -1694,13 +1694,13 @@ nb_example <-
         pdf(file = pdfFile, width = 30)
         results <-
             netboost(
-                datan = exaEnv$tcga_aml_meth_rna_chr18,
+                datan = exa_env$tcga_aml_meth_rna_chr18,
                 stepno = 20L,
-                softPower = 3L,
-                minClusterSize = 10L,
-                nPC = 2,
+                soft_power = 3L,
+                min_cluster_size = 10L,
+                n_pc = 2,
                 scale = TRUE,
-                MEDissThres = 0.25
+                ME_diss_thres = 0.25
             )
         # set.seed(1234)
         nb_plot_dendro(nb_summary = results,
@@ -1721,7 +1721,7 @@ nb_example <-
         ME_transfer <-
             nb_transfer(
                 nb_summary = results,
-                new_data = exaEnv$tcga_aml_meth_rna_chr18,
+                new_data = exa_env$tcga_aml_meth_rna_chr18,
                 scale = TRUE
             )
         
