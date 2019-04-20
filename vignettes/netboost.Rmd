@@ -30,7 +30,6 @@ instead of the original data.
 The package comes with an example dataset included and a complete Netboost run 
 on this data is performed by `nb_example()`. 
 
-
 ```{r netboost}
 library("netboost")
 nb_example
@@ -39,7 +38,7 @@ nb_example
 Let's perform this analysis step by step. First, we import the acute myeloid 
 leukemia patient data from The Cancer Genome Atlas public domain database. 
 The dataset consists of DNA methylation sites and gene expression on 
-chromosome 18 for 100 patients.   
+chromosome 18 for 80 patients.   
 
 ```{r load_data}
 data("tcga_aml_meth_rna_chr18", package = "netboost")
