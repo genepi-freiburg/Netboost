@@ -582,9 +582,9 @@ cut_dendro <-
             }
         }
         message(
-            "\nNetboost extracted",
+            "\nNetboost extracted ",
             length(table(mergedColors)),
-            "modules (including background) with an average size of",
+            " modules (including background) with an average size of ",
             mean(table(mergedColors)[-1]),
             " (excluding background) from ",
             substr(name_of_tree,
