@@ -129,8 +129,8 @@ netboost <-
             random_features <-
                 sample(ncol(datan), min(c(10000, ncol(datan))))
             # Call the network topology analysis function
-            sft <- pickSoftThreshold(datan[, random_features])
-            soft_power <- sft$powerEstimate
+            sft <- WGCNA::pickSoftThreshold(datan[, random_features])
+            soft_power <- sft[["powerEstimate"]]
             if(verbose>=0){message(
                 paste0(
                     "Netboost: soft_power was set to ",
@@ -350,7 +350,7 @@ nb_mcupgma <-
             message(ret)
         
         if (!file.exists(file_dist_tree) ||
-            file.info(file_dist_tree)$size == 0)
+            file.info(file_dist_tree)[["size"]] == 0)
             stop("No output file created. mcupgma error :(")
         
         return(as.matrix(
@@ -413,14 +413,14 @@ tree_search <- function(forest = NULL) {
 tree_dendro <- function(tree = NULL,
                         datan = NULL,
                         forest = NULL) {
-    index.features <- tree$ids[tree$ids <= dim(datan)[2]]
+    index.features <- tree[["ids"]][tree[["ids"]] <= dim(datan)[2]]
     data_tree <- datan[, index.features]
     
     colnames_tree <- colnames(datan)[index.features]
-    tree_cluster <- forest[tree$rows, , drop = FALSE]
+    tree_cluster <- forest[tree[["rows"]], , drop = FALSE]
     
     all_ids <- rev(sort(unique(c(forest[, c(1, 2, 4)]))))
-    none_tree_ids <- all_ids[!(all_ids %in% tree$ids)]
+    none_tree_ids <- all_ids[!(all_ids %in% tree[["ids"]])]
     for (i in none_tree_ids) {
         for (j in c(1, 2, 4)) {
             tree_cluster[tree_cluster[, j] > i, j] <-
@@ -433,21 +433,21 @@ tree_dendro <- function(tree = NULL,
     
     cutpoint <- dim(data_tree)[2]
     dendro <- list()
-    dendro$merge <- tree_cluster[, c(1, 2), drop = FALSE]
-    dendro$merge[dendro$merge <= cutpoint] <-
-        -dendro$merge[dendro$merge <= cutpoint]
-    dendro$merge[dendro$merge > 0] <-
-        dendro$merge[dendro$merge > 0] - cutpoint
-    dendro$merge <- apply(dendro$merge, c(1, 2), function(x) {
+    dendro[["merge"]] <- tree_cluster[, c(1, 2), drop = FALSE]
+    dendro[["merge"]][dendro[["merge"]] <= cutpoint] <-
+        -dendro[["merge"]][dendro[["merge"]] <= cutpoint]
+    dendro[["merge"]][dendro[["merge"]] > 0] <-
+        dendro[["merge"]][dendro[["merge"]] > 0] - cutpoint
+    dendro[["merge"]] <- apply(dendro[["merge"]], c(1, 2), function(x) {
         (as.integer(x))
     })
-    dendro$height <- tree_cluster[, 3]
-    dendro$order <- seq(from = 1, to = cutpoint, by = 1)
-    dendro$labels <- colnames_tree
+    dendro[["height"]] <- tree_cluster[, 3]
+    dendro[["order"]] <- seq(from = 1, to = cutpoint, by = 1)
+    dendro[["labels"]] <- colnames_tree
     class(dendro) <- "hclust"
     b <- as.dendrogram(dendro)
     b.order <- order.dendrogram(b)
-    dendro$order <- b.order
+    dendro[["order"]] <- b.order
     
     return(list(
         dendro = dendro,
@@ -486,7 +486,7 @@ cut_dendro <-
              nb_min_varExpl = 0.5) {
         dynamicMods <-
             dynamicTreeCut::cutreeDynamic(
-                dendro = tree_dendro$dendro,
+                dendro = tree_dendro[["dendro"]],
                 method = "tree",
                 deepSplit = TRUE,
                 minClusterSize = min_cluster_size
@@ -494,12 +494,12 @@ cut_dendro <-
         ### Merging of Dynamic Modules ### Calculate eigengenes
         MEList <-
             netboost::nb_moduleEigengenes(
-                expr = tree_dendro$data,
+                expr = tree_dendro[["data"]],
                 colors = dynamicMods,
                 n_pc = n_pc,
                 nb_min_varExpl = nb_min_varExpl
             )
-        MEs <- MEList$nb_eigengenes
+        MEs <- MEList[["nb_eigengenes"]]
         # Calculate dissimilarity of module eigengenes
         MEDiss <- 1 - cor(MEs)
         # Cluster module eigengenes
@@ -518,26 +518,26 @@ cut_dendro <-
             
             merged <-
                 WGCNA::mergeCloseModules(
-                    exprData = tree_dendro$data,
+                    exprData = tree_dendro[["data"]],
                     dynamicMods,
                     cutHeight = ME_diss_thres,
                     verbose = 3
                 )
-            mergedColors <- merged$colors
+            mergedColors <- merged[["colors"]]
             # Calculate eigengenes
             MEList <-
                 netboost::nb_moduleEigengenes(
-                    expr = tree_dendro$data,
-                    colors = merged$colors,
+                    expr = tree_dendro[["data"]],
+                    colors = merged[["colors"]],
                     n_pc = n_pc,
                     nb_min_varExpl = nb_min_varExpl
                 )
-            MEs <- MEList$nb_eigengenes
+            MEs <- MEList[["nb_eigengenes"]]
             MEDiss <- 1 - cor(MEs)
             if (length(MEDiss) > 1) {
                 METree <- hclust(as.dist(MEDiss), method = "average")
                 if (plot == TRUE &
-                    length(tree_dendro$dendro$labels) > 2) {
+                    length(tree_dendro[["dendro"]][["labels"]]) > 2) {
                     graphics::plot(
                         METree,
                         main = paste0(
@@ -548,7 +548,7 @@ cut_dendro <-
                         sub = ""
                     )
                     WGCNA::plotDendroAndColors(
-                        dendro = tree_dendro$dendro,
+                        dendro = tree_dendro[["dendro"]],
                         colors = mergedColors,
                         "Merged Dynamic",
                         dendroLabels = FALSE,
@@ -562,10 +562,10 @@ cut_dendro <-
         } else {
             message("\nOnly one module in ", name_of_tree, ".\n")
             mergedColors <- dynamicMods
-            if (length(tree_dendro$dendro$labels) > 2) {
+            if (length(tree_dendro[["dendro"]][["labels"]]) > 2) {
                 if (plot == TRUE) {
                     graphics::plot(
-                        tree_dendro$dendro,
+                        tree_dendro[["dendro"]],
                         main = paste0(
                             name_of_tree,
                             "Cluster Dendrogram ",
@@ -595,11 +595,11 @@ cut_dendro <-
             list(
                 colors = mergedColors,
                 MEs = MEs,
-                var_explained = MEList$var_explained,
-                rotation = MEList$rotation
+                var_explained = MEList[["var_explained"]],
+                rotation = MEList[["rotation"]]
             )
         )
-        # svd_PCs = MEList$eigengenes,
+        # svd_PCs = MEList[["eigengenes"]],
     }
 
 #' Module detection for the results from a nb_mcupgma call
@@ -655,9 +655,9 @@ cut_trees <-
                             datan = datan,
                             forest = forest)
             res[[i]] <- list()
-            res[[i]][["dendro"]] <- tree_dendro_res$dendro
-            res[[i]][["data"]] <- tree_dendro_res$data
-            res[[i]][["names"]] <- tree_dendro_res$names
+            res[[i]][["dendro"]] <- tree_dendro_res[["dendro"]]
+            res[[i]][["data"]] <- tree_dendro_res[["data"]]
+            res[[i]][["names"]] <- tree_dendro_res[["names"]]
             cut_dendro_res <-
                 cut_dendro(
                     tree_dendro = tree_dendro_res,
@@ -670,12 +670,12 @@ cut_trees <-
                     n_pc = n_pc,
                     nb_min_varExpl = nb_min_varExpl
                 )
-            res[[i]][["colors"]] <- cut_dendro_res$colors
-            res[[i]][["MEs"]] <- cut_dendro_res$MEs
-            # res[[i]][['svd_PCs']] <- cut_dendro_res$svd_PCs
+            res[[i]][["colors"]] <- cut_dendro_res[["colors"]]
+            res[[i]][["MEs"]] <- cut_dendro_res[["MEs"]]
+            # res[[i]][['svd_PCs']] <- cut_dendro_res[["svd_PCs"]]
             res[[i]][["var_explained"]] <-
-                cut_dendro_res$var_explained
-            res[[i]][["rotation"]] <- cut_dendro_res$rotation
+                cut_dendro_res[["var_explained"]]
+            res[[i]][["rotation"]] <- cut_dendro_res[["rotation"]]
             i <- i + 1
         }
         
@@ -786,22 +786,22 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
     for (tree in seq(from = 1,
                      to = length(clust_res),
                      by = 1)) {
-        res$dendros[[tree]] <- clust_res[[tree]]$dendro
-        res$names <- c(res$names, clust_res[[tree]]$names)
-        tmp.col <- clust_res[[tree]]$colors
+        res[["dendros"]][[tree]] <- clust_res[[tree]][["dendro"]]
+        res[["names"]] <- c(res[["names"]], clust_res[[tree]][["names"]])
+        tmp.col <- clust_res[[tree]][["colors"]]
         tmp.col.new <- tmp.col
-        tmp_MEs <- clust_res[[tree]]$MEs
+        tmp_MEs <- clust_res[[tree]][["MEs"]]
         tmp_MEs_new <- tmp_MEs
-        tmp_rotation <- clust_res[[tree]]$rotation
+        tmp_rotation <- clust_res[[tree]][["rotation"]]
         tmp_rotation <-
             do.call("cbind", lapply(
                 tmp_rotation,
                 FUN = function(x) {
                     y <-
                         matrix(0,
-                               nrow = length(clust_res[[tree]]$names),
+                               nrow = length(clust_res[[tree]][["names"]]),
                                ncol = ncol(x))
-                    rownames(y) <- clust_res[[tree]]$names
+                    rownames(y) <- clust_res[[tree]][["names"]]
                     y[rownames(x),] <- x
                     colnames(y) <- colnames(x)
                     return(y)
@@ -855,48 +855,48 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
                     )
             }
         }
-        res$colors <- c(res$colors, tmp.col.new)
+        res[["colors"]] <- c(res[["colors"]], tmp.col.new)
         if ("MEs" %in% names(res)) {
-            res$MEs <- cbind(res$MEs, tmp_MEs_new)
+            res[["MEs"]] <- cbind(res[["MEs"]], tmp_MEs_new)
         } else {
-            res$MEs <- tmp_MEs_new
+            res[["MEs"]] <- tmp_MEs_new
         }
         if ("rotation" %in% names(res)) {
-            res$rotation <- c(res$rotation, list(tmp_rotation_new))
+            res[["rotation"]] <- c(res[["rotation"]], list(tmp_rotation_new))
         } else {
-            res$rotation <- list(tmp_rotation_new)
+            res[["rotation"]] <- list(tmp_rotation_new)
         }
         ## if('svd_PCs' %in% names(res)){res$svd_PCs <- cbind(res$svd_PCs,
         ## clust_res[[tree]]$svd_PCs)}else{res$svd_PCs <-
         ## clust_res[[tree]]$svd_PCs}
         if ("var_explained" %in% names(res)) {
-            res$var_explained <-
-                cbind(res$var_explained, clust_res[[tree]]$var_explained)
+            res[["var_explained"]] <-
+                cbind(res[["var_explained"]], clust_res[[tree]][["var_explained"]])
         } else {
-            res$var_explained <- clust_res[[tree]]$var_explained
+            res[["var_explained"]] <- clust_res[[tree]][["var_explained"]]
         }
     }
-    rownames(res$var_explained) <-
+    rownames(res[["var_explained"]]) <-
         paste0("PC", seq(
             from = 1,
-            to = nrow(res$var_explained),
+            to = nrow(res[["var_explained"]]),
             by = 1
         ))
-    colnames(res$var_explained) <-
+    colnames(res[["var_explained"]]) <-
         unique(unlist(lapply(
             strsplit(split = "_pc",
-                     colnames(res$MEs)),
+                     colnames(res[["MEs"]])),
             FUN = function(x) {
                 x[1]
             }
         )))
     
-    res$rotation <-
+    res[["rotation"]] <-
         do.call("cbind", lapply(
-            res$rotation,
+            res[["rotation"]],
             FUN = function(x) {
-                y <- matrix(0, nrow = length(res$names), ncol = ncol(x))
-                rownames(y) <- res$names
+                y <- matrix(0, nrow = length(res[["names"]]), ncol = ncol(x))
+                rownames(y) <- res[["names"]]
                 y[rownames(x),] <- x
                 colnames(y) <- colnames(x)
                 return(y)
@@ -911,19 +911,19 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
         " background modules in ",
         length(clust_res),
         " trees resulting in ",
-        ncol(res$MEs),
+        ncol(res[["MEs"]]),
         " aggreagate measures.\n"
     )
     message("Average size of the modules was ",
-        mean(table(res$colors[!(res$colors <= 0)])), ".\n")
+        mean(table(res[["colors"]][!(res[["colors"]] <= 0)])), ".\n")
     message(
-        sum(res$colors <= 0),
+        sum(res[["colors"]] <= 0),
         " of ",
-        length(res$colors),
+        length(res[["colors"]]),
         " features (",
-        (sum(res$colors <=
+        (sum(res[["colors"]] <=
                  0) * 100 /
-             length(res$colors)),
+             length(res[["colors"]])),
         "%) were not assigned to modules.\n"
     )
     
@@ -952,7 +952,7 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
 #' ME_transfer <- nb_transfer(nb_summary = results,
 #'     new_data = tcga_aml_meth_rna_chr18,
 #'     scale = TRUE)
-#' all(round(results$MEs, 12) == round(ME_transfer, 12))
+#' all(round(results[["MEs"]], 12) == round(ME_transfer, 12))
 #'
 #' @export
 nb_transfer <-
@@ -968,18 +968,18 @@ nb_transfer <-
                                        0)))
             stop("new_data must be a data frame with dim() > (0,0).")
         
-        if (length(nb_summary$colors) != ncol(new_data)) {
+        if (length(nb_summary[["colors"]]) != ncol(new_data)) {
             stop(paste("The number of features in new_data must",
                        "correspond to the number in nb_summary."))
         }
         
-        if (!identical(sort(nb_summary$names), sort(colnames(new_data)))) {
+        if (!identical(sort(nb_summary[["names"]]), sort(colnames(new_data)))) {
             stop(paste("The features in new_data (colnames) must", 
                        "correspond to the features in nb_summary",
                        "(nb_summary$names)."))
         }
         
-        new_data <- new_data[, nb_summary$names]
+        new_data <- new_data[, nb_summary[["names"]]]
         
         if (scale) {
             new_data <-
@@ -987,17 +987,17 @@ nb_transfer <-
         }
         
         if (!only_module_membership) {
-            MEs <- as.matrix(new_data) %*% nb_summary$rotation
+            MEs <- as.matrix(new_data) %*% nb_summary[["rotation"]]
         } else {
             MEs <- netboost::nb_moduleEigengenes(expr = new_data,
-                                                 colors = nb_summary$colors)$nb_eigengenes
+                                                 colors = nb_summary[["colors"]])[["nb_eigengenes"]]
             colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"), FUN = length) >
                               1] <-
                 paste0("ME0_", substring(text = colnames(MEs)[lapply(strsplit(x = colnames(MEs),
                                                                               split = "-"), FUN = length) > 1], first = 4))
         }
         
-        MEs <- MEs[, colnames(nb_summary$MEs)]
+        MEs <- MEs[, colnames(nb_summary[["MEs"]])]
         rownames(MEs) <- rownames(new_data)
         return(MEs)
     }
@@ -1156,14 +1156,14 @@ nb_plot_dendro <-
         colorHeight <- 0.2
         graphics::layout(matrix(seq(
             from = 1,
-            to = (2 * length(nb_summary$dendros)),
+            to = (2 * length(nb_summary[["dendros"]])),
             by = 1
         ),
         nrow = 2),
         heights = c(1 - colorHeight, colorHeight))
         
         last_col <- 0
-        n_colors <- length(unique(nb_summary$colors))
+        n_colors <- length(unique(nb_summary[["colors"]]))
         middle <- floor(n_colors / 2)
         if (colorsrandom) {
             shuffel_index <- sample(x = n_colors, size = n_colors)
@@ -1180,29 +1180,29 @@ nb_plot_dendro <-
                                                                                          by = 1)]))
         plot_colors <-
             colorspace::rainbow_hcl(n = (length(unique(
-                nb_summary$colors
-            ))))[shuffel_index][as.factor(nb_summary$colors)]
-        plot_colors[nb_summary$colors <= 0] <- grDevices::gray(level = 0.7)
+                nb_summary[["colors"]]
+            ))))[shuffel_index][as.factor(nb_summary[["colors"]])]
+        plot_colors[nb_summary[["colors"]] <= 0] <- grDevices::gray(level = 0.7)
         for (tree in seq(from = 1,
-                         to = length(nb_summary$dendros),
+                         to = length(nb_summary[["dendros"]]),
                          by = 1)) {
             graphics::par(mar = c(0, 4, 8, 4))
             first_col <- last_col + 1
             last_col <-
-                last_col + length(nb_summary$dendros[[tree]]$labels)
+                last_col + length(nb_summary[["dendros"]][[tree]][["labels"]])
             if (labels) {
-                graphics::plot(nb_summary$dendros[[tree]],
-                     labels = nb_summary$names[seq(from = first_col,
+                graphics::plot(nb_summary[["dendros"]][[tree]],
+                     labels = nb_summary[["names"]][seq(from = first_col,
                                                    to = last_col,
                                                    by = 1)],
                      main = main)
             } else {
-                graphics::plot(nb_summary$dendros[[tree]],
+                graphics::plot(nb_summary[["dendros"]][[tree]],
                      labels = FALSE,
                      main = main)
             }
             graphics::par(mar = c(4, 4, 0, 4))
-            WGCNA::plotColorUnderTree(nb_summary$dendros[[tree]],
+            WGCNA::plotColorUnderTree(nb_summary[["dendros"]][[tree]],
                                       colors = plot_colors[seq(from = first_col,
                                                                to = last_col,
                                                                by = 1)],
@@ -1475,12 +1475,12 @@ nb_moduleEigengenes <-
                         tol = NULL,
                         rank. = NULL
                     )
-                nb_PCA$x <- t(t(nb_PCA$x) / svd1$d)
-                nb_PCA$rotation <- t(t(nb_PCA$rotation) / svd1$d)
+                nb_PCA[["x"]] <- t(t(nb_PCA[["x"]]) / svd1[["d"]])
+                nb_PCA[["rotation"]] <- t(t(nb_PCA[["rotation"]]) / svd1[["d"]])
                 if (verbose > 5)
                     message(paste(spaces, " ...calculating PVE"))
                 veMat <-
-                    WGCNA::cor(svd1$v[, seq(from = 1,
+                    WGCNA::cor(svd1[["v"]][, seq(from = 1,
                                             to = min(n, p, nVarExplained),
                                             by = 1)], t(datModule), use = "p")
                 varExpl[seq(
@@ -1489,7 +1489,7 @@ nb_moduleEigengenes <-
                     by = 1
                 ), i] <- rowMeans(veMat ^ 2,
                                   na.rm = TRUE)
-                svd1$v[, 1]
+                svd1[["v"]][, 1]
             }, silent = TRUE)
             
             if (methods::is(pc, "try-error")) {
@@ -1539,7 +1539,7 @@ nb_moduleEigengenes <-
                         ), i]) > nb_min_varExpl
                     ), nVarExplained))
                 nb_PrinComps <-
-                    base::cbind(nb_PrinComps, nb_PCA$x[, seq(from = 1,
+                    base::cbind(nb_PrinComps, nb_PCA[["x"]][, seq(from = 1,
                                                        to = nb_n_pcs,
                                                        by = 1)])
                 colnames(nb_PrinComps)[seq(
@@ -1556,7 +1556,7 @@ nb_moduleEigengenes <-
                         by = 1
                     )
                 )
-                colnames(nb_PCA$rotation)[seq(from = 1,
+                colnames(nb_PCA[["rotation"]])[seq(from = 1,
                                               to = nb_n_pcs,
                                               by = 1)] <- paste0(
                                                   moduleColor.getMEprefix(),
@@ -1569,7 +1569,7 @@ nb_moduleEigengenes <-
                                                   )
                                               )
                 rotation[[i]] <-
-                    nb_PCA$rotation[, seq(from = 1,
+                    nb_PCA[["rotation"]][, seq(from = 1,
                                           to = nb_n_pcs,
                                           by = 1),
                                     drop = FALSE]
@@ -1704,7 +1704,7 @@ nb_example <-
         pdf(file = pdfFile, width = 30)
         results <-
             netboost(
-                datan = exa_env$tcga_aml_meth_rna_chr18,
+                datan = exa_env[["tcga_aml_meth_rna_chr18"]],
                 stepno = 20L,
                 soft_power = 3L,
                 min_cluster_size = 10L,
@@ -1731,11 +1731,11 @@ nb_example <-
         ME_transfer <-
             nb_transfer(
                 nb_summary = results,
-                new_data = exa_env$tcga_aml_meth_rna_chr18,
+                new_data = exa_env[["tcga_aml_meth_rna_chr18"]],
                 scale = TRUE
             )
         
-        all(round(results$MEs, 12) == round(ME_transfer, 12))
+        all(round(results[["MEs"]], 12) == round(ME_transfer, 12))
         
         # Cleanup all produced temporary filed (esp. clustering/iteration_*)
         if (!keep)
