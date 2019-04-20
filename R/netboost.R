@@ -230,7 +230,7 @@ nb_dist <-
         
         if (!(is.matrix(filter) &&
               (nrow(filter) > 0) && (ncol(filter) > 0)))
-            stop("filter must be matrix with dim() > (0,0)")
+            stop("filter must be matrix with nrow > 0 and ncol >0")
         
         # if (!(is.vector(adjacency) && (length(adjacency) > 0)))
         # stop('adjacency is required a vector with length > 0')
