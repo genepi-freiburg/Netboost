@@ -390,10 +390,10 @@ tree_search <- function(forest = NULL) {
     ## have set up all values with as.integer() or R delivers default numeric
     ## (double). In that case, Rcpp converts the matrix.  (Alternative: convert
     ## manually 'matrix(as.integer(forest), nrow=nrow(forest))')
-    forest <- as.matrix(forest)
+    #forest <- as.matrix(forest)
     
     if (is.null(forest) || !is.matrix(forest))
-        stop("forest must be provided (as integer matrix)")
+        stop("forest must be provided (as matrix)")
     
     return(cpp_tree_search(forest))
 }
