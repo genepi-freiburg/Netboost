@@ -178,8 +178,8 @@ netboost <-
 #'   based on the scale free topology criterion if unspecified.
 #' @return Vector with adjacencies for the filter
 calculate_adjacency <-
-    function(datan = NULL,
-             filter = NULL,
+    function(datan,
+             filter,
              soft_power = 2) {
         return(vapply(X=seq(
             from = 1,
