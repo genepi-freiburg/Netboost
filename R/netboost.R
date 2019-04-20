@@ -347,7 +347,7 @@ nb_mcupgma <-
             )
         
         if (verbose)
-            print(ret)
+            message(ret)
         
         if (!file.exists(file_dist_tree) ||
             file.info(file_dist_tree)$size == 0)
@@ -560,7 +560,7 @@ cut_dendro <-
                 }
             }
         } else {
-            cat("\nOnly one module in ", name_of_tree, ".\n")
+            message("\nOnly one module in ", name_of_tree, ".\n")
             mergedColors <- dynamicMods
             if (length(tree_dendro$dendro$labels) > 2) {
                 if (plot == TRUE) {
@@ -574,14 +574,14 @@ cut_dendro <-
                     )
                 }
             } else {
-                cat(
+                message(
                     "\nOnly two elements in the one module in ",
                     name_of_tree,
                     " (no plot generated).\n"
                 )
             }
         }
-        cat(
+        message(
             "\nNetboost extracted",
             length(table(mergedColors)),
             "modules (including background) with an average size of",
@@ -903,7 +903,7 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
             }
         ))
     
-    cat(
+    message(
         "\nNetboost detected ",
         n_MEs,
         " modules and ",
@@ -914,9 +914,9 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
         ncol(res$MEs),
         " aggreagate measures.\n"
     )
-    cat("Average size of the modules was ",
+    message("Average size of the modules was ",
         mean(table(res$colors[!(res$colors <= 0)])), ".\n")
-    cat(
+    message(
         sum(res$colors <= 0),
         " of ",
         length(res$colors),
@@ -1079,7 +1079,7 @@ nb_filter <-
             
             boosting_filter <- mclapply(seq(1, until), function(x) {
                 if ((((x - 1) %% progress) == 0)) {
-                    print(sprintf("idx: %d (%.1f%%) - %s", x,
+                    message(sprintf("idx: %d (%.1f%%) - %s", x,
                                   x * 100 / until, date()))
                 }
                 
@@ -1089,7 +1089,7 @@ nb_filter <-
             ## Sequential function for debugging.  print(paste('Sequential version'))
             boosting_filter <- lapply(seq(1, until), function(x) {
                 if ((((x - 1) %% progress) == 0)) {
-                    print(sprintf("idx: %d (%.1f%%) - %s", x,
+                    message(sprintf("idx: %d (%.1f%%) - %s", x,
                                   x * 100 / until, date()))
                 }
                 
@@ -1343,7 +1343,7 @@ nb_moduleEigengenes <-
         spaces <- indentSpaces(indent)
         
         if (verbose == 1)
-            printFlush(
+            message(
                 paste(
                     spaces,
                     "moduleEigengenes: Calculating",
@@ -1386,7 +1386,7 @@ nb_moduleEigengenes <-
         alignRecognizedValues <- c("", "along average")
         
         if (!is.element(align, alignRecognizedValues)) {
-            printFlush(
+            message(
                 paste(
                     "ModulePrincipalComponents: Error:",
                     "parameter align has an unrecognised value:",
@@ -1442,7 +1442,7 @@ nb_moduleEigengenes <-
                       to = length(modlevels),
                       by = 1)) {
             if (verbose > 1)
-                printFlush(paste(
+                message(paste(
                     spaces,
                     "moduleEigengenes : Working on ME for module",
                     modlevels[i]
@@ -1451,17 +1451,17 @@ nb_moduleEigengenes <-
             restrict1 <-
                 as.character(colors) == as.character(modulename)
             if (verbose > 2)
-                printFlush(paste(spaces, " ...", sum(restrict1), "features"))
+                message(paste(spaces, " ...", sum(restrict1), "features"))
             datModule <- as.matrix(t(expr[, restrict1]))
             n <- dim(datModule)[1]
             p <- dim(datModule)[2]
             pc <- try({
                 if (verbose > 5)
-                    printFlush(paste(spaces, " ...scaling"))
+                    message(paste(spaces, " ...scaling"))
                 if (scale)
                     datModule <- t(scale(t(datModule)))
                 if (verbose > 5)
-                    printFlush(paste(spaces, " ...calculating SVD"))
+                    message(paste(spaces, " ...calculating SVD"))
                 svd1 <-
                     svd(datModule,
                         nu = min(n, p, n_pc),
@@ -1478,7 +1478,7 @@ nb_moduleEigengenes <-
                 nb_PCA$x <- t(t(nb_PCA$x) / svd1$d)
                 nb_PCA$rotation <- t(t(nb_PCA$rotation) / svd1$d)
                 if (verbose > 5)
-                    printFlush(paste(spaces, " ...calculating PVE"))
+                    message(paste(spaces, " ...calculating PVE"))
                 veMat <-
                     WGCNA::cor(svd1$v[, seq(from = 1,
                                             to = min(n, p, nVarExplained),
@@ -1496,7 +1496,7 @@ nb_moduleEigengenes <-
                 if (!trapErrors)
                     stop(pc)
                 if (verbose > 0) {
-                    printFlush(
+                    message(
                         paste(
                             spaces,
                             " ..ME calculation of module",
@@ -1504,7 +1504,7 @@ nb_moduleEigengenes <-
                             "failed with the following error:"
                         )
                     )
-                    printFlush(
+                    message(
                         paste(
                             spaces,
                             "     ",
@@ -1580,7 +1580,7 @@ nb_moduleEigengenes <-
                         rowMeans(scaledExpr, na.rm = TRUE)
                     if (align == "along average") {
                         if (verbose > 4)
-                            printFlush(
+                            message(
                                 paste(
                                     spaces,
                                     " .. aligning module eigengene with average expression."
@@ -1599,7 +1599,7 @@ nb_moduleEigengenes <-
                     if (!trapErrors)
                         stop(ae)
                     if (verbose > 0) {
-                        printFlush(
+                        message(
                             paste(
                                 spaces,
                                 " ..Average expression calculation of module",
@@ -1607,7 +1607,7 @@ nb_moduleEigengenes <-
                                 "failed with the following error:"
                             )
                         )
-                        printFlush(
+                        message(
                             paste(
                                 spaces,
                                 "     ",
@@ -1741,7 +1741,7 @@ nb_example <-
         if (!keep)
             netboostTmpCleanup()
         else
-            print(paste("Kept MCUPGMA temporary files in:", netboostTmpPath()))
+            message(paste("Kept MCUPGMA temporary files in:", netboostTmpPath()))
         
         invisible(results)
     }
