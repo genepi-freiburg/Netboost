@@ -24,8 +24,8 @@ Sys.unsetenv("ALLOW_WGCNA_THREADS")
 #'   step
 #' @param until     Stop at index/column (if 0: iterate through all columns).
 #'   For testing purposes in large datasets.
-#' @param progress  Integer. If > 0, print progress after every X steps (mind:
-#'   parallel!)
+#' @param progress  Integer. If > 0, print progress after every X steps (
+#' Progress might not be reported 100% accurate due to parallel execution)
 #' @param mode      Integer. Mode (0: x86, 1: FMA, 2: AVX). Features are only
 #'   available if compiled accordingly and available on the hardware.
 #' @param softPower Integer. Exponent of the transformation. Set automatically
