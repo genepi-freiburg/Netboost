@@ -195,7 +195,7 @@ calculate_adjacency <-
         ),
         FUN=function(i) {
             abs(WGCNA::cor(datan[, filter[i, 1]],
-                           datan[, filter[i, 2]]), method = method) ^ soft_power
+                           datan[, filter[i, 2]], method = method)) ^ soft_power
         },
         FUN.VALUE=1))
     }
