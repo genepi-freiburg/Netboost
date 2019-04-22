@@ -2500,6 +2500,7 @@ fi
 
 
 
+# M4 macros for checking of CPU features.
 # ===========================================================================
 #  https://www.gnu.org/software/autoconf-archive/ax_gcc_x86_avx_xgetbv.html
 # ===========================================================================

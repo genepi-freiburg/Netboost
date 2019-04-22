@@ -45,7 +45,7 @@ data("tcga_aml_meth_rna_chr18", package = "netboost")
 dim(tcga_aml_meth_rna_chr18)
 ```
 
-The `netboost()` function integrates all mayor analysis steps and generates 
+The `netboost()` function integrates all major analysis steps and generates 
 multiple plots. In this step we also set analysis parameters:
 
  `stepno` defines the number of boosting steps taken

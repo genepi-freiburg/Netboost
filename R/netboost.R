@@ -323,18 +323,15 @@ nb_mcupgma <-
             quote = FALSE
         )
         
-        # system('gzip -f clustering/dist.edges')
-        ret <- system2("gzip", args = c("-f", file_dist_edges,
-                       ifelse(verbose, "--verbose", "")))
-        
-        ## If gzip compressed file, the original file (and variable) is replaced
-        if (ret == 0 && file.exists(paste0(file_dist_edges, ".gz")))
-            file_dist_edges <-
-            paste0(file_dist_edges, ".gz")
-        else
+        file_dist_edges_gz <- paste(file_dist_edges, ".gz", sep="")
+        ret <- R.utils::gzip(file_dist_edges, destname = file_dist_edges_gz,
+                             overwrite = TRUE)
+
+        if (attr(ret, "nbrOfBytes") <= 0 || !R.utils::isGzipped(file_dist_edges_gz))
             warning(paste("Gzip maybe failed on:", file_dist_edges,
-                          "Return:", ret))
-        
+                          "Return:", as.character(ret),
+                          " Bytes: ", attr(ret, "nbrOfBytes")))
+
         ret <-
             mcupgma_exec(
                 exec = "cluster.pl",
@@ -350,7 +347,7 @@ nb_mcupgma <-
                 file_dist_tree,
                 "-split_unmodified_edges",
                 max(cores,2L),
-                file_dist_edges,
+                file_dist_edges_gz,
                 console = FALSE
             )
         

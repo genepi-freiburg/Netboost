@@ -1,8 +1,8 @@
 Package: netboost
 Type: Package
 Title: Network Analysis Supported by Boosting
-Version: 0.99.6
-Date: 2019-04-04
+Version: 0.99.7
+Date: 2019-04-22
 Authors@R: c(person("Pascal", "Schlosser", role = c("aut", "cre"),
                     email = "pascal.schlosser@uniklinik-freiburg.de"),
              person("Jochen", "Knaus", role = c("aut", "ctb"),
@@ -35,7 +35,8 @@ Imports:
   WGCNA,
   impute,
   colorspace,
-  methods
+  methods,
+  R.utils
 LinkingTo:
   Rcpp,
   RcppParallel

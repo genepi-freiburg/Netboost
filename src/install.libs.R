@@ -38,7 +38,7 @@ if (WINDOWS)
 cnt <- c(nbCheckPrg("make", "(GNU) make"),
          nbCheckPrg("bash", "Bash shell"),
          nbCheckPrg("perl", "Perl interpreter"),
-         nbCheckPrg("gzip", "GZip packer"),
+#         nbCheckPrg("gzip", "GZip packer"),
          nbCheckPrg("echo", "echo shell command"))
 
 # Any missings?
@@ -112,10 +112,10 @@ for (path in c(file.path('clustering_round', 'bin'),
                file.path('clustering_util', 'bin'),
                file.path('scripts'))) {
   ## Source folder
-  copy_path <- file.path(src_mcupgma, path, '*')
+  copy_path <- file.path(src_mcupgma, path)
   
   ## All files in folder
-  files <- Sys.glob(copy_path)
+  files <- list.files(path = copy_path, full.names = TRUE)
 
   ## Skip all sub-directories, all files in flat folder.
   files <- files[which(sapply(files, function(x) file.info(x)$isdir) != TRUE)]
@@ -132,8 +132,8 @@ for (path in c(file.path('clustering_round', 'bin'),
                   copy_path,
                   " (build failed)"))
 
-  print(paste("INSTALL FROM:", copy_path, "TO:", dest_mcupgma, "FILES:"))
-##  print(files)
+  print(paste("INSTALL FROM:", copy_path, "TO:", dest_mcupgma))
+
   ## Write all files. (return is logical for each element)
   retCopy <- file.copy(files, dest_mcupgma, overwrite = TRUE)
 
@@ -146,22 +146,28 @@ for (path in c(file.path('clustering_round', 'bin'),
 }
 
 # @TODO Unused?
-files <- Sys.glob(paste0(dest_mcupgma, "/*"))
+# files2 <- Sys.glob(paste0(dest_mcupgma, "/*"))
+files <- list.files(path = dest_mcupgma, full.names = TRUE)
 
 # This fix should be in Makevars, but as Gnu make syntax only allowed on
 # Windows, it hastingly added here...
 # @TODO Remove
-sapply(Sys.glob(paste0("*", SHLIB_EXT)), function(file) {
-    if (file != tolower(file)) {
-#        print(paste("Create:", tolower(file), "from", file))
-        file.copy(c(file), c(tolower(file)), overwrite = TRUE)
-    }
-})
+# sapply(Sys.glob(paste0("*", SHLIB_EXT)), function(file) {
+
+# Extension is .so, so mask "." as character.
+sapply(list.files(".", pattern = paste(".*\\", SHLIB_EXT, sep=""), full.names = TRUE),
+        function(file) {
+            if (file != tolower(file)) {
+            print(paste("Create:", tolower(file), "from", file))
+            file.copy(c(file), c(tolower(file)), overwrite = TRUE)
+        }
+    })
 
 ## Copy own (non-mcugpma) libraries (basically only netboost.so) to dest.
 ## Basically the code from R manual
 dir.create(dest_lib, recursive = TRUE, showWarnings = FALSE)
-files <- Sys.glob(paste0("*", SHLIB_EXT))
+# files <- Sys.glob(paste0("*", SHLIB_EXT))
+files <- list.files(".", pattern = paste("*", SHLIB_EXT, sep=""), full.names = TRUE)
 file.copy(files, dest_lib, overwrite = TRUE)
 print(files)
 

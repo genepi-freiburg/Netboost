@@ -14,6 +14,7 @@
 #' 
 #' @importFrom Rcpp evalCpp
 #' @importFrom RcppParallel setThreadOptions
+#' @importFrom R.utils gzip isGzipped
 #' @importFrom parallel mclapply
 #' @importFrom colorspace rainbow_hcl
 #' @importFrom grDevices dev.off gray pdf
@@ -105,6 +106,7 @@
 ##    netboostTmpPath())))
 ##    close(filew)
   }
+  # Else successful build would be warned.
   else {
     warning(paste("File not written (as it does not exist):",
                   mcupgma_install))
@@ -154,7 +156,8 @@ nb_set_tempdir <- function(tmp = NULL) {
   }
   else {
     # Existing folder must be empty, as will be removed on cleanup.
-    files <- Sys.glob(file.path(folder, '*'))
+    files <- list.files(folder, full.names = TRUE)
+#    files <- Sys.glob(file.path(folder, '*'))
     
     if (length(files) > 0)
       stop(paste("Given temporary folder not empty:", folder))

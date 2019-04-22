@@ -15,9 +15,11 @@ src/mcupgma/clustering_round/obj*
 src/mcupgma/clustering_util/obj*
 src/mcupgma/*.tar.gz
 results_netboost.pdf
-src/mcupgma/clustering_round/dep.x86_64_Darwin/HierarchicalClustering_main.d
-src/mcupgma/clustering_round/dep.x86_64_Darwin/HierarchicalClustering_with_unknown_edges.d
-src/mcupgma/clustering_round/dep.x86_64_Darwin/test_heap.d
+# src/mcupgma/clustering_round/dep.x86_64_Darwin/HierarchicalClustering_main.d
+# src/mcupgma/clustering_round/dep.x86_64_Darwin/HierarchicalClustering_with_unknown_edges.d
+# src/mcupgma/clustering_round/dep.x86_64_Darwin/test_heap.d
+# src/mcupgma/clustering_round/dep.x86_64_*/*
+src/mcupgma/clustering_round/dep.*/*
 src/mcupgma/scripts/install_path.mk
 src/Makevars
 src/mcupgma/clustering_util/Makefile
