@@ -4,11 +4,11 @@
 ## Load WGCNA, try to hide the welcome-message (only a try as it is printed...)
 ## Workaround using environment to force WGCNA skipping it's welcome-message.
 Sys.setenv(ALLOW_WGCNA_THREADS = 1)
-suppressPackageStartupMessages(library(WGCNA))
+suppressPackageStartupMessages(require(WGCNA))
 Sys.unsetenv("ALLOW_WGCNA_THREADS")
 
-## library(colorspace)
-## library(parallel)
+## require(colorspace)
+## require(parallel)
 
 #' Netboost clustering.
 #'
@@ -24,37 +24,37 @@ Sys.unsetenv("ALLOW_WGCNA_THREADS")
 #'   step
 #' @param until     Stop at index/column (if 0: iterate through all columns).
 #'   For testing purposes in large datasets.
-#' @param progress  Integer. If > 0, print progress after every X steps (mind:
-#'   parallel!)
+#' @param progress  Integer. If > 0, print progress after every X steps (
+#' Progress might not be reported 100% accurate due to parallel execution)
 #' @param mode      Integer. Mode (0: x86, 1: FMA, 2: AVX). Features are only
 #'   available if compiled accordingly and available on the hardware.
-#' @param softPower Integer. Exponent of the transformation. Set automatically
+#' @param soft_power Integer. Exponent of the transformation. Set automatically
 #'   based on the scale free topology criterion if unspecified.
 #' @param max_singleton   Integer. The maximal singleton in the clustering.
 #'   Usually equals the number of features.
 #' @param plot      Logical. Should plots be created?
-#' @param minClusterSize  Integer. The minimum number of features in one module.
-#' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for
+#' @param min_cluster_size  Integer. The minimum number of features in one module.
+#' @param ME_diss_thres Numeric. Module Eigengene Dissimilarity Threshold for
 #'   merging close modules.
 #' @param cores     Integer. Amount of CPU cores used (<=1 : sequential)
 #' @param scale     Logical. Should data be scaled and centered?
+#' @param method	A character string specifying the method to be used for
+#'   correlation coefficients.
 #' @param verbose   Additional diagnostic messages.
-#' @param nPC        Number of principal components and variance explained
+#' @param n_pc        Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained entries
-#'   is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is
+#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
 #'   issued.
 #' @param nb_min_varExpl        Minimum proportion of variance explained for
-#'   returned module eigengenes. The number of PCs is capped at nPC.
+#'   returned module eigengenes. The number of PCs is capped at n_pc.
 #' @return dendros  A list of dendrograms. For each fully separate part of the
 #'   network an individual dendrogram.
 #' @return names    A vector of feature names.
 #' @return colors   A vector of numeric color coding in matching order of names
 #'   and module eigengene names (color = 3 -> variable in ME3).
 #' @return MEs      Aggregated module measures (Module eigengenes).
-#' @return varExplained  Proportion of variance explained per module eigengene
-#'   per principal component (max nPC principal components are listed).
-#' @return dendros  A list of dendrograms. For each fully separate part of the
-#'   network an individual dendrogram.
+#' @return var_explained  Proportion of variance explained per module eigengene
+#'   per principal component (max n_pc principal components are listed).
 #' @return rotation Matrix of variable loadings divided by their singular
 #'   values. datan %*% rotation = MEs (with datan potentially scaled)
 #'
@@ -62,8 +62,8 @@ Sys.unsetenv("ALLOW_WGCNA_THREADS")
 #' @examples
 #' data('tcga_aml_meth_rna_chr18',  package='netboost')
 #' results <- netboost(datan=tcga_aml_meth_rna_chr18, stepno=20L,
-#'    softPower=3L, minClusterSize=10L, nPC=2, scale=TRUE,
-#'    MEDissThres=0.25, plot=TRUE)
+#'    soft_power=3L, min_cluster_size=10L, n_pc=2, scale=TRUE,
+#'    ME_diss_thres=0.25, plot=TRUE)
 #'
 #' @export
 netboost <-
@@ -72,36 +72,47 @@ netboost <-
              until = 0L,
              progress = 1000L,
              mode = 2L,
-             softPower = NULL,
-             max_singleton = dim(datan)[2],
+             soft_power = NULL,
+             max_singleton = ncol(datan),
              plot = TRUE,
-             minClusterSize = 2L,
-             MEDissThres = 0.25,
-             nPC = 1,
+             min_cluster_size = 2L,
+             ME_diss_thres = 0.25,
+             n_pc = 1,
              nb_min_varExpl = 0.5,
              cores = as.integer(getOption("mc.cores", 2)),
              scale = TRUE,
+             method = c("pearson", "kendall", "spearman"),
              verbose = getOption("verbose")) {
         # Initialize parallelization of WGCNA package.
         if (cores > 1)
             WGCNA::allowWGCNAThreads(nThreads = as.numeric(cores))
         
+        if (is.null(datan) || !is.data.frame(datan))
+            stop("netboost: Error: datan must be a data.frame.")
+
+        if (is.null(stepno) || !is.integer(stepno))
+            stop("netboost: Error: stepno must be an integer.")
+
+        if (is.null(min_cluster_size) || !is.integer(min_cluster_size))
+            stop("netboost: Error: min_cluster_size must be an integer.")
+
+        if (is.null(ME_diss_thres) || !is.numeric(ME_diss_thres))
+            stop("netboost: Error: ME_diss_thres must be numeric.")
+
         if (ncol(datan) > 5e+06) {
             stop(
-                paste(
                     "A bug in sparse UPGMA currently prevents analyses",
-                    "with more than 5 million features."
-                )
+                    " with more than 5 million features."
             )
         }
         
         if (scale) {
-            message("Netboost: Scaling and centering data.")
+            if(verbose>=1){message("Netboost: Scaling and centering data.")}
             datan <-
                 as.data.frame(scale(datan, center = TRUE, scale = TRUE))
         }
         
-        message("Netboost: Initialising filter step.")
+        if(verbose>=1){message("Netboost: Initialising filter step.")}
         filter <-
             nb_filter(
                 datan = datan,
@@ -112,51 +123,52 @@ netboost <-
                 mode = mode
             )
         
-        message("Netboost: Finished filter step.")
+        if(verbose>=1){message("Netboost: Finished filter step.")}
         
-        if (is.null(softPower)) {
+        if (is.null(soft_power)) {
             # Random subset out of allocation
             random_features <-
                 sample(ncol(datan), min(c(10000, ncol(datan))))
             # Call the network topology analysis function
-            sft <- pickSoftThreshold(datan[, random_features])
-            softPower <- sft$powerEstimate
-            message(
+            sft <- WGCNA::pickSoftThreshold(datan[, random_features])
+            soft_power <- sft[["powerEstimate"]]
+            if(verbose>=0){message(
                 paste0(
-                    "Netboost: softPower was set to ",
-                    softPower,
+                    "Netboost: soft_power was set to ",
+                    soft_power,
                     " based on the scale free topology criterion."
                 )
-            )
+            )}
         }
         
-        message("Netboost: Initialising distance calculation.")
+        if(verbose>=1){message("Netboost: Initialising distance calculation.")}
         dist <-
             nb_dist(
                 datan = datan,
                 filter = filter,
-                softPower = softPower,
-                cores = cores
+                soft_power = soft_power,
+                cores = cores,
+                method = method
             )
-        message("Netboost: Finished distance calculation.")
+        if(verbose>=1){message("Netboost: Finished distance calculation.")}
         
-        message("Netboost: Initialising clustering step.")
+        if(verbose>=1){message("Netboost: Initialising clustering step.")}
         results <-
             nb_clust(
                 datan = datan,
                 filter = filter,
                 dist = dist,
-                minClusterSize = minClusterSize,
-                MEDissThres = MEDissThres,
-                nPC = nPC,
+                min_cluster_size = min_cluster_size,
+                ME_diss_thres = ME_diss_thres,
+                n_pc = n_pc,
                 nb_min_varExpl = nb_min_varExpl,
                 max_singleton = max_singleton,
                 cores = cores,
                 plot = plot
             )
-        message("Netboost: Finished clustering step.")
+        if(verbose>=1){message("Netboost: Finished clustering step.")}
         
-        message("Netboost: Finished Netboost.")
+        if(verbose>=1){message("Netboost: Finished Netboost.")}
         invisible(results)
     }
 
@@ -166,13 +178,16 @@ netboost <-
 #' @param datan     Data frame were rows correspond to samples and columns to
 #'   features.
 #' @param filter    Filter-Matrix as generated by the nb_filter function.
-#' @param softPower Integer. Exponent of the transformation. Set automatically
+#' @param soft_power Integer. Exponent of the transformation. Set automatically
 #'   based on the scale free topology criterion if unspecified.
+#' @param method	A character string specifying the method to be used for
+#'   correlation coefficients.
 #' @return Vector with adjacencies for the filter
 calculate_adjacency <-
-    function(datan = NULL,
-             filter = NULL,
-             softPower = 2) {
+    function(datan,
+             filter,
+             soft_power = 2,
+             method = c("pearson", "kendall", "spearman")) {
         return(vapply(X=seq(
             from = 1,
             to = nrow(filter),
@@ -180,7 +195,7 @@ calculate_adjacency <-
         ),
         FUN=function(i) {
             abs(WGCNA::cor(datan[, filter[i, 1]],
-                           datan[, filter[i, 2]])) ^ softPower
+                           datan[, filter[i, 2]], method = method)) ^ soft_power
         },
         FUN.VALUE=1))
     }
@@ -192,10 +207,12 @@ calculate_adjacency <-
 #' @param filter    Filter-Matrix as generated by the nb_filter function.
 #' @param datan     Data frame were rows correspond to samples and columns to
 #'   features.
-#' @param softPower Integer. Exponent of the transformation. Set automatically
+#' @param soft_power Integer. Exponent of the transformation. Set automatically
 #'   based on the scale free topology criterion if unspecified.
 #' @param cores     Integer. Amount of CPU cores used (<=1 : sequential).
 #' @param verbose   Additional diagnostic messages.
+#' @param method	A character string specifying the method to be used for
+#'   correlation coefficients.
 #' @return Vector with distances.
 #'
 #' @examples
@@ -205,22 +222,23 @@ calculate_adjacency <-
 #'  scale=TRUE))
 #'  filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L,
 #'  cores=cores,mode=2L)
-#'  dist <- nb_dist(datan=datan, filter=filter, softPower=3L, cores=cores)
+#'  dist <- nb_dist(datan=datan, filter=filter, soft_power=3L, cores=cores)
 #'  summary(dist)
 #'
 #' @export
 nb_dist <-
-    function(filter = NULL,
-             datan = NULL,
-             softPower = 2,
+    function(filter,
+             datan,
+             soft_power = 2,
              cores = getOption("mc.cores", 2L),
-             verbose = getOption("verbose")) {
+             verbose = getOption("verbose"),
+             method = c("pearson", "kendall", "spearman")) {
         # if (is.null(filter) || is.null(adjacency)) stop('Both filter and
         # adjacency must be provided')
         
         if (!(is.matrix(filter) &&
               (nrow(filter) > 0) && (ncol(filter) > 0)))
-            stop("filter must be matrix with dim() > (0,0)")
+            stop("filter must be matrix with nrow > 0 and ncol >0")
         
         # if (!(is.vector(adjacency) && (length(adjacency) > 0)))
         # stop('adjacency is required a vector with length > 0')
@@ -234,8 +252,8 @@ nb_dist <-
             calculate_adjacency(
                 datan = datan,
                 filter = filter,
-                softPower = softPower
-            )
+                soft_power = soft_power,
+                method = method)
         ))
     }
 
@@ -258,7 +276,7 @@ nb_dist <-
 #'    center=TRUE, scale=TRUE))
 #'    filter <- nb_filter(datan=datan, stepno=20L, until=0L,
 #'                        progress=1000L, cores=cores, mode=2L)
-#'    dist <- nb_dist(datan=datan, filter=filter, softPower=3L, cores=cores)
+#'    dist <- nb_dist(datan=datan, filter=filter, soft_power=3L, cores=cores)
 #'    max_singleton = dim(tcga_aml_meth_rna_chr18)[2]
 #'    forest <- nb_mcupgma(filter=filter, dist=dist,
 #'                         max_singleton=max_singleton, cores=cores)
@@ -266,9 +284,9 @@ nb_dist <-
 #'
 #' @export
 nb_mcupgma <-
-    function(filter = NULL,
-             dist = NULL,
-             max_singleton = NULL,
+    function(filter,
+             dist,
+             max_singleton,
              cores = getOption("mc.cores",
                                2L),
              verbose = getOption("verbose")) {
@@ -276,15 +294,15 @@ nb_mcupgma <-
         netboostTmpCleanup()
         
         if (max_singleton > 5e+06) {
-            stop(paste("A bug in sparse UPGMA currently prevents analyses",
-                       "with more than 5 million features."))
+            stop("A bug in sparse UPGMA currently prevents analyses",
+                       " with more than 5 million features.")
         }
         
         if (!dir.create(file.path(netboostTmpPath(), "clustering")))
-            stop(paste(
-                "Unable to create:",
+            stop(
+                "Unable to create: ",
                 file.path(netboostTmpPath(), "clustering")
-            ))
+            )
         
         file_dist_edges <-
             file.path(netboostTmpPath(), "clustering", "dist.edges")
@@ -331,17 +349,17 @@ nb_mcupgma <-
                 "-output_tree_file",
                 file_dist_tree,
                 "-split_unmodified_edges",
-                cores,
+                max(cores,2L),
                 file_dist_edges,
                 console = FALSE
             )
         
         if (verbose)
-            print(ret)
+            message(ret)
         
         if (!file.exists(file_dist_tree) ||
-            file.info(file_dist_tree)$size == 0)
-            stop("No output file created. mcupgma error :(")
+            file.info(file_dist_tree)[["size"]] == 0)
+            stop("No output file created. mcupgma error.")
         
         return(as.matrix(
             read.table(
@@ -367,7 +385,7 @@ nb_mcupgma <-
 #'                                 scale=TRUE))
 #'    filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L,
 #'                        cores=cores,mode=2L)
-#'    dist <- nb_dist(datan=datan, filter=filter, softPower=3L, cores=cores)
+#'    dist <- nb_dist(datan=datan, filter=filter, soft_power=3L, cores=cores)
 #'    max_singleton = dim(tcga_aml_meth_rna_chr18)[2]
 #'    forest <- nb_mcupgma(filter=filter, dist=dist,
 #'                         max_singleton=max_singleton, cores=cores)
@@ -380,10 +398,10 @@ tree_search <- function(forest = NULL) {
     ## have set up all values with as.integer() or R delivers default numeric
     ## (double). In that case, Rcpp converts the matrix.  (Alternative: convert
     ## manually 'matrix(as.integer(forest), nrow=nrow(forest))')
-    forest <- as.matrix(forest)
+    #forest <- as.matrix(forest)
     
     if (is.null(forest) || !is.matrix(forest))
-        stop("forest must be provided (as integer matrix)")
+        stop("forest must be provided (as matrix)")
     
     return(cpp_tree_search(forest))
 }
@@ -400,17 +418,17 @@ tree_search <- function(forest = NULL) {
 #' @param forest Raw dendrogram-matrix as generated by the nb_mcupgma function.
 #' @return List of tree specific objects including dendrogram, tree data and
 #'   features.
-tree_dendro <- function(tree = NULL,
-                        datan = NULL,
-                        forest = NULL) {
-    index.features <- tree$ids[tree$ids <= dim(datan)[2]]
+tree_dendro <- function(tree,
+                        datan,
+                        forest) {
+    index.features <- tree[["ids"]][tree[["ids"]] <= dim(datan)[2]]
     data_tree <- datan[, index.features]
     
     colnames_tree <- colnames(datan)[index.features]
-    tree_cluster <- forest[tree$rows, , drop = FALSE]
+    tree_cluster <- forest[tree[["rows"]], , drop = FALSE]
     
     all_ids <- rev(sort(unique(c(forest[, c(1, 2, 4)]))))
-    none_tree_ids <- all_ids[!(all_ids %in% tree$ids)]
+    none_tree_ids <- all_ids[!(all_ids %in% tree[["ids"]])]
     for (i in none_tree_ids) {
         for (j in c(1, 2, 4)) {
             tree_cluster[tree_cluster[, j] > i, j] <-
@@ -423,21 +441,21 @@ tree_dendro <- function(tree = NULL,
     
     cutpoint <- dim(data_tree)[2]
     dendro <- list()
-    dendro$merge <- tree_cluster[, c(1, 2), drop = FALSE]
-    dendro$merge[dendro$merge <= cutpoint] <-
-        -dendro$merge[dendro$merge <= cutpoint]
-    dendro$merge[dendro$merge > 0] <-
-        dendro$merge[dendro$merge > 0] - cutpoint
-    dendro$merge <- apply(dendro$merge, c(1, 2), function(x) {
+    dendro[["merge"]] <- tree_cluster[, c(1, 2), drop = FALSE]
+    dendro[["merge"]][dendro[["merge"]] <= cutpoint] <-
+        -dendro[["merge"]][dendro[["merge"]] <= cutpoint]
+    dendro[["merge"]][dendro[["merge"]] > 0] <-
+        dendro[["merge"]][dendro[["merge"]] > 0] - cutpoint
+    dendro[["merge"]] <- apply(dendro[["merge"]], c(1, 2), function(x) {
         (as.integer(x))
     })
-    dendro$height <- tree_cluster[, 3]
-    dendro$order <- seq(from = 1, to = cutpoint, by = 1)
-    dendro$labels <- colnames_tree
+    dendro[["height"]] <- tree_cluster[, 3]
+    dendro[["order"]] <- seq(from = 1, to = cutpoint, by = 1)
+    dendro[["labels"]] <- colnames_tree
     class(dendro) <- "hclust"
     b <- as.dendrogram(dendro)
     b.order <- order.dendrogram(b)
-    dendro$order <- b.order
+    dendro[["order"]] <- b.order
     
     return(list(
         dendro = dendro,
@@ -451,45 +469,45 @@ tree_dendro <- function(tree = NULL,
 #' @name cut_dendro
 #' @param tree_dendro List of tree specific objects including dendrogram, tree
 #'   data and features originating from the tree_dendro function.
-#' @param minClusterSize  Integer. The minimum number of features in one module.
+#' @param min_cluster_size  Integer. The minimum number of features in one module.
 #' @param datan     Data frame were rows correspond to samples and columns to
 #'   features.
-#' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for
+#' @param ME_diss_thres Numeric. Module Eigengene Dissimilarity Threshold for
 #'   merging close modules.
 #' @param name_of_tree String. Annotating plots and messages.
 #' @param plot      Logical. Should plots be created?
-#' @param nPC        Number of principal components and variance explained
+#' @param n_pc        Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained entries
-#'   is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is
+#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
 #'   issued.
 #' @param nb_min_varExpl        Minimum proportion of variance explained for
-#'   returned module eigengenes. The number of PCs is capped at nPC.
+#'   returned module eigengenes. The number of PCs is capped at n_pc.
 #' @return List
 cut_dendro <-
-    function(tree_dendro = NULL,
-             minClusterSize = 2L,
-             datan = NULL,
-             MEDissThres = NULL,
+    function(tree_dendro,
+             min_cluster_size = 2L,
+             datan,
+             ME_diss_thres,
              name_of_tree = "",
              plot = TRUE,
-             nPC = 1,
+             n_pc = 1,
              nb_min_varExpl = 0.5) {
         dynamicMods <-
-            cutreeDynamic(
-                dendro = tree_dendro$dendro,
+            dynamicTreeCut::cutreeDynamic(
+                dendro = tree_dendro[["dendro"]],
                 method = "tree",
                 deepSplit = TRUE,
-                minClusterSize = minClusterSize
+                minClusterSize = min_cluster_size
             )
         ### Merging of Dynamic Modules ### Calculate eigengenes
         MEList <-
             netboost::nb_moduleEigengenes(
-                expr = tree_dendro$data,
+                expr = tree_dendro[["data"]],
                 colors = dynamicMods,
-                nPC = nPC,
+                n_pc = n_pc,
                 nb_min_varExpl = nb_min_varExpl
             )
-        MEs <- MEList$nb_eigengenes
+        MEs <- MEList[["nb_eigengenes"]]
         # Calculate dissimilarity of module eigengenes
         MEDiss <- 1 - cor(MEs)
         # Cluster module eigengenes
@@ -503,31 +521,31 @@ cut_dendro <-
                     xlab = "",
                     sub = ""
                 )
-                graphics::abline(h = MEDissThres, col = "red")
+                graphics::abline(h = ME_diss_thres, col = "red")
             }
             
             merged <-
-                mergeCloseModules(
-                    exprData = tree_dendro$data,
+                WGCNA::mergeCloseModules(
+                    exprData = tree_dendro[["data"]],
                     dynamicMods,
-                    cutHeight = MEDissThres,
+                    cutHeight = ME_diss_thres,
                     verbose = 3
                 )
-            mergedColors <- merged$colors
+            mergedColors <- merged[["colors"]]
             # Calculate eigengenes
             MEList <-
                 netboost::nb_moduleEigengenes(
-                    expr = tree_dendro$data,
-                    colors = merged$colors,
-                    nPC = nPC,
+                    expr = tree_dendro[["data"]],
+                    colors = merged[["colors"]],
+                    n_pc = n_pc,
                     nb_min_varExpl = nb_min_varExpl
                 )
-            MEs <- MEList$nb_eigengenes
+            MEs <- MEList[["nb_eigengenes"]]
             MEDiss <- 1 - cor(MEs)
             if (length(MEDiss) > 1) {
                 METree <- hclust(as.dist(MEDiss), method = "average")
                 if (plot == TRUE &
-                    length(tree_dendro$dendro$labels) > 2) {
+                    length(tree_dendro[["dendro"]][["labels"]]) > 2) {
                     graphics::plot(
                         METree,
                         main = paste0(
@@ -537,8 +555,8 @@ cut_dendro <-
                         xlab = "",
                         sub = ""
                     )
-                    plotDendroAndColors(
-                        dendro = tree_dendro$dendro,
+                    WGCNA::plotDendroAndColors(
+                        dendro = tree_dendro[["dendro"]],
                         colors = mergedColors,
                         "Merged Dynamic",
                         dendroLabels = FALSE,
@@ -550,12 +568,12 @@ cut_dendro <-
                 }
             }
         } else {
-            cat("\nOnly one module in ", name_of_tree, ".\n")
+            message("\nOnly one module in ", name_of_tree, ".\n")
             mergedColors <- dynamicMods
-            if (length(tree_dendro$dendro$labels) > 2) {
+            if (length(tree_dendro[["dendro"]][["labels"]]) > 2) {
                 if (plot == TRUE) {
                     graphics::plot(
-                        tree_dendro$dendro,
+                        tree_dendro[["dendro"]],
                         main = paste0(
                             name_of_tree,
                             "Cluster Dendrogram ",
@@ -564,17 +582,17 @@ cut_dendro <-
                     )
                 }
             } else {
-                cat(
+                message(
                     "\nOnly two elements in the one module in ",
                     name_of_tree,
                     " (no plot generated).\n"
                 )
             }
         }
-        cat(
-            "\nNetboost extracted",
+        message(
+            "\nNetboost extracted ",
             length(table(mergedColors)),
-            "modules (including background) with an average size of",
+            " modules (including background) with an average size of ",
             mean(table(mergedColors)[-1]),
             " (excluding background) from ",
             substr(name_of_tree,
@@ -585,11 +603,11 @@ cut_dendro <-
             list(
                 colors = mergedColors,
                 MEs = MEs,
-                varExplained = MEList$varExplained,
-                rotation = MEList$rotation
+                var_explained = MEList[["var_explained"]],
+                rotation = MEList[["rotation"]]
             )
         )
-        # svd_PCs = MEList$eigengenes,
+        # svd_PCs = MEList[["eigengenes"]],
     }
 
 #' Module detection for the results from a nb_mcupgma call
@@ -599,16 +617,16 @@ cut_dendro <-
 #' @param datan     Data frame were rows correspond to samples and columns to
 #'   features.
 #' @param forest Raw dendrogram-matrix as generated by the nb_mcupgma function.
-#' @param minClusterSize  Integer. The minimum number of features in one module.
-#' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for
+#' @param min_cluster_size  Integer. The minimum number of features in one module.
+#' @param ME_diss_thres Numeric. Module Eigengene Dissimilarity Threshold for
 #'   merging close modules.
 #' @param plot      Logical. Should plots be created?
-#' @param nPC        Number of principal components and variance explained
+#' @param n_pc        Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained entries
-#'   is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is
+#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
 #'   issued.
 #' @param nb_min_varExpl        Minimum proportion of variance explained for
-#'   returned module eigengenes. The number of PCs is capped at nPC.
+#'   returned module eigengenes. The number of PCs is capped at n_pc.
 #' @return List
 #'
 #' @examples
@@ -618,23 +636,23 @@ cut_dendro <-
 #'  scale=TRUE))
 #'  filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L,
 #'  cores=cores,mode=2L)
-#'  dist <- nb_dist(datan=datan, filter=filter, softPower=3L, cores=cores)
+#'  dist <- nb_dist(datan=datan, filter=filter, soft_power=3L, cores=cores)
 #'  max_singleton = dim(tcga_aml_meth_rna_chr18)[2]
 #'  forest <- nb_mcupgma(filter=filter, dist=dist, max_singleton=max_singleton,
 #'  cores=cores)
 #'  trees <- tree_search(forest)
 #'  results <- cut_trees(trees=trees,datan=datan, forest=forest,
-#'  minClusterSize=10L, MEDissThres=0.25, plot=TRUE)
+#'  min_cluster_size=10L, ME_diss_thres=0.25, plot=TRUE)
 #'
 #' @export
 cut_trees <-
-    function(trees = NULL,
-             datan = NULL,
-             forest = NULL,
-             minClusterSize = 2L,
-             MEDissThres = NULL,
+    function(trees,
+             datan,
+             forest,
+             min_cluster_size = 2L,
+             ME_diss_thres,
              plot = TRUE,
-             nPC = 1,
+             n_pc = 1,
              nb_min_varExpl = 0.5) {
         res <- list()
         i <- 1L
@@ -645,27 +663,27 @@ cut_trees <-
                             datan = datan,
                             forest = forest)
             res[[i]] <- list()
-            res[[i]][["dendro"]] <- tree_dendro_res$dendro
-            res[[i]][["data"]] <- tree_dendro_res$data
-            res[[i]][["names"]] <- tree_dendro_res$names
+            res[[i]][["dendro"]] <- tree_dendro_res[["dendro"]]
+            res[[i]][["data"]] <- tree_dendro_res[["data"]]
+            res[[i]][["names"]] <- tree_dendro_res[["names"]]
             cut_dendro_res <-
                 cut_dendro(
                     tree_dendro = tree_dendro_res,
-                    minClusterSize = minClusterSize,
+                    min_cluster_size = min_cluster_size,
                     datan = datan,
-                    MEDissThres = MEDissThres,
+                    ME_diss_thres = ME_diss_thres,
                     name_of_tree = paste0("Tree ",
                                           i, ":"),
                     plot = plot,
-                    nPC = nPC,
+                    n_pc = n_pc,
                     nb_min_varExpl = nb_min_varExpl
                 )
-            res[[i]][["colors"]] <- cut_dendro_res$colors
-            res[[i]][["MEs"]] <- cut_dendro_res$MEs
-            # res[[i]][['svd_PCs']] <- cut_dendro_res$svd_PCs
-            res[[i]][["varExplained"]] <-
-                cut_dendro_res$varExplained
-            res[[i]][["rotation"]] <- cut_dendro_res$rotation
+            res[[i]][["colors"]] <- cut_dendro_res[["colors"]]
+            res[[i]][["MEs"]] <- cut_dendro_res[["MEs"]]
+            # res[[i]][['svd_PCs']] <- cut_dendro_res[["svd_PCs"]]
+            res[[i]][["var_explained"]] <-
+                cut_dendro_res[["var_explained"]]
+            res[[i]][["rotation"]] <- cut_dendro_res[["rotation"]]
             i <- i + 1
         }
         
@@ -681,17 +699,17 @@ cut_trees <-
 #'   features.
 #' @param max_singleton   Integer. The maximal singleton in the clustering.
 #'   Usually equals the number of features.
-#' @param minClusterSize  Integer. The minimum number of features in one module.
-#' @param MEDissThres Numeric. Module Eigengene Dissimilarity Threshold for
+#' @param min_cluster_size  Integer. The minimum number of features in one module.
+#' @param ME_diss_thres Numeric. Module Eigengene Dissimilarity Threshold for
 #'   merging close modules.
 #' @param cores     Integer. Amount of CPU cores used (<=1 : sequential)
 #' @param plot Logical. Create plot.
-#' @param nPC        Number of principal components and variance explained
+#' @param n_pc        Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained entries
-#'   is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is
+#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
 #'   issued.
 #' @param nb_min_varExpl        Minimum proportion of variance explained for
-#'   returned module eigengenes. The number of PCs is capped at nPC.
+#'   returned module eigengenes. The number of PCs is capped at n_pc.
 #' @return List
 #'
 #' @examples
@@ -701,24 +719,24 @@ cut_trees <-
 #'  scale=TRUE))
 #'  filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L,
 #'  cores=cores,mode=2L)
-#'  dist <- nb_dist(datan=datan, filter=filter, softPower=3L, cores=cores)
+#'  dist <- nb_dist(datan=datan, filter=filter, soft_power=3L, cores=cores)
 #'  max_singleton = dim(tcga_aml_meth_rna_chr18)[2]
 #'  pdf("test.pdf",width=30)
 #'  sum_res <- nb_clust(filter=filter, dist=dist, datan=datan,
-#'  max_singleton=max_singleton, minClusterSize=10L, MEDissThres=0.25,
-#'  cores=cores, plot=TRUE, nPC=2L, nb_min_varExpl=0.5)
+#'  max_singleton=max_singleton, min_cluster_size=10L, ME_diss_thres=0.25,
+#'  cores=cores, plot=TRUE, n_pc=2L, nb_min_varExpl=0.5)
 #'  dev.off()
 #' @export
 nb_clust <-
-    function(filter = NULL,
-             dist = NULL,
-             datan = NULL,
+    function(filter,
+             dist,
+             datan,
              max_singleton = dim(datan)[2],
-             minClusterSize = 2L,
-             MEDissThres = 0.25,
+             min_cluster_size = 2L,
+             ME_diss_thres = 0.25,
              cores = getOption("mc.cores", 2L),
              plot = TRUE,
-             nPC = 1,
+             n_pc = 1,
              nb_min_varExpl = 0.5) {
         forest <-
             nb_mcupgma(
@@ -733,10 +751,10 @@ nb_clust <-
                 trees = trees,
                 datan = datan,
                 forest = forest,
-                minClusterSize = minClusterSize,
-                MEDissThres = MEDissThres,
+                min_cluster_size = min_cluster_size,
+                ME_diss_thres = ME_diss_thres,
                 plot = plot,
-                nPC = nPC,
+                n_pc = n_pc,
                 nb_min_varExpl = nb_min_varExpl
             )
         sum_res <- nb_summary(clust_res = results, plot = plot)
@@ -758,17 +776,17 @@ nb_clust <-
 #'  scale=TRUE))
 #'  filter <- nb_filter(datan=datan, stepno=20L, until=0L, progress=1000L,
 #'  cores=cores,mode=2L)
-#'  dist <- nb_dist(datan=datan, filter=filter, softPower=3L, cores=cores)
+#'  dist <- nb_dist(datan=datan, filter=filter, soft_power=3L, cores=cores)
 #'  max_singleton = dim(tcga_aml_meth_rna_chr18)[2]
 #'  forest <- nb_mcupgma(filter=filter,dist=dist,max_singleton=max_singleton,
 #'  cores=cores)
 #'  trees <- tree_search(forest)
 #'  results <- cut_trees(trees=trees,datan=datan, forest=forest,
-#'  minClusterSize=10L, MEDissThres=0.25, plot=FALSE)
+#'  min_cluster_size=10L, ME_diss_thres=0.25, plot=FALSE)
 #'  sum_res <- nb_summary(clust_res=results, plot=TRUE)
 #'
 #' @export
-nb_summary <- function(clust_res = NULL, plot = TRUE) {
+nb_summary <- function(clust_res, plot = TRUE) {
     res <- vector("list")
     # res$clust_res <- clust_res
     n_MEs <- 0
@@ -776,22 +794,22 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
     for (tree in seq(from = 1,
                      to = length(clust_res),
                      by = 1)) {
-        res$dendros[[tree]] <- clust_res[[tree]]$dendro
-        res$names <- c(res$names, clust_res[[tree]]$names)
-        tmp.col <- clust_res[[tree]]$colors
+        res[["dendros"]][[tree]] <- clust_res[[tree]][["dendro"]]
+        res[["names"]] <- c(res[["names"]], clust_res[[tree]][["names"]])
+        tmp.col <- clust_res[[tree]][["colors"]]
         tmp.col.new <- tmp.col
-        tmp_MEs <- clust_res[[tree]]$MEs
+        tmp_MEs <- clust_res[[tree]][["MEs"]]
         tmp_MEs_new <- tmp_MEs
-        tmp_rotation <- clust_res[[tree]]$rotation
+        tmp_rotation <- clust_res[[tree]][["rotation"]]
         tmp_rotation <-
             do.call("cbind", lapply(
                 tmp_rotation,
                 FUN = function(x) {
                     y <-
                         matrix(0,
-                               nrow = length(clust_res[[tree]]$names),
+                               nrow = length(clust_res[[tree]][["names"]]),
                                ncol = ncol(x))
-                    rownames(y) <- clust_res[[tree]]$names
+                    rownames(y) <- clust_res[[tree]][["names"]]
                     y[rownames(x),] <- x
                     colnames(y) <- colnames(x)
                     return(y)
@@ -845,55 +863,55 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
                     )
             }
         }
-        res$colors <- c(res$colors, tmp.col.new)
+        res[["colors"]] <- c(res[["colors"]], tmp.col.new)
         if ("MEs" %in% names(res)) {
-            res$MEs <- cbind(res$MEs, tmp_MEs_new)
+            res[["MEs"]] <- cbind(res[["MEs"]], tmp_MEs_new)
         } else {
-            res$MEs <- tmp_MEs_new
+            res[["MEs"]] <- tmp_MEs_new
         }
         if ("rotation" %in% names(res)) {
-            res$rotation <- c(res$rotation, list(tmp_rotation_new))
+            res[["rotation"]] <- c(res[["rotation"]], list(tmp_rotation_new))
         } else {
-            res$rotation <- list(tmp_rotation_new)
+            res[["rotation"]] <- list(tmp_rotation_new)
         }
         ## if('svd_PCs' %in% names(res)){res$svd_PCs <- cbind(res$svd_PCs,
         ## clust_res[[tree]]$svd_PCs)}else{res$svd_PCs <-
         ## clust_res[[tree]]$svd_PCs}
-        if ("varExplained" %in% names(res)) {
-            res$varExplained <-
-                cbind(res$varExplained, clust_res[[tree]]$varExplained)
+        if ("var_explained" %in% names(res)) {
+            res[["var_explained"]] <-
+                cbind(res[["var_explained"]], clust_res[[tree]][["var_explained"]])
         } else {
-            res$varExplained <- clust_res[[tree]]$varExplained
+            res[["var_explained"]] <- clust_res[[tree]][["var_explained"]]
         }
     }
-    rownames(res$varExplained) <-
+    rownames(res[["var_explained"]]) <-
         paste0("PC", seq(
             from = 1,
-            to = nrow(res$varExplained),
+            to = nrow(res[["var_explained"]]),
             by = 1
         ))
-    colnames(res$varExplained) <-
+    colnames(res[["var_explained"]]) <-
         unique(unlist(lapply(
             strsplit(split = "_pc",
-                     colnames(res$MEs)),
+                     colnames(res[["MEs"]])),
             FUN = function(x) {
                 x[1]
             }
         )))
     
-    res$rotation <-
+    res[["rotation"]] <-
         do.call("cbind", lapply(
-            res$rotation,
+            res[["rotation"]],
             FUN = function(x) {
-                y <- matrix(0, nrow = length(res$names), ncol = ncol(x))
-                rownames(y) <- res$names
+                y <- matrix(0, nrow = length(res[["names"]]), ncol = ncol(x))
+                rownames(y) <- res[["names"]]
                 y[rownames(x),] <- x
                 colnames(y) <- colnames(x)
                 return(y)
             }
         ))
     
-    cat(
+    message(
         "\nNetboost detected ",
         n_MEs,
         " modules and ",
@@ -901,19 +919,19 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
         " background modules in ",
         length(clust_res),
         " trees resulting in ",
-        ncol(res$MEs),
+        ncol(res[["MEs"]]),
         " aggreagate measures.\n"
     )
-    cat("Average size of the modules was ",
-        mean(table(res$colors[!(res$colors <= 0)])), ".\n")
-    cat(
-        sum(res$colors <= 0),
+    message("Average size of the modules was ",
+        mean(table(res[["colors"]][!(res[["colors"]] <= 0)])), ".\n")
+    message(
+        sum(res[["colors"]] <= 0),
         " of ",
-        length(res$colors),
+        length(res[["colors"]]),
         " features (",
-        (sum(res$colors <=
+        (sum(res[["colors"]] <=
                  0) * 100 /
-             length(res$colors)),
+             length(res[["colors"]])),
         "%) were not assigned to modules.\n"
     )
     
@@ -930,26 +948,26 @@ nb_summary <- function(clust_res = NULL, plot = TRUE) {
 #' @param new_data Data frame were rows correspond to samples and columns to
 #'   features.
 #' @param scale     Logical. Should data be scaled and centered?
-#' @param onlyModuleMembership     Logical. Should only module memberships be
+#' @param only_module_membership     Logical. Should only module memberships be
 #'   transfered and PCs be newly computed?
 #' @return List
 #'
 #' @examples
 #' data('tcga_aml_meth_rna_chr18',  package='netboost')
 #' results <- netboost(datan = tcga_aml_meth_rna_chr18, stepno = 20L,
-#'     softPower = 3L, minClusterSize = 10L, nPC = 2, scale=TRUE,
-#'     MEDissThres = 0.25, plot=FALSE)
+#'     soft_power = 3L, min_cluster_size = 10L, n_pc = 2, scale=TRUE,
+#'     ME_diss_thres = 0.25, plot=FALSE)
 #' ME_transfer <- nb_transfer(nb_summary = results,
 #'     new_data = tcga_aml_meth_rna_chr18,
 #'     scale = TRUE)
-#' all(round(results$MEs, 12) == round(ME_transfer, 12))
+#' all(round(results[["MEs"]], 12) == round(ME_transfer, 12))
 #'
 #' @export
 nb_transfer <-
     function(nb_summary = NULL,
              new_data = NULL,
              scale = FALSE,
-             onlyModuleMembership = FALSE) {
+             only_module_membership = FALSE) {
         if (!exists("new_data"))
             stop("datan must be provided")
         
@@ -958,36 +976,36 @@ nb_transfer <-
                                        0)))
             stop("new_data must be a data frame with dim() > (0,0).")
         
-        if (length(nb_summary$colors) != ncol(new_data)) {
-            stop(paste("The number of features in new_data must",
-                       "correspond to the number in nb_summary."))
+        if (length(nb_summary[["colors"]]) != ncol(new_data)) {
+            stop("The number of features in new_data must ",
+                       "correspond to the number in nb_summary.")
         }
         
-        if (!identical(sort(nb_summary$names), sort(colnames(new_data)))) {
-            stop(paste("The features in new_data (colnames) must", 
-                       "correspond to the features in nb_summary",
-                       "(nb_summary$names)."))
+        if (!identical(sort(nb_summary[["names"]]), sort(colnames(new_data)))) {
+            stop("The features in new_data (colnames) must ", 
+                       "correspond to the features in nb_summary ",
+                       "(nb_summary$names).")
         }
         
-        new_data <- new_data[, nb_summary$names]
+        new_data <- new_data[, nb_summary[["names"]]]
         
         if (scale) {
             new_data <-
                 as.data.frame(scale(new_data, center = TRUE, scale = TRUE))
         }
         
-        if (!onlyModuleMembership) {
-            MEs <- as.matrix(new_data) %*% nb_summary$rotation
+        if (!only_module_membership) {
+            MEs <- as.matrix(new_data) %*% nb_summary[["rotation"]]
         } else {
             MEs <- netboost::nb_moduleEigengenes(expr = new_data,
-                                                 colors = nb_summary$colors)$nb_eigengenes
+                                                 colors = nb_summary[["colors"]])[["nb_eigengenes"]]
             colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"), FUN = length) >
                               1] <-
                 paste0("ME0_", substring(text = colnames(MEs)[lapply(strsplit(x = colnames(MEs),
                                                                               split = "-"), FUN = length) > 1], first = 4))
         }
         
-        MEs <- MEs[, colnames(nb_summary$MEs)]
+        MEs <- MEs[, colnames(nb_summary[["MEs"]])]
         rownames(MEs) <- rownames(new_data)
         return(MEs)
     }
@@ -1054,8 +1072,8 @@ nb_filter <-
         }
         
         if (ncol(datan) > 5e+06) {
-            stop(paste("A bug in sparse UPGMA currently prevents analyses",
-                       "with more than 5 million features."))
+            stop("A bug in sparse UPGMA currently prevents analyses ",
+                       "with more than 5 million features.")
         }
         
         message(paste("Netboost: Filtering"))
@@ -1069,7 +1087,7 @@ nb_filter <-
             
             boosting_filter <- mclapply(seq(1, until), function(x) {
                 if ((((x - 1) %% progress) == 0)) {
-                    print(sprintf("idx: %d (%.1f%%) - %s", x,
+                    message(sprintf("idx: %d (%.1f%%) - %s", x,
                                   x * 100 / until, date()))
                 }
                 
@@ -1079,7 +1097,7 @@ nb_filter <-
             ## Sequential function for debugging.  print(paste('Sequential version'))
             boosting_filter <- lapply(seq(1, until), function(x) {
                 if ((((x - 1) %% progress) == 0)) {
-                    print(sprintf("idx: %d (%.1f%%) - %s", x,
+                    message(sprintf("idx: %d (%.1f%%) - %s", x,
                                   x * 100 / until, date()))
                 }
                 
@@ -1091,11 +1109,7 @@ nb_filter <-
         cpp_filter_end()
         
         filter <-
-            do.call("rbind", lapply(seq(
-                from = 1,
-                to = length(boosting_filter),
-                by = 1
-            ), function(x) {
+            do.call("rbind", lapply(seq_along(boosting_filter), function(x) {
                 return(as.data.frame(cbind(
                     as.integer(boosting_filter[[x]]),
                     as.integer(rep(x,
@@ -1128,8 +1142,8 @@ nb_filter <-
 #' @examples
 #' data('tcga_aml_meth_rna_chr18',  package='netboost')
 #' results <- netboost(datan = tcga_aml_meth_rna_chr18, stepno = 20L,
-#' softPower = 3L, minClusterSize = 10L, nPC = 2, scale=TRUE,
-#' MEDissThres = 0.25, plot = FALSE)
+#' soft_power = 3L, min_cluster_size = 10L, n_pc = 2, scale=TRUE,
+#' ME_diss_thres = 0.25, plot = FALSE)
 #' set.seed(1234) # reproducible but shuffled color-module matching
 #' nb_plot_dendro(nb_summary = results, labels = FALSE, main = 'Test',
 #' colorsrandom = TRUE)
@@ -1146,14 +1160,14 @@ nb_plot_dendro <-
         colorHeight <- 0.2
         graphics::layout(matrix(seq(
             from = 1,
-            to = (2 * length(nb_summary$dendros)),
+            to = (2 * length(nb_summary[["dendros"]])),
             by = 1
         ),
         nrow = 2),
         heights = c(1 - colorHeight, colorHeight))
         
         last_col <- 0
-        n_colors <- length(unique(nb_summary$colors))
+        n_colors <- length(unique(nb_summary[["colors"]]))
         middle <- floor(n_colors / 2)
         if (colorsrandom) {
             shuffel_index <- sample(x = n_colors, size = n_colors)
@@ -1170,29 +1184,27 @@ nb_plot_dendro <-
                                                                                          by = 1)]))
         plot_colors <-
             colorspace::rainbow_hcl(n = (length(unique(
-                nb_summary$colors
-            ))))[shuffel_index][as.factor(nb_summary$colors)]
-        plot_colors[nb_summary$colors <= 0] <- grDevices::gray(level = 0.7)
-        for (tree in seq(from = 1,
-                         to = length(nb_summary$dendros),
-                         by = 1)) {
+                nb_summary[["colors"]]
+            ))))[shuffel_index][as.factor(nb_summary[["colors"]])]
+        plot_colors[nb_summary[["colors"]] <= 0] <- grDevices::gray(level = 0.7)
+        for (tree in seq_along(nb_summary[["dendros"]])) {
             graphics::par(mar = c(0, 4, 8, 4))
             first_col <- last_col + 1
             last_col <-
-                last_col + length(nb_summary$dendros[[tree]]$labels)
+                last_col + length(nb_summary[["dendros"]][[tree]][["labels"]])
             if (labels) {
-                graphics::plot(nb_summary$dendros[[tree]],
-                     labels = nb_summary$names[seq(from = first_col,
+                graphics::plot(nb_summary[["dendros"]][[tree]],
+                     labels = nb_summary[["names"]][seq(from = first_col,
                                                    to = last_col,
                                                    by = 1)],
                      main = main)
             } else {
-                graphics::plot(nb_summary$dendros[[tree]],
+                graphics::plot(nb_summary[["dendros"]][[tree]],
                      labels = FALSE,
                      main = main)
             }
             graphics::par(mar = c(4, 4, 0, 4))
-            WGCNA::plotColorUnderTree(nb_summary$dendros[[tree]],
+            WGCNA::plotColorUnderTree(nb_summary[["dendros"]][[tree]],
                                       colors = plot_colors[seq(from = first_col,
                                                                to = last_col,
                                                                by = 1)],
@@ -1214,15 +1226,15 @@ nb_plot_dendro <-
 #' @param colors    A vector of the same length as the number of probes in
 #'   ‘expr’, giving module color for all probes (genes). Color ‘'grey'’ is
 #'   reserved for unassigned genes.     Expression
-#' @param nPC       Number of principal components and variance explained
+#' @param n_pc       Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained entries
-#'   is currently ‘min(nPC,10)’. If given ‘nPC’ is greater than 10, a warning is
+#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
 #'   issued.
 #' @param align     Controls whether eigengenes, whose orientation is
 #'   undetermined, should be aligned with average expression (‘align = 'along
 #'   average'’, the default) or left as they are (‘align = ''’). Any other value
 #'   will trigger an error.
-#' @param excludeGrey   Should the improper module consisting of 'grey' genes be
+#' @param exclude_grey   Should the improper module consisting of 'grey' genes be
 #'   excluded from the eigengenes?
 #' @param grey          Value of ‘colors’ designating the improper module. Note
 #'   that if ‘colors’ is a factor of numbers, the default value will be
@@ -1241,12 +1253,12 @@ nb_plot_dendro <-
 #'   precedence in the sense that if ‘subHubs==TRUE’ and ‘trapErrors==FALSE’, an
 #'   error will be issued only if both the principal component and the hubgene
 #'   calculations have failed.
-#' @param returnValidOnly   logical; controls whether the returned data frame of
+#' @param return_valid_only   logical; controls whether the returned data frame of
 #'   module eigengenes contains columns corresponding only to modules whose
 #'   eigengenes or hub genes could be calculated correctly (‘TRUE’), or whether
 #'   the data frame should have columns for each of the input color labels
 #'   (‘FALSE’).
-#' @param softPower     The power used in soft-thresholding the adjacency
+#' @param soft_power     The power used in soft-thresholding the adjacency
 #'   matrix. Only used when the hubgene approximation is necessary because the
 #'   principal component calculation failed. It must be non-negative. The
 #'   default value should only be changed if there is a clear indication that it
@@ -1265,27 +1277,27 @@ nb_plot_dendro <-
 #'   printed messages. 0 means no indentation, each unit above that adds two
 #'   spaces.
 #' @param nb_min_varExpl        Minimum proportion of variance explained for
-#'   returned module eigengenes. Is capped at nPC.
+#'   returned module eigengenes. Is capped at n_pc.
 #'
 #' @return eigengenes   Module eigengenes in a dataframe, with each column
 #'   corresponding to one eigengene. The columns are named by the corresponding
 #'   color with an ‘'ME'’ prepended, e.g., ‘MEturquoise’ etc. If
-#'   ‘returnValidOnly==FALSE’, module eigengenes whose calculation failed have
+#'   ‘return_valid_only==FALSE’, module eigengenes whose calculation failed have
 #'   all components set to ‘NA’.
 #' @return averageExpr  If ‘align == 'along average'’, a dataframe containing
 #'   average normalized expression in each module. The columns are named by the
 #'   corresponding color with an ‘'AE'’ prepended, e.g., ‘AEturquoise’ etc.
-#' @return varExplained A dataframe in which each column corresponds to a
-#'   module, with the component ‘varExplained[PC, module]’ giving the variance
+#' @return var_explained A dataframe in which each column corresponds to a
+#'   module, with the component ‘var_explained[PC, module]’ giving the variance
 #'   of module ‘module’ explained by the principal component no. ‘PC’. The
 #'   calculation is exact irrespective of the number of computed principal
 #'   components. At most 10 variance explained values are recorded in this
 #'   dataframe.
-#' @return nPC          A copy of the input ‘nPC’.
+#' @return n_pc          A copy of the input ‘n_pc’.
 #' @return validMEs     A boolean vector. Each component (corresponding to the
 #'   columns in ‘data’) is ‘TRUE’ if the corresponding eigengene is valid, and
 #'   ‘FALSE’ if it is invalid. Valid eigengenes include both principal
-#'   components and their hubgene approximations. When ‘returnValidOnly==FALSE’,
+#'   components and their hubgene approximations. When ‘return_valid_only==FALSE’,
 #'   by definition all returned eigengenes are valid and the entries of
 #'   ‘validMEs’ are all ‘TRUE’.
 #' @return validColors  A copy of the input colors with entries corresponding to
@@ -1308,24 +1320,24 @@ nb_plot_dendro <-
 #'   columns in ‘eigengenes’) is ‘TRUE’ if the corresponding module average
 #'   expression is valid.
 #' @return allAEOK      Boolean flag signalling whether all returned module
-#'   average expressions contain valid data. Note that ‘returnValidOnly==TRUE’
+#'   average expressions contain valid data. Note that ‘return_valid_only==TRUE’
 #'   does not imply ‘allAEOK==TRUE’: some invalid average expressions may be
 #'   returned if their corresponding eigengenes have been calculated correctly.
 #' @export
 nb_moduleEigengenes <-
     function(expr,
              colors,
-             nPC = 1,
+             n_pc = 1,
              align = "along average",
-             excludeGrey = FALSE,
+             exclude_grey = FALSE,
              grey = if (is.numeric(colors))
                  0
              else
                  "grey",
              subHubs = TRUE,
              trapErrors = FALSE,
-             returnValidOnly = trapErrors,
-             softPower = 6,
+             return_valid_only = trapErrors,
+             soft_power = 6,
              scale = TRUE,
              verbose = 0,
              indent = 0,
@@ -1333,7 +1345,7 @@ nb_moduleEigengenes <-
         spaces <- indentSpaces(indent)
         
         if (verbose == 1)
-            printFlush(
+            message(
                 paste(
                     spaces,
                     "moduleEigengenes: Calculating",
@@ -1363,20 +1375,18 @@ nb_moduleEigengenes <-
             nlDrop <- nlevels(colors[, drop = TRUE])
             if (nl > nlDrop)
                 stop(
-                    paste(
                         "Argument 'colors' contains unused levels (empty modules). ",
                         "Use colors[, drop=TRUE] to get rid of them."
-                    )
                 )
         }
         
-        if (softPower < 0)
-            stop("softPower must be non-negative")
+        if (soft_power < 0)
+            stop("soft_power must be non-negative")
         
         alignRecognizedValues <- c("", "along average")
         
         if (!is.element(align, alignRecognizedValues)) {
-            printFlush(
+            message(
                 paste(
                     "ModulePrincipalComponents: Error:",
                     "parameter align has an unrecognised value:",
@@ -1390,22 +1400,20 @@ nb_moduleEigengenes <-
         
         maxVarExplained <- 10
         
-        if (nPC > maxVarExplained)
-            warning(paste("Given nPC is too large. Will use value", maxVarExplained))
+        if (n_pc > maxVarExplained)
+            warning(paste("Given n_pc is too large. Will use value", maxVarExplained))
         
-        nVarExplained <- min(nPC, maxVarExplained)
+        nVarExplained <- min(n_pc, maxVarExplained)
         modlevels <- levels(factor(colors))
         
-        if (excludeGrey)
+        if (exclude_grey)
             if (sum(as.character(modlevels) != as.character(grey)) > 0) {
                 modlevels <-
                     modlevels[as.character(modlevels) != as.character(grey)]
             } else {
                 stop(
-                    paste(
                         "Color levels are empty. Possible reason: the only color is grey",
-                        "and grey module is excluded from the calculation."
-                    )
+                        " and grey module is excluded from the calculation."
                 )
             }
         
@@ -1428,11 +1436,9 @@ nb_moduleEigengenes <-
         names(PrinComps) <-
             paste(moduleColor.getMEprefix(), modlevels, sep = "")
         names(averExpr) <- paste("AE", modlevels, sep = "")
-        for (i in seq(from = 1,
-                      to = length(modlevels),
-                      by = 1)) {
+        for (i in seq_along(modlevels)) {
             if (verbose > 1)
-                printFlush(paste(
+                message(paste(
                     spaces,
                     "moduleEigengenes : Working on ME for module",
                     modlevels[i]
@@ -1441,21 +1447,21 @@ nb_moduleEigengenes <-
             restrict1 <-
                 as.character(colors) == as.character(modulename)
             if (verbose > 2)
-                printFlush(paste(spaces, " ...", sum(restrict1), "features"))
+                message(paste(spaces, " ...", sum(restrict1), "features"))
             datModule <- as.matrix(t(expr[, restrict1]))
             n <- dim(datModule)[1]
             p <- dim(datModule)[2]
             pc <- try({
                 if (verbose > 5)
-                    printFlush(paste(spaces, " ...scaling"))
+                    message(paste(spaces, " ...scaling"))
                 if (scale)
                     datModule <- t(scale(t(datModule)))
                 if (verbose > 5)
-                    printFlush(paste(spaces, " ...calculating SVD"))
+                    message(paste(spaces, " ...calculating SVD"))
                 svd1 <-
                     svd(datModule,
-                        nu = min(n, p, nPC),
-                        nv = min(n, p, nPC))
+                        nu = min(n, p, n_pc),
+                        nv = min(n, p, n_pc))
                 nb_PCA <-
                     stats::prcomp(
                         x = t(datModule),
@@ -1465,12 +1471,12 @@ nb_moduleEigengenes <-
                         tol = NULL,
                         rank. = NULL
                     )
-                nb_PCA$x <- t(t(nb_PCA$x) / svd1$d)
-                nb_PCA$rotation <- t(t(nb_PCA$rotation) / svd1$d)
+                nb_PCA[["x"]] <- t(t(nb_PCA[["x"]]) / svd1[["d"]])
+                nb_PCA[["rotation"]] <- t(t(nb_PCA[["rotation"]]) / svd1[["d"]])
                 if (verbose > 5)
-                    printFlush(paste(spaces, " ...calculating PVE"))
+                    message(paste(spaces, " ...calculating PVE"))
                 veMat <-
-                    WGCNA::cor(svd1$v[, seq(from = 1,
+                    WGCNA::cor(svd1[["v"]][, seq(from = 1,
                                             to = min(n, p, nVarExplained),
                                             by = 1)], t(datModule), use = "p")
                 varExpl[seq(
@@ -1479,14 +1485,14 @@ nb_moduleEigengenes <-
                     by = 1
                 ), i] <- rowMeans(veMat ^ 2,
                                   na.rm = TRUE)
-                svd1$v[, 1]
+                svd1[["v"]][, 1]
             }, silent = TRUE)
             
             if (methods::is(pc, "try-error")) {
                 if (!trapErrors)
                     stop(pc)
                 if (verbose > 0) {
-                    printFlush(
+                    message(
                         paste(
                             spaces,
                             " ..ME calculation of module",
@@ -1494,7 +1500,7 @@ nb_moduleEigengenes <-
                             "failed with the following error:"
                         )
                     )
-                    printFlush(
+                    message(
                         paste(
                             spaces,
                             "     ",
@@ -1519,7 +1525,7 @@ nb_moduleEigengenes <-
                 validColors[restrict1] <- grey
             } else {
                 PrinComps[, i] <- pc
-                nb_nPCs <-
+                nb_n_pcs <-
                     min(c(which(
                         cumsum(varExpl[seq(
                             from = 1,
@@ -1529,11 +1535,11 @@ nb_moduleEigengenes <-
                         ), i]) > nb_min_varExpl
                     ), nVarExplained))
                 nb_PrinComps <-
-                    base::cbind(nb_PrinComps, nb_PCA$x[, seq(from = 1,
-                                                       to = nb_nPCs,
+                    base::cbind(nb_PrinComps, nb_PCA[["x"]][, seq(from = 1,
+                                                       to = nb_n_pcs,
                                                        by = 1)])
                 colnames(nb_PrinComps)[seq(
-                    from = (ncol(nb_PrinComps) - nb_nPCs + 1),
+                    from = (ncol(nb_PrinComps) - nb_n_pcs + 1),
                     to = ncol(nb_PrinComps),
                     by = 1
                 )] <- paste0(
@@ -1542,25 +1548,25 @@ nb_moduleEigengenes <-
                     "_pc",
                     seq(
                         from = 1,
-                        to = nb_nPCs,
+                        to = nb_n_pcs,
                         by = 1
                     )
                 )
-                colnames(nb_PCA$rotation)[seq(from = 1,
-                                              to = nb_nPCs,
+                colnames(nb_PCA[["rotation"]])[seq(from = 1,
+                                              to = nb_n_pcs,
                                               by = 1)] <- paste0(
                                                   moduleColor.getMEprefix(),
                                                   modlevels[i],
                                                   "_pc",
                                                   seq(
                                                       from = 1,
-                                                      to = nb_nPCs,
+                                                      to = nb_n_pcs,
                                                       by = 1
                                                   )
                                               )
                 rotation[[i]] <-
-                    nb_PCA$rotation[, seq(from = 1,
-                                          to = nb_nPCs,
+                    nb_PCA[["rotation"]][, seq(from = 1,
+                                          to = nb_n_pcs,
                                           by = 1),
                                     drop = FALSE]
                 ae <- try({
@@ -1570,7 +1576,7 @@ nb_moduleEigengenes <-
                         rowMeans(scaledExpr, na.rm = TRUE)
                     if (align == "along average") {
                         if (verbose > 4)
-                            printFlush(
+                            message(
                                 paste(
                                     spaces,
                                     " .. aligning module eigengene with average expression."
@@ -1589,7 +1595,7 @@ nb_moduleEigengenes <-
                     if (!trapErrors)
                         stop(ae)
                     if (verbose > 0) {
-                        printFlush(
+                        message(
                             paste(
                                 spaces,
                                 " ..Average expression calculation of module",
@@ -1597,7 +1603,7 @@ nb_moduleEigengenes <-
                                 "failed with the following error:"
                             )
                         )
-                        printFlush(
+                        message(
                             paste(
                                 spaces,
                                 "     ",
@@ -1624,7 +1630,7 @@ nb_moduleEigengenes <-
         }
         
         allOK <- (sum(!validMEs) == 0)
-        if (returnValidOnly && sum(!validMEs) > 0) {
+        if (return_valid_only && sum(!validMEs) > 0) {
             PrinComps <- PrinComps[, validMEs]
             averExpr <- averExpr[, validMEs]
             varExpl <- varExpl[, validMEs]
@@ -1639,8 +1645,8 @@ nb_moduleEigengenes <-
         list(
             eigengenes = PrinComps,
             averageExpr = averExpr,
-            varExplained = varExpl,
-            nPC = nPC,
+            var_explained = varExpl,
+            n_pc = n_pc,
             validMEs = validMEs,
             validColors = validColors,
             allOK = allOK,
@@ -1681,12 +1687,12 @@ nb_example <-
     function(cores = getOption("mc.cores", 2L),
              keep = FALSE) {
         # Keep data local.
-        exaEnv <- new.env()
+        exa_env <- new.env()
         
         # load data methylation and RNA data 180 patients x 5283 features
         data("tcga_aml_meth_rna_chr18",
              package = "netboost",
-             envir = exaEnv)
+             envir = exa_env)
         
         pdfFile <- file.path(tempdir(), "results_netboost.pdf")
         
@@ -1694,13 +1700,13 @@ nb_example <-
         pdf(file = pdfFile, width = 30)
         results <-
             netboost(
-                datan = exaEnv$tcga_aml_meth_rna_chr18,
+                datan = exa_env[["tcga_aml_meth_rna_chr18"]],
                 stepno = 20L,
-                softPower = 3L,
-                minClusterSize = 10L,
-                nPC = 2,
+                soft_power = 3L,
+                min_cluster_size = 10L,
+                n_pc = 2,
                 scale = TRUE,
-                MEDissThres = 0.25
+                ME_diss_thres = 0.25
             )
         # set.seed(1234)
         nb_plot_dendro(nb_summary = results,
@@ -1721,17 +1727,17 @@ nb_example <-
         ME_transfer <-
             nb_transfer(
                 nb_summary = results,
-                new_data = exaEnv$tcga_aml_meth_rna_chr18,
+                new_data = exa_env[["tcga_aml_meth_rna_chr18"]],
                 scale = TRUE
             )
         
-        all(round(results$MEs, 12) == round(ME_transfer, 12))
+        all(round(results[["MEs"]], 12) == round(ME_transfer, 12))
         
         # Cleanup all produced temporary filed (esp. clustering/iteration_*)
         if (!keep)
             netboostTmpCleanup()
         else
-            print(paste("Kept MCUPGMA temporary files in:", netboostTmpPath()))
+            message(paste("Kept MCUPGMA temporary files in:", netboostTmpPath()))
         
         invisible(results)
     }
