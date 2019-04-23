@@ -4,12 +4,12 @@
 \alias{nb_summary}
 \title{Summarize results from a forest. Plot trees together.}
 \usage{
-nb_summary(clust_res, plot = TRUE)
+nb_summary(clust_res)
 }
 \arguments{
 \item{clust_res}{Clustering results from cut_trees call.}
 
-\item{plot}{Logical. Create plot.}
+\item{qc_plot}{Logical. Create plot.}
 }
 \value{
 List
@@ -30,7 +30,7 @@ data('tcga_aml_meth_rna_chr18',  package='netboost')
  cores=cores)
  trees <- tree_search(forest)
  results <- cut_trees(trees=trees,datan=datan, forest=forest,
- min_cluster_size=10L, ME_diss_thres=0.25, plot=FALSE)
- sum_res <- nb_summary(clust_res=results, plot=TRUE)
+ min_cluster_size=10L, ME_diss_thres=0.25, qc_plot=FALSE)
+ sum_res <- nb_summary(clust_res=results)
 
 }

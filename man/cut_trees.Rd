@@ -5,7 +5,7 @@
 \title{Module detection for the results from a nb_mcupgma call}
 \usage{
 cut_trees(trees, datan, forest, min_cluster_size = 2L, ME_diss_thres,
-  plot = TRUE, n_pc = 1, nb_min_varExpl = 0.5)
+  qc_plot = TRUE, n_pc = 1, nb_min_varExpl = 0.5)
 }
 \arguments{
 \item{trees}{List of trees, where one tree is a list of ids and rows}
@@ -20,7 +20,7 @@ features.}
 \item{ME_diss_thres}{Numeric. Module Eigengene Dissimilarity Threshold for
 merging close modules.}
 
-\item{plot}{Logical. Should plots be created?}
+\item{qc_plot}{Logical. Should plots be created?}
 
 \item{n_pc}{Number of principal components and variance explained
 entries to be calculated. The number of returned variance explained entries
@@ -49,6 +49,6 @@ data('tcga_aml_meth_rna_chr18',  package='netboost')
  cores=cores)
  trees <- tree_search(forest)
  results <- cut_trees(trees=trees,datan=datan, forest=forest,
- min_cluster_size=10L, ME_diss_thres=0.25, plot=TRUE)
+ min_cluster_size=10L, ME_diss_thres=0.25, qc_plot=TRUE)
 
 }

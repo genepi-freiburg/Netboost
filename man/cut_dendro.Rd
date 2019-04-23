@@ -5,7 +5,8 @@
 \title{Module detection for an individual tree}
 \usage{
 cut_dendro(tree_dendro, min_cluster_size = 2L, datan, ME_diss_thres,
-  name_of_tree = "", plot = TRUE, n_pc = 1, nb_min_varExpl = 0.5)
+  name_of_tree = "", qc_plot = TRUE, n_pc = 1,
+  nb_min_varExpl = 0.5)
 }
 \arguments{
 \item{tree_dendro}{List of tree specific objects including dendrogram, tree
@@ -21,7 +22,7 @@ merging close modules.}
 
 \item{name_of_tree}{String. Annotating plots and messages.}
 
-\item{plot}{Logical. Should plots be created?}
+\item{qc_plot}{Logical. Should plots be created?}
 
 \item{n_pc}{Number of principal components and variance explained
 entries to be calculated. The number of returned variance explained entries

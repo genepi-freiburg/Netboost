@@ -29,7 +29,7 @@ Transfer of Netboost clustering to new data.
 data('tcga_aml_meth_rna_chr18',  package='netboost')
 results <- netboost(datan = tcga_aml_meth_rna_chr18, stepno = 20L,
     soft_power = 3L, min_cluster_size = 10L, n_pc = 2, scale=TRUE,
-    ME_diss_thres = 0.25, plot=FALSE)
+    ME_diss_thres = 0.25, qc_plot=FALSE)
 ME_transfer <- nb_transfer(nb_summary = results,
     new_data = tcga_aml_meth_rna_chr18,
     scale = TRUE)
