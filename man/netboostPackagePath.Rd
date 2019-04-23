@@ -2,13 +2,19 @@
 % Please edit documentation in R/zzz.R
 \name{netboostPackagePath}
 \alias{netboostPackagePath}
-\title{Returns the absolute path to "exec" folder in the package.}
+\title{If package detached, clean up temporary folders.}
 \usage{
 netboostPackagePath()
 }
+\arguments{
+\item{libpath}{Library path (unused)
+Returns the absolute path to "exec" folder in the package.}
+}
 \value{
+none
+
 Absolute path of installed package
 }
 \description{
-Returns the absolute path to "exec" folder in the package.
+If package detached, clean up temporary folders.
 }

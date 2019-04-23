@@ -2,16 +2,15 @@
 % Please edit documentation in R/zzz.R
 \name{netboostTmpPath}
 \alias{netboostTmpPath}
-\title{Returns the absolute path to "exec" folder in the package.}
+\title{Returns the absolute path to temporary folder of the package.
+To change temporary path, use normal R variables (TEMPDIR etc).}
 \usage{
-netboostTmpPath(nostop = FALSE)
-}
-\arguments{
-\item{nostop}{Return on error (default: stop)}
+netboostTmpPath()
 }
 \value{
 Absolute path for "exec" folder
 }
 \description{
-Returns the absolute path to "exec" folder in the package.
+Returns the absolute path to temporary folder of the package.
+To change temporary path, use normal R variables (TEMPDIR etc).
 }

@@ -36,15 +36,16 @@ Usually equals the number of features.}
 
 \item{qc_plot}{Logical. Should plots be created?}
 
-\item{min_cluster_size}{Integer. The minimum number of features in one module.}
+\item{min_cluster_size}{Integer. The minimum number of features in one
+module.}
 
 \item{ME_diss_thres}{Numeric. Module Eigengene Dissimilarity Threshold for
 merging close modules.}
 
 \item{n_pc}{Number of principal components and variance explained
-entries to be calculated. The number of returned variance explained entries
-is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
-issued.}
+entries to be calculated. The number of returned variance explained
+entries is currently ‘min(n_pc,10)’. If given ‘n_pc’ is 
+greater than 10, a warning is issued.}
 
 \item{nb_min_varExpl}{Minimum proportion of variance explained for
 returned module eigengenes. The number of PCs is capped at n_pc.}
