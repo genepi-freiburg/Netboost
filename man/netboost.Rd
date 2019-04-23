@@ -23,13 +23,13 @@ step}
 For testing purposes in large datasets.}
 
 \item{progress}{Integer. If > 0, print progress after every X steps (
-Progress might not be reported 100% accurate due to parallel execution)}
+Progress might not be reported completely accurate due to parallel execution)}
 
 \item{mode}{Integer. Mode (0: x86, 1: FMA, 2: AVX). Features are only
 available if compiled accordingly and available on the hardware.}
 
-\item{soft_power}{Integer. Exponent of the transformation. Set automatically
-based on the scale free topology criterion if unspecified.}
+\item{soft_power}{Integer. Exponent of the transformation. Set
+automatically based on the scale free topology criterion if unspecified.}
 
 \item{max_singleton}{Integer. The maximal singleton in the clustering.
 Usually equals the number of features.}
@@ -70,7 +70,8 @@ colors    A vector of numeric color coding in matching order of names
 
 MEs    Aggregated module measures (Module eigengenes).
 
-var_explained    Proportion of variance explained per module eigengene
+var_explained    Proportion of variance explained per module
+  eigengene
   per principal component (max n_pc principal components are listed).
 
 rotation    Matrix of variable loadings divided by their singular

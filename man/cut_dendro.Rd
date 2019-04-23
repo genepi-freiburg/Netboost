@@ -9,10 +9,12 @@ cut_dendro(tree_dendro, min_cluster_size = 2L, datan, ME_diss_thres,
   nb_min_varExpl = 0.5)
 }
 \arguments{
-\item{tree_dendro}{List of tree specific objects including dendrogram, tree
+\item{tree_dendro}{List of tree specific objects including dendrogram, 
+tree
 data and features originating from the tree_dendro function.}
 
-\item{min_cluster_size}{Integer. The minimum number of features in one module.}
+\item{min_cluster_size}{Integer. The minimum number of features in one 
+module.}
 
 \item{datan}{Data frame were rows correspond to samples and columns to
 features.}
@@ -26,8 +28,8 @@ merging close modules.}
 
 \item{n_pc}{Number of principal components and variance explained
 entries to be calculated. The number of returned variance explained entries
-is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
-issued.}
+is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning 
+is issued.}
 
 \item{nb_min_varExpl}{Minimum proportion of variance explained for
 returned module eigengenes. The number of PCs is capped at n_pc.}

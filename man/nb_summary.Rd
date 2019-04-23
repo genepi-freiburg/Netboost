@@ -8,8 +8,6 @@ nb_summary(clust_res)
 }
 \arguments{
 \item{clust_res}{Clustering results from cut_trees call.}
-
-\item{qc_plot}{Logical. Create plot.}
 }
 \value{
 List
