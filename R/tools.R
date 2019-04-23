@@ -60,3 +60,26 @@ mcupgma_exec <- function(exec=NULL, ..., console=TRUE) {
         return(std_output)
     }
 }
+
+#' Cleans the netboost temporary folder. This can be useful during the session
+#' as mcupgma creates vast directory structures (for iterations).
+#' Creates the own folder (all netboost temporary data is stored in
+#' netboostTmpPath(), which is equal to tempdir()/netboost).
+#' Also used for first time setup of folder.
+#'
+#' @param verbose Flag verbose
+#' @return none
+netboostTmpCleanup <- function(verbose = FALSE) {
+    folder <- netboostTmpPath()
+
+    if (dir.exists(folder)) {
+        if (verbose)
+            message(paste("Netboost: cleaning temporary folder:", folder))
+
+        ## Delete and recreate more convenient than globbing through the folders
+        unlink(folder, recursive = TRUE)
+    }
+
+    # Create or recreate folder.
+    dir.create(folder)
+}

@@ -292,23 +292,21 @@ nb_mcupgma <-
              verbose = getOption("verbose")) {
         # Deletes all files under netboostTmpPath(), esp. clustering/iteration_
         netboostTmpCleanup()
-        
+
         if (max_singleton > 5e+06) {
             stop("A bug in sparse UPGMA currently prevents analyses",
                        " with more than 5 million features.")
         }
-        
+
         if (!dir.create(file.path(netboostTmpPath(), "clustering")))
-            stop(
-                "Unable to create: ",
-                file.path(netboostTmpPath(), "clustering")
-            )
-        
+            stop("Unable to create: ",
+                 file.path(netboostTmpPath(), "clustering"))
+
         file_dist_edges <-
             file.path(netboostTmpPath(), "clustering", "dist.edges")
         file_dist_tree <-
             file.path(netboostTmpPath(), "clustering", "dist.mcupgma_tree")
-        
+
         # write.table(file='clustering/dist.edges',
         write.table(
             file = file_dist_edges,

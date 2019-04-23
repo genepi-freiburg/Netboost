@@ -30,7 +30,7 @@ nbCheckPrg <- function(prg, txt) {
         return(NULL)
 }
 
-# Should never be reached, as in DESCRIPTION and .BBSfile.
+# Should never be reached, as in DESCRIPTION and .BBSoptions.
 if (WINDOWS)
     stop(nbErrorMsg("mcupgma build on Windows is currently not supported"))
 

@@ -66,8 +66,8 @@
     )
     #                              "Loaded from:", libname),
 
-    ## Store exec and general path in package variables
-#    assign("exec_path", file.path(pPath, "exec"), envir = .netboostInternal)
+    # Create temp subfolder in tempdir()
+    netboostTmpCleanup()
 
     ## Add the current (real) loading path to MCUPGMA Makefiles
     ## (install_path.mk is loaded by definitions.mk, which is
@@ -115,9 +115,10 @@ netboostPackagePath <- function() {
 }
 
 #' Returns the absolute path to temporary folder of the package.
+#' To change temporary path, use normal R variables (TEMPDIR etc).
 #'
 #' @return Absolute path for "exec" folder
-netboostTmpPath <- function(nostop = FALSE) {
+netboostTmpPath <- function() {
     return(file.path(tempdir(), "netboost"))
 }
 
