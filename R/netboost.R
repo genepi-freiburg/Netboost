@@ -391,12 +391,6 @@ nb_mcupgma <-
 #'
 #' @export
 tree_search <- function(forest = NULL) {
-    ## Check for integer values cannot be done here, as either the user must
-    ## have set up all values with as.integer() or R delivers default numeric
-    ## (double). In that case, Rcpp converts the matrix.  (Alternative: convert
-    ## manually 'matrix(as.integer(forest), nrow=nrow(forest))')
-    #forest <- as.matrix(forest)
-    
     if (is.null(forest) || !is.matrix(forest))
         stop("forest must be provided (as matrix)")
     
