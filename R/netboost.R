@@ -1688,72 +1688,72 @@ nb_moduleEigengenes <-
 ##     print(sapply(files, basename, USE.NAMES = FALSE))
 ## }
 
-#' Test/example code. Applies netboost to the TCGA-AML CHR18 DNA methylation and
-#' gene expression data supplied with the package.
-#'
-#' @param cores Integer. CPU cores to use.
-#' @param keep Logical. Keep mcupgma intermediate files.
-#' @return Netboost result
-#'
-#' @examples
-#' nb_example()
-#'
-#' @export
-nb_example <-
-    function(cores = getOption("mc.cores", 2L),
-             keep = FALSE) {
-        # Keep data local.
-        exa_env <- new.env()
-        
-        # load data methylation and RNA data 180 patients x 5283 features
-        data("tcga_aml_meth_rna_chr18",
-             package = "netboost",
-             envir = exa_env)
-        
-        pdfFile <- file.path(tempdir(), "results_netboost.pdf")
-        
-        # pdf(file=file.path(getwd(), 'results_netboost.pdf'), width = 30)
-        pdf(file = pdfFile, width = 30)
-        results <-
-            netboost(
-                datan = exa_env[["tcga_aml_meth_rna_chr18"]],
-                stepno = 20L,
-                soft_power = 3L,
-                min_cluster_size = 10L,
-                n_pc = 2,
-                scale = TRUE,
-                ME_diss_thres = 0.25
-            )
-        # set.seed(1234)
-        nb_plot_dendro(nb_summary = results,
-                       labels = TRUE,
-                       colorsrandom = TRUE)
-        dev.off()
-        
-        if (file.exists(pdfFile)) {
-            message(paste0("PDF created:", pdfFile))
-            
-            # If default PDF viewer is assigned, try to show PDF.
-            if (!is.null(getOption("pdfviewer"))) {
-      #          system2(getOption("pdfviewer"), pdfFile)
-            }
-        }
-        
-        ### Transfer results to the same data (bug check)
-        ME_transfer <-
-            nb_transfer(
-                nb_summary = results,
-                new_data = exa_env[["tcga_aml_meth_rna_chr18"]],
-                scale = TRUE
-            )
-        
-        all(round(results[["MEs"]], 12) == round(ME_transfer, 12))
-        
-        # Cleanup all produced temporary filed (esp. clustering/iteration_*)
-        if (!keep)
-            netboostTmpCleanup()
-        else
-            message(paste("Kept MCUPGMA temporary files in:", netboostTmpPath()))
-        
-        invisible(results)
-    }
+## #' Test/example code. Applies netboost to the TCGA-AML CHR18 DNA methylation and
+## #' gene expression data supplied with the package.
+## #'
+## #' @param cores Integer. CPU cores to use.
+## #' @param keep Logical. Keep mcupgma intermediate files.
+## #' @return Netboost result
+## #'
+## #' @examples
+## #' nb_example()
+## #'
+## #' @export
+# nb_example <-
+#     function(cores = getOption("mc.cores", 2L),
+#              keep = FALSE) {
+#         # Keep data local.
+#         exa_env <- new.env()
+#         
+#         # load data methylation and RNA data 180 patients x 5283 features
+#         data("tcga_aml_meth_rna_chr18",
+#              package = "netboost",
+#              envir = exa_env)
+#         
+#         pdfFile <- file.path(tempdir(), "results_netboost.pdf")
+#         
+#         # pdf(file=file.path(getwd(), 'results_netboost.pdf'), width = 30)
+#         pdf(file = pdfFile, width = 30)
+#         results <-
+#             netboost(
+#                 datan = exa_env[["tcga_aml_meth_rna_chr18"]],
+#                 stepno = 20L,
+#                 soft_power = 3L,
+#                 min_cluster_size = 10L,
+#                 n_pc = 2,
+#                 scale = TRUE,
+#                 ME_diss_thres = 0.25
+#             )
+#         # set.seed(1234)
+#         nb_plot_dendro(nb_summary = results,
+#                        labels = TRUE,
+#                        colorsrandom = TRUE)
+#         dev.off()
+#         
+#         if (file.exists(pdfFile)) {
+#             message(paste0("PDF created:", pdfFile))
+#             
+#             # If default PDF viewer is assigned, try to show PDF.
+#             if (!is.null(getOption("pdfviewer"))) {
+#       #          system2(getOption("pdfviewer"), pdfFile)
+#             }
+#         }
+#         
+#         ### Transfer results to the same data (bug check)
+#         ME_transfer <-
+#             nb_transfer(
+#                 nb_summary = results,
+#                 new_data = exa_env[["tcga_aml_meth_rna_chr18"]],
+#                 scale = TRUE
+#             )
+#         
+#         all(round(results[["MEs"]], 12) == round(ME_transfer, 12))
+#         
+#         # Cleanup all produced temporary filed (esp. clustering/iteration_*)
+#         if (!keep)
+#             netboostTmpCleanup()
+#         else
+#             message(paste("Kept MCUPGMA temporary files in:", netboostTmpPath()))
+#         
+#         invisible(results)
+#     }
