@@ -32,7 +32,7 @@ Sys.unsetenv("ALLOW_WGCNA_THREADS")
 #'   based on the scale free topology criterion if unspecified.
 #' @param max_singleton   Integer. The maximal singleton in the clustering.
 #'   Usually equals the number of features.
-#' @param plot      Logical. Should plots be created?
+#' @param qc_plot      Logical. Should plots be created?
 #' @param min_cluster_size  Integer. The minimum number of features in one module.
 #' @param ME_diss_thres Numeric. Module Eigengene Dissimilarity Threshold for
 #'   merging close modules.
@@ -63,7 +63,7 @@ Sys.unsetenv("ALLOW_WGCNA_THREADS")
 #' data('tcga_aml_meth_rna_chr18',  package='netboost')
 #' results <- netboost(datan=tcga_aml_meth_rna_chr18, stepno=20L,
 #'    soft_power=3L, min_cluster_size=10L, n_pc=2, scale=TRUE,
-#'    ME_diss_thres=0.25, plot=TRUE)
+#'    ME_diss_thres=0.25, qc_plot=TRUE)
 #'
 #' @export
 netboost <-
@@ -74,7 +74,7 @@ netboost <-
              mode = 2L,
              soft_power = NULL,
              max_singleton = ncol(datan),
-             plot = TRUE,
+             qc_plot = TRUE,
              min_cluster_size = 2L,
              ME_diss_thres = 0.25,
              n_pc = 1,
@@ -164,7 +164,7 @@ netboost <-
                 nb_min_varExpl = nb_min_varExpl,
                 max_singleton = max_singleton,
                 cores = cores,
-                plot = plot
+                qc_plot = qc_plot
             )
         if(verbose>=1){message("Netboost: Finished clustering step.")}
         
@@ -466,7 +466,7 @@ tree_dendro <- function(tree,
 #' @param ME_diss_thres Numeric. Module Eigengene Dissimilarity Threshold for
 #'   merging close modules.
 #' @param name_of_tree String. Annotating plots and messages.
-#' @param plot      Logical. Should plots be created?
+#' @param qc_plot      Logical. Should plots be created?
 #' @param n_pc        Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained entries
 #'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
@@ -480,7 +480,7 @@ cut_dendro <-
              datan,
              ME_diss_thres,
              name_of_tree = "",
-             plot = TRUE,
+             qc_plot = TRUE,
              n_pc = 1,
              nb_min_varExpl = 0.5) {
         dynamicMods <-
@@ -504,7 +504,7 @@ cut_dendro <-
         # Cluster module eigengenes
         if (length(MEDiss) > 1) {
             METree <- hclust(as.dist(MEDiss), method = "average")
-            if (plot == TRUE) {
+            if (qc_plot == TRUE) {
                 graphics::plot(
                     METree,
                     main = paste0(name_of_tree,
@@ -535,7 +535,7 @@ cut_dendro <-
             MEDiss <- 1 - cor(MEs)
             if (length(MEDiss) > 1) {
                 METree <- hclust(as.dist(MEDiss), method = "average")
-                if (plot == TRUE &
+                if (qc_plot == TRUE &
                     length(tree_dendro[["dendro"]][["labels"]]) > 2) {
                     graphics::plot(
                         METree,
@@ -562,7 +562,7 @@ cut_dendro <-
             message("\nOnly one module in ", name_of_tree, ".\n")
             mergedColors <- dynamicMods
             if (length(tree_dendro[["dendro"]][["labels"]]) > 2) {
-                if (plot == TRUE) {
+                if (qc_plot == TRUE) {
                     graphics::plot(
                         tree_dendro[["dendro"]],
                         main = paste0(
@@ -611,7 +611,7 @@ cut_dendro <-
 #' @param min_cluster_size  Integer. The minimum number of features in one module.
 #' @param ME_diss_thres Numeric. Module Eigengene Dissimilarity Threshold for
 #'   merging close modules.
-#' @param plot      Logical. Should plots be created?
+#' @param qc_plot      Logical. Should plots be created?
 #' @param n_pc        Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained entries
 #'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
@@ -633,7 +633,7 @@ cut_dendro <-
 #'  cores=cores)
 #'  trees <- tree_search(forest)
 #'  results <- cut_trees(trees=trees,datan=datan, forest=forest,
-#'  min_cluster_size=10L, ME_diss_thres=0.25, plot=TRUE)
+#'  min_cluster_size=10L, ME_diss_thres=0.25, qc_plot=TRUE)
 #'
 #' @export
 cut_trees <-
@@ -642,7 +642,7 @@ cut_trees <-
              forest,
              min_cluster_size = 2L,
              ME_diss_thres,
-             plot = TRUE,
+             qc_plot = TRUE,
              n_pc = 1,
              nb_min_varExpl = 0.5) {
         res <- list()
@@ -665,7 +665,7 @@ cut_trees <-
                     ME_diss_thres = ME_diss_thres,
                     name_of_tree = paste0("Tree ",
                                           i, ":"),
-                    plot = plot,
+                    qc_plot = qc_plot,
                     n_pc = n_pc,
                     nb_min_varExpl = nb_min_varExpl
                 )
@@ -694,7 +694,7 @@ cut_trees <-
 #' @param ME_diss_thres Numeric. Module Eigengene Dissimilarity Threshold for
 #'   merging close modules.
 #' @param cores     Integer. Amount of CPU cores used (<=1 : sequential)
-#' @param plot Logical. Create plot.
+#' @param qc_plot Logical. Create plot.
 #' @param n_pc        Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained entries
 #'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
@@ -715,7 +715,7 @@ cut_trees <-
 #'  pdf("test.pdf",width=30)
 #'  sum_res <- nb_clust(filter=filter, dist=dist, datan=datan,
 #'  max_singleton=max_singleton, min_cluster_size=10L, ME_diss_thres=0.25,
-#'  cores=cores, plot=TRUE, n_pc=2L, nb_min_varExpl=0.5)
+#'  cores=cores, qc_plot=TRUE, n_pc=2L, nb_min_varExpl=0.5)
 #'  dev.off()
 #' @export
 nb_clust <-
@@ -726,7 +726,7 @@ nb_clust <-
              min_cluster_size = 2L,
              ME_diss_thres = 0.25,
              cores = getOption("mc.cores", 2L),
-             plot = TRUE,
+             qc_plot = TRUE,
              n_pc = 1,
              nb_min_varExpl = 0.5) {
         forest <-
@@ -744,11 +744,11 @@ nb_clust <-
                 forest = forest,
                 min_cluster_size = min_cluster_size,
                 ME_diss_thres = ME_diss_thres,
-                plot = plot,
+                qc_plot = qc_plot,
                 n_pc = n_pc,
                 nb_min_varExpl = nb_min_varExpl
             )
-        sum_res <- nb_summary(clust_res = results, plot = plot)
+        sum_res <- nb_summary(clust_res = results, qc_plot = qc_plot)
         
         return(sum_res)
     }
@@ -757,7 +757,7 @@ nb_clust <-
 #'
 #' @name nb_summary
 #' @param clust_res Clustering results from cut_trees call.
-#' @param plot Logical. Create plot.
+#' @param qc_plot Logical. Create plot.
 #' @return List
 #'
 #' @examples
@@ -773,11 +773,11 @@ nb_clust <-
 #'  cores=cores)
 #'  trees <- tree_search(forest)
 #'  results <- cut_trees(trees=trees,datan=datan, forest=forest,
-#'  min_cluster_size=10L, ME_diss_thres=0.25, plot=FALSE)
-#'  sum_res <- nb_summary(clust_res=results, plot=TRUE)
+#'  min_cluster_size=10L, ME_diss_thres=0.25, qc_plot=FALSE)
+#'  sum_res <- nb_summary(clust_res=results, qc_plot=TRUE)
 #'
 #' @export
-nb_summary <- function(clust_res, plot = TRUE) {
+nb_summary <- function(clust_res, qc_plot = TRUE) {
     res <- vector("list")
     # res$clust_res <- clust_res
     n_MEs <- 0
@@ -926,7 +926,7 @@ nb_summary <- function(clust_res, plot = TRUE) {
         "%) were not assigned to modules.\n"
     )
     
-    if (plot == TRUE) {
+    if (qc_plot == TRUE) {
         nb_plot_dendro(nb_summary = res, labels = FALSE)
     }
     return(res)
@@ -947,7 +947,7 @@ nb_summary <- function(clust_res, plot = TRUE) {
 #' data('tcga_aml_meth_rna_chr18',  package='netboost')
 #' results <- netboost(datan = tcga_aml_meth_rna_chr18, stepno = 20L,
 #'     soft_power = 3L, min_cluster_size = 10L, n_pc = 2, scale=TRUE,
-#'     ME_diss_thres = 0.25, plot=FALSE)
+#'     ME_diss_thres = 0.25, qc_plot=FALSE)
 #' ME_transfer <- nb_transfer(nb_summary = results,
 #'     new_data = tcga_aml_meth_rna_chr18,
 #'     scale = TRUE)
@@ -1134,7 +1134,7 @@ nb_filter <-
 #' data('tcga_aml_meth_rna_chr18',  package='netboost')
 #' results <- netboost(datan = tcga_aml_meth_rna_chr18, stepno = 20L,
 #' soft_power = 3L, min_cluster_size = 10L, n_pc = 2, scale=TRUE,
-#' ME_diss_thres = 0.25, plot = FALSE)
+#' ME_diss_thres = 0.25, qc_plot = FALSE)
 #' set.seed(1234) # reproducible but shuffled color-module matching
 #' nb_plot_dendro(nb_summary = results, labels = FALSE, main = 'Test',
 #' colorsrandom = TRUE)
