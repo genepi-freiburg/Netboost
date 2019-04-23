@@ -100,12 +100,12 @@
     }
 }
 
-#' If package detached, clean up temporary folders.
-#' @return none
-#' @param libpath Library path (unused)
-#.onDetach <- function(libpath) {
-#    print("kthnxbye")
-#}
+## #' If package detached, clean up temporary folders.
+## #' @return none
+## #' @param libpath Library path (unused)
+##.onDetach <- function(libpath) {
+##    print("kthnxbye")
+##}
 
 #' Returns the absolute path to "exec" folder in the package.
 #'
