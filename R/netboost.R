@@ -748,7 +748,8 @@ nb_clust <-
                 n_pc = n_pc,
                 nb_min_varExpl = nb_min_varExpl
             )
-        sum_res <- nb_summary(clust_res = results, qc_plot = qc_plot)
+#         sum_res <- nb_summary(clust_res = results, qc_plot = qc_plot)
+        sum_res <- nb_summary(clust_res = results)
         
         return(sum_res)
     }
@@ -757,7 +758,7 @@ nb_clust <-
 #'
 #' @name nb_summary
 #' @param clust_res Clustering results from cut_trees call.
-#' @param qc_plot Logical. Create plot.
+##' @param qc_plot Logical. Create plot.
 #' @return List
 #'
 #' @examples
@@ -774,10 +775,11 @@ nb_clust <-
 #'  trees <- tree_search(forest)
 #'  results <- cut_trees(trees=trees,datan=datan, forest=forest,
 #'  min_cluster_size=10L, ME_diss_thres=0.25, qc_plot=FALSE)
-#'  sum_res <- nb_summary(clust_res=results, qc_plot=TRUE)
+#'  sum_res <- nb_summary(clust_res=results)
 #'
 #' @export
-nb_summary <- function(clust_res, qc_plot = TRUE) {
+nb_summary <- function(#qc_plot = TRUE,
+    clust_res) {
     res <- vector("list")
     # res$clust_res <- clust_res
     n_MEs <- 0
@@ -926,9 +928,9 @@ nb_summary <- function(clust_res, qc_plot = TRUE) {
         "%) were not assigned to modules.\n"
     )
     
-    if (qc_plot == TRUE) {
-        nb_plot_dendro(nb_summary = res, labels = FALSE)
-    }
+#     if (qc_plot == TRUE) {
+#         nb_plot_dendro(nb_summary = res, labels = FALSE)
+#     }
     return(res)
 }
 
