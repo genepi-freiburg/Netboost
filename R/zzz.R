@@ -27,7 +27,7 @@
 #' @useDynLib netboost
 #'
 #' @examples 
-#'\dontrun{nb_example()}
+#' \dontrun{nb_example()}
 #' @return none
 #' @param libname Path to R installation (base package dir)
 #' @param pkgname Package name (should be "netboost")
@@ -103,9 +103,9 @@
 #' If package detached, clean up temporary folders.
 #' @return none
 #' @param libpath Library path (unused)
-.onDetach <- function(libpath) {
-    print("kthnxbye")
-}
+#.onDetach <- function(libpath) {
+#    print("kthnxbye")
+#}
 
 #' Returns the absolute path to "exec" folder in the package.
 #'
