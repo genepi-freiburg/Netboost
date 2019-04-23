@@ -1,7 +1,7 @@
 AC_INIT([Netboost], 0.0.2)
 AM_INIT_AUTOMAKE([1.9 foreign])
 
-AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_MACRO_DIR([tools])
 
 # M4 macros for checking of CPU features.
 m4_include([tools/ax_gcc_x86_avx_xgetbv.m4])

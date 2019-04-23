@@ -7,4 +7,4 @@ autoconf   (for generation of configure)
 autoheader (for generating src/config.h.in)
 
 required folders:
-m4 - Macros for configure
+tools - Macros for configure

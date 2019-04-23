@@ -33,7 +33,8 @@ Sys.unsetenv("ALLOW_WGCNA_THREADS")
 #' @param max_singleton    Integer. The maximal singleton in the clustering.
 #'   Usually equals the number of features.
 #' @param qc_plot    Logical. Should plots be created?
-#' @param min_cluster_size    Integer. The minimum number of features in one module.
+#' @param min_cluster_size  Integer. The minimum number of features in one
+#' module.
 #' @param ME_diss_thres    Numeric. Module Eigengene Dissimilarity Threshold for
 #'   merging close modules.
 #' @param cores    Integer. Amount of CPU cores used (<=1 : sequential)
@@ -41,10 +42,10 @@ Sys.unsetenv("ALLOW_WGCNA_THREADS")
 #' @param method    A character string specifying the method to be used for
 #'   correlation coefficients.
 #' @param verbose    Additional diagnostic messages.
-#' @param n_pc    Number of principal components and variance explained
-#'   entries to be calculated. The number of returned variance explained entries
-#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
-#'   issued.
+#' @param n_pc        Number of principal components and variance explained
+#'   entries to be calculated. The number of returned variance explained
+#'   entries is currently ‘min(n_pc,10)’. If given ‘n_pc’ is 
+#'   greater than 10, a warning is issued.
 #' @param nb_min_varExpl    Minimum proportion of variance explained for
 #'   returned module eigengenes. The number of PCs is capped at n_pc.
 #' @return dendros    A list of dendrograms. For each fully separate part of the
@@ -84,8 +85,8 @@ netboost <-
              verbose = getOption("verbose")) {
         # Initialize parallelization of WGCNA package.
         if (cores > 1)
-            WGCNA::allowWGCNAThreads(nThreads = as.numeric(cores))
-        
+            WGCNA::allowWGCNAThreads(nThreads = as.integer(cores))
+
         if (is.null(datan) || !is.data.frame(datan))
             stop("netboost: Error: datan must be a data.frame.")
 
@@ -98,20 +99,24 @@ netboost <-
         if (is.null(ME_diss_thres) || !is.numeric(ME_diss_thres))
             stop("netboost: Error: ME_diss_thres must be numeric.")
 
+        verbose <- as.logical(verbose)
+
         if (ncol(datan) > 5e+06) {
             stop(
-                    "A bug in sparse UPGMA currently prevents analyses",
-                    " with more than 5 million features."
+                "A bug in sparse UPGMA currently prevents analyses",
+                " with more than 5 million features."
             )
         }
-        
+
         if (scale) {
-            if(verbose>=1){message("Netboost: Scaling and centering data.")}
+            if (verbose) message("Netboost: Scaling and centering data.")
+            
             datan <-
                 as.data.frame(scale(datan, center = TRUE, scale = TRUE))
         }
-        
-        if(verbose>=1){message("Netboost: Initialising filter step.")}
+
+        if (verbose) message("Netboost: Initialising filter step.")
+
         filter <-
             nb_filter(
                 datan = datan,
@@ -122,8 +127,8 @@ netboost <-
                 mode = mode
             )
         
-        if(verbose>=1){message("Netboost: Finished filter step.")}
-        
+        if (verbose) message("Netboost: Finished filter step.")
+
         if (is.null(soft_power)) {
             # Random subset out of allocation
             random_features <-
@@ -131,16 +136,18 @@ netboost <-
             # Call the network topology analysis function
             sft <- WGCNA::pickSoftThreshold(datan[, random_features])
             soft_power <- sft[["powerEstimate"]]
-            if(verbose>=0){message(
-                paste0(
-                    "Netboost: soft_power was set to ",
-                    soft_power,
-                    " based on the scale free topology criterion."
-                )
-            )}
+            if (verbose) {
+                message(
+                    paste0(
+                        "Netboost: soft_power was set to ",
+                        soft_power,
+                        " based on the scale free topology criterion."
+                    )
+                )}
         }
         
-        if(verbose>=1){message("Netboost: Initialising distance calculation.")}
+        if (verbose) message("Netboost: Initialising distance calculation.")
+
         dist <-
             nb_dist(
                 datan = datan,
@@ -149,9 +156,11 @@ netboost <-
                 cores = cores,
                 method = method
             )
-        if(verbose>=1){message("Netboost: Finished distance calculation.")}
-        
-        if(verbose>=1){message("Netboost: Initialising clustering step.")}
+
+        if (verbose) message("Netboost: Finished distance calculation.")
+
+        if (verbose) message("Netboost: Initialising clustering step.")
+
         results <-
             nb_clust(
                 datan = datan,
@@ -165,9 +174,12 @@ netboost <-
                 cores = cores,
                 qc_plot = qc_plot
             )
-        if(verbose>=1){message("Netboost: Finished clustering step.")}
-        
-        if(verbose>=1){message("Netboost: Finished Netboost.")}
+
+        if (verbose) {
+            message("Netboost: Finished clustering step.")
+            message("Netboost: Finished Netboost.")
+        }
+
         invisible(results)
     }
 
@@ -234,14 +246,20 @@ nb_dist <-
              method = c("pearson", "kendall", "spearman")) {
         # if (is.null(filter) || is.null(adjacency)) stop('Both filter and
         # adjacency must be provided')
-        
+        if (!(is.matrix(filter) &&
+              (nrow(filter) > 0) && (ncol(filter) > 0)))
+            stop("filter must be matrix with nrow > 0 and ncol >0")
+
+        # if (!(is.vector(adjacency) && (length(adjacency) > 0)))
+        # if (is.null(filter) || is.null(adjacency)) stop('Both filter and
+        # adjacency must be provided')
         if (!(is.matrix(filter) &&
               (nrow(filter) > 0) && (ncol(filter) > 0)))
             stop("filter must be matrix with nrow > 0 and ncol >0")
         
         # if (!(is.vector(adjacency) && (length(adjacency) > 0)))
         # stop('adjacency is required a vector with length > 0')
-        cores <- max(cores, 1)
+        cores <- max(as.integer(cores), 1)
         
         ## RcppParallel amount of threads to be started
         setThreadOptions(numThreads = cores)
@@ -286,22 +304,19 @@ nb_mcupgma <-
     function(filter,
              dist,
              max_singleton,
-             cores = getOption("mc.cores",
-                               2L),
+             cores = getOption("mc.cores", 2L),
              verbose = getOption("verbose")) {
-        # Deletes all files under netboostTmpPath(), esp. clustering/iteration_
+        # Deletes all files under netboostTmpPath(), esp. clustering/iteration
         netboostTmpCleanup()
         
         if (max_singleton > 5e+06) {
             stop("A bug in sparse UPGMA currently prevents analyses",
-                       " with more than 5 million features.")
+                 " with more than 5 million features.")
         }
         
         if (!dir.create(file.path(netboostTmpPath(), "clustering")))
-            stop(
-                "Unable to create: ",
-                file.path(netboostTmpPath(), "clustering")
-            )
+            stop("Unable to create: ",
+                 file.path(netboostTmpPath(), "clustering"))
         
         file_dist_edges <-
             file.path(netboostTmpPath(), "clustering", "dist.edges")
@@ -322,15 +337,16 @@ nb_mcupgma <-
             quote = FALSE
         )
         
+        # Compress edges file (inplace)
         file_dist_edges_gz <- paste(file_dist_edges, ".gz", sep="")
         ret <- R.utils::gzip(file_dist_edges, destname = file_dist_edges_gz,
                              overwrite = TRUE)
-
+        
         if (attr(ret, "nbrOfBytes") <= 0 || !R.utils::isGzipped(file_dist_edges_gz))
             warning(paste("Gzip maybe failed on:", file_dist_edges,
                           "Return:", as.character(ret),
                           " Bytes: ", attr(ret, "nbrOfBytes")))
-
+        
         ret <-
             mcupgma_exec(
                 exec = "cluster.pl",
@@ -350,7 +366,7 @@ nb_mcupgma <-
                 console = FALSE
             )
         
-        if (verbose)
+        if (as.logical(verbose))
             message(ret)
         
         if (!file.exists(file_dist_tree) ||
