@@ -6,7 +6,7 @@
 \usage{
 netboost(datan = NULL, stepno = 20L, until = 0L, progress = 1000L,
   mode = 2L, soft_power = NULL, max_singleton = ncol(datan),
-  plot = TRUE, min_cluster_size = 2L, ME_diss_thres = 0.25,
+  qc_plot = TRUE, min_cluster_size = 2L, ME_diss_thres = 0.25,
   n_pc = 1, nb_min_varExpl = 0.5,
   cores = as.integer(getOption("mc.cores", 2)), scale = TRUE,
   method = c("pearson", "kendall", "spearman"),
@@ -23,18 +23,18 @@ step}
 For testing purposes in large datasets.}
 
 \item{progress}{Integer. If > 0, print progress after every X steps (
-Progress might not be reported 100% accurate due to parallel execution)}
+Progress might not be reported completely accurate due to parallel execution)}
 
 \item{mode}{Integer. Mode (0: x86, 1: FMA, 2: AVX). Features are only
 available if compiled accordingly and available on the hardware.}
 
-\item{soft_power}{Integer. Exponent of the transformation. Set automatically
-based on the scale free topology criterion if unspecified.}
+\item{soft_power}{Integer. Exponent of the transformation. Set
+automatically based on the scale free topology criterion if unspecified.}
 
 \item{max_singleton}{Integer. The maximal singleton in the clustering.
 Usually equals the number of features.}
 
-\item{plot}{Logical. Should plots be created?}
+\item{qc_plot}{Logical. Should plots be created?}
 
 \item{min_cluster_size}{Integer. The minimum number of features in one
 module.}
@@ -44,9 +44,8 @@ merging close modules.}
 
 \item{n_pc}{Number of principal components and variance explained
 entries to be calculated. The number of returned variance explained
-entries
-is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
-issued.}
+entries is currently ‘min(n_pc,10)’. If given ‘n_pc’ is 
+greater than 10, a warning is issued.}
 
 \item{nb_min_varExpl}{Minimum proportion of variance explained for
 returned module eigengenes. The number of PCs is capped at n_pc.}
@@ -61,20 +60,21 @@ correlation coefficients.}
 \item{verbose}{Additional diagnostic messages.}
 }
 \value{
-dendros  A list of dendrograms. For each fully separate part of the
+dendros    A list of dendrograms. For each fully separate part of the
   network an individual dendrogram.
 
 names    A vector of feature names.
 
-colors   A vector of numeric color coding in matching order of names
+colors    A vector of numeric color coding in matching order of names
   and module eigengene names (color = 3 -> variable in ME3).
 
-MEs      Aggregated module measures (Module eigengenes).
+MEs    Aggregated module measures (Module eigengenes).
 
-var_explained  Proportion of variance explained per module eigengene
+var_explained    Proportion of variance explained per module
+  eigengene
   per principal component (max n_pc principal components are listed).
 
-rotation Matrix of variable loadings divided by their singular
+rotation    Matrix of variable loadings divided by their singular
   values. datan %*% rotation = MEs (with datan potentially scaled)
 }
 \description{
@@ -87,6 +87,6 @@ Schlosser et al. doi...
 data('tcga_aml_meth_rna_chr18',  package='netboost')
 results <- netboost(datan=tcga_aml_meth_rna_chr18, stepno=20L,
    soft_power=3L, min_cluster_size=10L, n_pc=2, scale=TRUE,
-   ME_diss_thres=0.25, plot=TRUE)
+   ME_diss_thres=0.25, qc_plot=TRUE)
 
 }

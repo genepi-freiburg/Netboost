@@ -55,13 +55,7 @@
         paste(
             "Default CPU cores:",
             getOption("mc.cores"),
-            "\n",
-            "    _   __     __  __                     __ \n",
-            "   / | / /__  / /_/ /_  ____  ____  _____/ /_\n",
-            "  /  |/ / _ \\/ __/ __ \\/ __ \\/ __ \\/ ___/ __/\n",
-            " / /|  /  __/ /_/ /_/ / /_/ / /_/ (__  ) /_  \n",
-            "/_/ |_/\\___/\\__/_.___/\\____/\\____/____/\\__/  \n"
-        ),
+            "\n"),
         appendLF = TRUE
     )
     #                              "Loaded from:", libname),
@@ -75,7 +69,7 @@
     mcupgma_install <- file.path(netboostMCUPGMAPath(),
                                  "install_path.mk")
 
-    ## If this file is not existing in this location, this is no working
+    ## If this file is not existing in this location, this is a non working
     ## installation (may happen during build and included test-loads) (writeLines
     ## throws warning in R CMD check, but we do valid stuff here)
     if (file.exists(mcupgma_install)) {
@@ -95,17 +89,17 @@
     }
     # Else successful build would be warned.
     else {
-        warning(paste("File not written (as it does not exist):",
-                      mcupgma_install))
+        warning(paste("File not written:", mcupgma_install,
+                      "(okay during build, error after installation)"))
     }
 }
 
-#' If package detached, clean up temporary folders.
-#' @return none
-#' @param libpath Library path (unused)
-#.onDetach <- function(libpath) {
-#    print("kthnxbye")
-#}
+## #' If package detached, clean up temporary folders.
+## #' @return none
+## #' @param libpath Library path (unused)
+##.onDetach <- function(libpath) {
+##    print("kthnxbye")
+##}
 
 #' Returns the absolute path to "exec" folder in the package.
 #'

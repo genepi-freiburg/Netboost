@@ -15,8 +15,8 @@ nb_dist(filter, datan, soft_power = 2, cores = getOption("mc.cores",
 \item{datan}{Data frame were rows correspond to samples and columns to
 features.}
 
-\item{soft_power}{Integer. Exponent of the transformation. Set automatically
-based on the scale free topology criterion if unspecified.}
+\item{soft_power}{Integer. Exponent of the transformation. Set 
+automatically based on the scale free topology criterion if unspecified.}
 
 \item{cores}{Integer. Amount of CPU cores used (<=1 : sequential).}
 

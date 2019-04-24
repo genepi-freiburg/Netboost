@@ -83,7 +83,7 @@ spaces.}
 returned module eigengenes. Is capped at n_pc.}
 }
 \value{
-eigengenes   Module eigengenes in a dataframe, with each column
+eigengenes    Module eigengenes in a dataframe, with each column
   corresponding to one eigengene. The columns are named by the corresponding
   color with an ‘'ME'’ prepended, e.g., ‘MEturquoise’ etc. If
   ‘return_valid_only==FALSE’, module eigengenes whose calculation failed have

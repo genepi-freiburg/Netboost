@@ -6,7 +6,7 @@
 \usage{
 nb_clust(filter, dist, datan, max_singleton = dim(datan)[2],
   min_cluster_size = 2L, ME_diss_thres = 0.25,
-  cores = getOption("mc.cores", 2L), plot = TRUE, n_pc = 1,
+  cores = getOption("mc.cores", 2L), qc_plot = TRUE, n_pc = 1,
   nb_min_varExpl = 0.5)
 }
 \arguments{
@@ -20,19 +20,20 @@ features.}
 \item{max_singleton}{Integer. The maximal singleton in the clustering.
 Usually equals the number of features.}
 
-\item{min_cluster_size}{Integer. The minimum number of features in one module.}
+\item{min_cluster_size}{Integer. The minimum number of features in one 
+module.}
 
 \item{ME_diss_thres}{Numeric. Module Eigengene Dissimilarity Threshold for
 merging close modules.}
 
 \item{cores}{Integer. Amount of CPU cores used (<=1 : sequential)}
 
-\item{plot}{Logical. Create plot.}
+\item{qc_plot}{Logical. Create plot.}
 
 \item{n_pc}{Number of principal components and variance explained
 entries to be calculated. The number of returned variance explained entries
-is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
-issued.}
+is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning 
+is issued.}
 
 \item{nb_min_varExpl}{Minimum proportion of variance explained for
 returned module eigengenes. The number of PCs is capped at n_pc.}
@@ -55,6 +56,6 @@ Netboost clustering step
  pdf("test.pdf",width=30)
  sum_res <- nb_clust(filter=filter, dist=dist, datan=datan,
  max_singleton=max_singleton, min_cluster_size=10L, ME_diss_thres=0.25,
- cores=cores, plot=TRUE, n_pc=2L, nb_min_varExpl=0.5)
+ cores=cores, qc_plot=TRUE, n_pc=2L, nb_min_varExpl=0.5)
  dev.off()
 }

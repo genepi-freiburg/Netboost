@@ -1,1 +1,1 @@
-export INSTALL_PATH := /opt/R-3.6-rc/lib/R/library/00LOCK-Netboost/00new/netboost/mcupgma
+export INSTALL_PATH := /Library/Frameworks/R.framework/Versions/3.6/Resources/library/00LOCK-netboost/00new/netboost/mcupgma
