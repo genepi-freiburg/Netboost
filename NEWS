@@ -1,11 +1,2 @@
-Changes in version 1.31.10 (2019-04-02)
+Changes in version 0.99.XX (2019-04-02)
 + Final submission changes for Bioconductor.
-
-Changes in version 1.31.9 (2019-04-01)
-+ Examples.
-+ More tweaks according to package guidelines.
-
-Changes in version 1.31.2 (2019-03-16)
-+ Tweaks according to package guidelines:
-  o Code format policies
-  o Functional tweaks
