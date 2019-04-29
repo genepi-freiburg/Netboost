@@ -10,14 +10,12 @@ Required for building are C/C++ compilers, GNU make, GZIP, Perl.
 
 # Installation
 ```
-# Skip if already installed
-#install.packages("devtools")      # Install from Github
-
-# Install netboost
-devtools::install_github("PascalSchlosser/netboost")
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("netboost", version = "3.9")
 ```
 
 # Example
 ```R
-vignette("netboost")
+browseVignettes("netboost")
 ```
