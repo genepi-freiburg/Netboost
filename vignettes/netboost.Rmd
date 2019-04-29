@@ -105,8 +105,8 @@ modules. Labels are only suitable in applications with few features or with a
 appropriately large pdf device.
 
 ```{r plot}
-nb_plot_dendro(nb_summary = results, labels = FALSE, colorsrandom = TRUE,
-seed = 123)
+set.seed(123)
+nb_plot_dendro(nb_summary = results, labels = FALSE, colorsrandom = TRUE)
 ```
 
 Next the primary analysis on the aggregated dataset (`results$MEs`) can be 
