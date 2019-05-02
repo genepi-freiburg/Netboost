@@ -114,7 +114,7 @@ for (path in c(file.path('clustering_round', 'bin'),
     copy_path <- file.path(src_mcupgma, path)
 
     ## All files in folder
-    files <- list.files(path = copy_path, full.names = TRUE)
+    files <- list.files(path = copy_path, full.names = TRUE, no.. = TRUE)
 
     ## Skip all sub-directories, all files in flat folder.
     files <- files[which(sapply(files, function(x) file.info(x)$isdir) != TRUE)]
@@ -146,13 +146,16 @@ for (path in c(file.path('clustering_round', 'bin'),
 
 ## @TODO Unused?
 ## files2 <- Sys.glob(paste0(dest_mcupgma, "/*"))
-files <- list.files(path = dest_mcupgma, full.names = TRUE)
+files <- list.files(path = dest_mcupgma, full.names = TRUE, no.. = TRUE)
 
-## This fix should be in Makevars, but as Gnu make syntax only allowed on
-## Windows, it hastingly added here...
+## This fix should be in Makevars, but as Gnu make syntax is only allowed on
+## Windows, it is hastingly added here for *nix...
 ## @TODO Remove
-## Extension is .so, so mask "." as character.
-sapply(list.files(".", pattern = paste(".*\\", SHLIB_EXT, sep=""), full.names = TRUE),
+## Following pattern may be non portable, so Sys.glob is used like in R Writing
+## extensions documentation.
+##    list.files(".", pattern = paste(".*\\", SHLIB_EXT, sep=""),
+##                    full.names = TRUE)
+sapply(Sys.glob(paste0("*", SHLIB_EXT)),
        function(file) {
            if (file != tolower(file)) {
                print(paste("Create:", tolower(file), "from", file))
@@ -162,9 +165,12 @@ sapply(list.files(".", pattern = paste(".*\\", SHLIB_EXT, sep=""), full.names = 
 
 ## Copy own (non-mcugpma) libraries (basically only netboost.so) to dest.
 ## Basically the code from R manual
-## files <- Sys.glob(paste0("*", SHLIB_EXT))
 dir.create(dest_lib, recursive = TRUE, showWarnings = FALSE)
-files <- list.files(".", pattern = paste(".*\\", SHLIB_EXT, sep=""), full.names = TRUE)
+files <- Sys.glob(paste0("*", SHLIB_EXT))
+## Following pattern may be non portable, so Sys.glob is used like in R Writing
+## extensions documentation.
+## files <- list.files(".", pattern = paste(".*\\", SHLIB_EXT, sep=""),
+##                     full.names = TRUE)
 file.copy(files, dest_lib, overwrite = TRUE)
 print(files)
 

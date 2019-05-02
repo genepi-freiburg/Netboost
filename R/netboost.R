@@ -18,54 +18,53 @@ Sys.unsetenv("ALLOW_WGCNA_THREADS")
 #' Schlosser et al. doi...
 #'
 #' @name netboost
-#' @param datan     Data frame were rows correspond to samples and columns to
+#' @param datan    Data frame were rows correspond to samples and columns to
 #'   features.
 #' @param stepno    Integer amount of boosting steps applied in the filtering
 #'   step
-#' @param until     Stop at index/column (if 0: iterate through all columns).
+#' @param until    Stop at index/column (if 0: iterate through all columns).
 #'   For testing purposes in large datasets.
-#' @param progress  Integer. If > 0, print progress after every X steps (
-#' Progress might not be reported 100% accurate due to parallel execution)
-#' @param mode      Integer. Mode (0: x86, 1: FMA, 2: AVX). Features are only
+#' @param progress    Integer. If > 0, print progress after every X steps (
+#' Progress might not be reported completely accurate due to parallel execution)
+#' @param mode    Integer. Mode (0: x86, 1: FMA, 2: AVX). Features are only
 #'   available if compiled accordingly and available on the hardware.
-#' @param soft_power Integer. Exponent of the transformation. Set automatically
-#'   based on the scale free topology criterion if unspecified.
-#' @param max_singleton   Integer. The maximal singleton in the clustering.
+#' @param soft_power    Integer. Exponent of the transformation. Set
+#'    automatically based on the scale free topology criterion if unspecified.
+#' @param max_singleton    Integer. The maximal singleton in the clustering.
 #'   Usually equals the number of features.
-#' @param plot      Logical. Should plots be created?
+#' @param qc_plot    Logical. Should plots be created?
 #' @param min_cluster_size  Integer. The minimum number of features in one
 #' module.
-#' @param ME_diss_thres Numeric. Module Eigengene Dissimilarity Threshold for
+#' @param ME_diss_thres    Numeric. Module Eigengene Dissimilarity Threshold for
 #'   merging close modules.
-#' @param cores     Integer. Amount of CPU cores used (<=1 : sequential)
-#' @param scale     Logical. Should data be scaled and centered?
+#' @param cores    Integer. Amount of CPU cores used (<=1 : sequential)
+#' @param scale    Logical. Should data be scaled and centered?
 #' @param method    A character string specifying the method to be used for
 #'   correlation coefficients.
-#' @param verbose   Additional diagnostic messages.
+#' @param verbose    Additional diagnostic messages.
 #' @param n_pc        Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained
-#'   entries
-#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
-#'   issued.
-#' @param nb_min_varExpl        Minimum proportion of variance explained for
+#'   entries is currently ‘min(n_pc,10)’. If given ‘n_pc’ is 
+#'   greater than 10, a warning is issued.
+#' @param nb_min_varExpl    Minimum proportion of variance explained for
 #'   returned module eigengenes. The number of PCs is capped at n_pc.
-#' @return dendros  A list of dendrograms. For each fully separate part of the
+#' @return dendros    A list of dendrograms. For each fully separate part of the
 #'   network an individual dendrogram.
 #' @return names    A vector of feature names.
-#' @return colors   A vector of numeric color coding in matching order of names
+#' @return colors    A vector of numeric color coding in matching order of names
 #'   and module eigengene names (color = 3 -> variable in ME3).
-#' @return MEs      Aggregated module measures (Module eigengenes).
-#' @return var_explained  Proportion of variance explained per module eigengene
+#' @return MEs    Aggregated module measures (Module eigengenes).
+#' @return var_explained    Proportion of variance explained per module
+#'   eigengene
 #'   per principal component (max n_pc principal components are listed).
-#' @return rotation Matrix of variable loadings divided by their singular
+#' @return rotation    Matrix of variable loadings divided by their singular
 #'   values. datan %*% rotation = MEs (with datan potentially scaled)
-#'
 #'
 #' @examples
 #' data('tcga_aml_meth_rna_chr18',  package='netboost')
 #' results <- netboost(datan=tcga_aml_meth_rna_chr18, stepno=20L,
 #'    soft_power=3L, min_cluster_size=10L, n_pc=2, scale=TRUE,
-#'    ME_diss_thres=0.25, plot=TRUE)
+#'    ME_diss_thres=0.25, qc_plot=TRUE)
 #'
 #' @export
 netboost <-
@@ -76,7 +75,7 @@ netboost <-
              mode = 2L,
              soft_power = NULL,
              max_singleton = ncol(datan),
-             plot = TRUE,
+             qc_plot = TRUE,
              min_cluster_size = 2L,
              ME_diss_thres = 0.25,
              n_pc = 1,
@@ -174,7 +173,7 @@ netboost <-
                 nb_min_varExpl = nb_min_varExpl,
                 max_singleton = max_singleton,
                 cores = cores,
-                plot = plot
+                qc_plot = qc_plot
             )
 
         if (verbose) {
@@ -188,12 +187,12 @@ netboost <-
 #' Calculate network adjacencies for filter
 #'
 #' @name calculate_adjacency
-#' @param datan     Data frame were rows correspond to samples and columns to
+#' @param datan    Data frame were rows correspond to samples and columns to
 #'   features.
 #' @param filter    Filter-Matrix as generated by the nb_filter function.
 #' @param soft_power Integer. Exponent of the transformation. Set automatically
 #'   based on the scale free topology criterion if unspecified.
-#' @param method     A character string specifying the method to be used for
+#' @param method    A character string specifying the method to be used for
 #'   correlation coefficients.
 #' @return Vector with adjacencies for the filter
 calculate_adjacency <-
@@ -218,12 +217,12 @@ calculate_adjacency <-
 #'
 #' @name nb_dist
 #' @param filter    Filter-Matrix as generated by the nb_filter function.
-#' @param datan     Data frame were rows correspond to samples and columns to
+#' @param datan    Data frame were rows correspond to samples and columns to
 #'   features.
-#' @param soft_power Integer. Exponent of the transformation. Set automatically
-#'   based on the scale free topology criterion if unspecified.
-#' @param cores     Integer. Amount of CPU cores used (<=1 : sequential).
-#' @param verbose   Additional diagnostic messages.
+#' @param soft_power    Integer. Exponent of the transformation. Set 
+#'  automatically based on the scale free topology criterion if unspecified.
+#' @param cores    Integer. Amount of CPU cores used (<=1 : sequential).
+#' @param verbose    Additional diagnostic messages.
 #' @param method    A character string specifying the method to be used for
 #'   correlation coefficients.
 #' @return Vector with distances.
@@ -280,12 +279,12 @@ nb_dist <-
 #' (external wrapper MC-UPGMA clustering package Loewenstein et al.
 #'
 #' @name nb_mcupgma
-#' @param filter Filter-Matrix as generated by the nb_filter function.
-#' @param dist Distance-Matrix as generated by the nb_dist function.
-#' @param max_singleton Integer The maximal singleton in the clustering.
+#' @param filter    Filter-Matrix as generated by the nb_filter function.
+#' @param dist    Distance-Matrix as generated by the nb_dist function.
+#' @param max_singleton    Integer The maximal singleton in the clustering.
 #'                      Usually equals the number of features.
-#' @param cores Integer Amount of CPU cores used (<=1 : sequential)
-#' @param verbose Logical Additional diagnostic messages.
+#' @param cores    Integer Amount of CPU cores used (<=1 : sequential)
+#' @param verbose    Logical Additional diagnostic messages.
 #' @return Raw dendrogram to be processed by tree_search and tree_dendro.
 #'
 #' @examples
@@ -389,7 +388,8 @@ nb_mcupgma <-
 #' internal C++ function)
 #'
 #' @name tree_search
-#' @param forest Raw dendrogram-matrix as generated by the nb_mcupgma function.
+#' @param forest    Raw dendrogram-matrix as generated by the nb_mcupgma
+#'   function.
 #' @return List
 #'   
 #' @examples
@@ -408,12 +408,6 @@ nb_mcupgma <-
 #'
 #' @export
 tree_search <- function(forest = NULL) {
-    ## Check for integer values cannot be done here, as either the user must
-    ## have set up all values with as.integer() or R delivers default numeric
-    ## (double). In that case, Rcpp converts the matrix.  (Alternative: convert
-    ## manually 'matrix(as.integer(forest), nrow=nrow(forest))')
-    #forest <- as.matrix(forest)
-    
     if (is.null(forest) || !is.matrix(forest))
         stop("forest must be provided (as matrix)")
     
@@ -424,12 +418,13 @@ tree_search <- function(forest = NULL) {
 #' Calculate the dendrogram for an individual tree
 #'
 #' @name tree_dendro
-#' @param tree A list with two elements. ids, which is an integer vector of
+#' @param tree    A list with two elements. ids, which is an integer vector of
 #'   feature identifiers and rows, which is an integer vector of selected rows
 #'   in the corresponding forest
-#' @param datan     Data frame were rows correspond to samples and columns to
+#' @param datan    Data frame were rows correspond to samples and columns to
 #'   features.
-#' @param forest Raw dendrogram-matrix as generated by the nb_mcupgma function.
+#' @param forest    Raw dendrogram-matrix as generated by the nb_mcupgma 
+#'   function.
 #' @return List of tree specific objects including dendrogram, tree data and
 #'   features.
 tree_dendro <- function(tree,
@@ -481,20 +476,22 @@ tree_dendro <- function(tree,
 #' Module detection for an individual tree
 #'
 #' @name cut_dendro
-#' @param tree_dendro List of tree specific objects including dendrogram, tree
+#' @param tree_dendro    List of tree specific objects including dendrogram, 
+#'   tree
 #'   data and features originating from the tree_dendro function.
-#' @param min_cluster_size  Integer. The minimum number of features in one module.
-#' @param datan     Data frame were rows correspond to samples and columns to
+#' @param min_cluster_size    Integer. The minimum number of features in one 
+#'   module.
+#' @param datan    Data frame were rows correspond to samples and columns to
 #'   features.
-#' @param ME_diss_thres Numeric. Module Eigengene Dissimilarity Threshold for
+#' @param ME_diss_thres    Numeric. Module Eigengene Dissimilarity Threshold for
 #'   merging close modules.
-#' @param name_of_tree String. Annotating plots and messages.
-#' @param plot      Logical. Should plots be created?
-#' @param n_pc        Number of principal components and variance explained
+#' @param name_of_tree    String. Annotating plots and messages.
+#' @param qc_plot    Logical. Should plots be created?
+#' @param n_pc    Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained entries
-#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
-#'   issued.
-#' @param nb_min_varExpl        Minimum proportion of variance explained for
+#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning 
+#'   is issued.
+#' @param nb_min_varExpl    Minimum proportion of variance explained for
 #'   returned module eigengenes. The number of PCs is capped at n_pc.
 #' @return List
 cut_dendro <-
@@ -503,7 +500,7 @@ cut_dendro <-
              datan,
              ME_diss_thres,
              name_of_tree = "",
-             plot = TRUE,
+             qc_plot = TRUE,
              n_pc = 1,
              nb_min_varExpl = 0.5) {
         dynamicMods <-
@@ -527,7 +524,7 @@ cut_dendro <-
         # Cluster module eigengenes
         if (length(MEDiss) > 1) {
             METree <- hclust(as.dist(MEDiss), method = "average")
-            if (plot == TRUE) {
+            if (qc_plot == TRUE) {
                 graphics::plot(
                     METree,
                     main = paste0(name_of_tree,
@@ -558,7 +555,7 @@ cut_dendro <-
             MEDiss <- 1 - cor(MEs)
             if (length(MEDiss) > 1) {
                 METree <- hclust(as.dist(MEDiss), method = "average")
-                if (plot == TRUE &
+                if (qc_plot == TRUE &
                     length(tree_dendro[["dendro"]][["labels"]]) > 2) {
                     graphics::plot(
                         METree,
@@ -585,7 +582,7 @@ cut_dendro <-
             message("\nOnly one module in ", name_of_tree, ".\n")
             mergedColors <- dynamicMods
             if (length(tree_dendro[["dendro"]][["labels"]]) > 2) {
-                if (plot == TRUE) {
+                if (qc_plot == TRUE) {
                     graphics::plot(
                         tree_dendro[["dendro"]],
                         main = paste0(
@@ -627,19 +624,21 @@ cut_dendro <-
 #' Module detection for the results from a nb_mcupgma call
 #'
 #' @name cut_trees
-#' @param trees List of trees, where one tree is a list of ids and rows
-#' @param datan     Data frame were rows correspond to samples and columns to
+#' @param trees    List of trees, where one tree is a list of ids and rows
+#' @param datan    Data frame were rows correspond to samples and columns to
 #'   features.
-#' @param forest Raw dendrogram-matrix as generated by the nb_mcupgma function.
-#' @param min_cluster_size  Integer. The minimum number of features in one module.
-#' @param ME_diss_thres Numeric. Module Eigengene Dissimilarity Threshold for
+#' @param forest    Raw dendrogram-matrix as generated by the nb_mcupgma 
+#'   function.
+#' @param min_cluster_size    Integer. The minimum number of features in one
+#'   module.
+#' @param ME_diss_thres    Numeric. Module Eigengene Dissimilarity Threshold for
 #'   merging close modules.
-#' @param plot      Logical. Should plots be created?
-#' @param n_pc        Number of principal components and variance explained
+#' @param qc_plot    Logical. Should plots be created?
+#' @param n_pc    Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained entries
-#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
-#'   issued.
-#' @param nb_min_varExpl        Minimum proportion of variance explained for
+#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning 
+#'   is issued.
+#' @param nb_min_varExpl    Minimum proportion of variance explained for
 #'   returned module eigengenes. The number of PCs is capped at n_pc.
 #' @return List
 #'
@@ -656,7 +655,7 @@ cut_dendro <-
 #'  cores=cores)
 #'  trees <- tree_search(forest)
 #'  results <- cut_trees(trees=trees,datan=datan, forest=forest,
-#'  min_cluster_size=10L, ME_diss_thres=0.25, plot=TRUE)
+#'  min_cluster_size=10L, ME_diss_thres=0.25, qc_plot=TRUE)
 #'
 #' @export
 cut_trees <-
@@ -665,7 +664,7 @@ cut_trees <-
              forest,
              min_cluster_size = 2L,
              ME_diss_thres,
-             plot = TRUE,
+             qc_plot = TRUE,
              n_pc = 1,
              nb_min_varExpl = 0.5) {
         res <- list()
@@ -688,7 +687,7 @@ cut_trees <-
                     ME_diss_thres = ME_diss_thres,
                     name_of_tree = paste0("Tree ",
                                           i, ":"),
-                    plot = plot,
+                    qc_plot = qc_plot,
                     n_pc = n_pc,
                     nb_min_varExpl = nb_min_varExpl
                 )
@@ -708,21 +707,22 @@ cut_trees <-
 #'
 #' @name nb_clust
 #' @param filter    Filter-Matrix as generated by the nb_filter function.
-#' @param dist      Distance-Matrix as generated by the nb_dist function.
-#' @param datan     Data frame were rows correspond to samples and columns to
+#' @param dist    Distance-Matrix as generated by the nb_dist function.
+#' @param datan    Data frame were rows correspond to samples and columns to
 #'   features.
-#' @param max_singleton   Integer. The maximal singleton in the clustering.
+#' @param max_singleton    Integer. The maximal singleton in the clustering.
 #'   Usually equals the number of features.
-#' @param min_cluster_size  Integer. The minimum number of features in one module.
-#' @param ME_diss_thres Numeric. Module Eigengene Dissimilarity Threshold for
+#' @param min_cluster_size    Integer. The minimum number of features in one 
+#'   module.
+#' @param ME_diss_thres    Numeric. Module Eigengene Dissimilarity Threshold for
 #'   merging close modules.
-#' @param cores     Integer. Amount of CPU cores used (<=1 : sequential)
-#' @param plot Logical. Create plot.
-#' @param n_pc        Number of principal components and variance explained
+#' @param cores    Integer. Amount of CPU cores used (<=1 : sequential)
+#' @param qc_plot Logical. Create plot.
+#' @param n_pc    Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained entries
-#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
-#'   issued.
-#' @param nb_min_varExpl        Minimum proportion of variance explained for
+#'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning 
+#'   is issued.
+#' @param nb_min_varExpl    Minimum proportion of variance explained for
 #'   returned module eigengenes. The number of PCs is capped at n_pc.
 #' @return List
 #'
@@ -738,7 +738,7 @@ cut_trees <-
 #'  pdf("test.pdf",width=30)
 #'  sum_res <- nb_clust(filter=filter, dist=dist, datan=datan,
 #'  max_singleton=max_singleton, min_cluster_size=10L, ME_diss_thres=0.25,
-#'  cores=cores, plot=TRUE, n_pc=2L, nb_min_varExpl=0.5)
+#'  cores=cores, qc_plot=TRUE, n_pc=2L, nb_min_varExpl=0.5)
 #'  dev.off()
 #' @export
 nb_clust <-
@@ -749,7 +749,7 @@ nb_clust <-
              min_cluster_size = 2L,
              ME_diss_thres = 0.25,
              cores = getOption("mc.cores", 2L),
-             plot = TRUE,
+             qc_plot = TRUE,
              n_pc = 1,
              nb_min_varExpl = 0.5) {
         forest <-
@@ -767,11 +767,12 @@ nb_clust <-
                 forest = forest,
                 min_cluster_size = min_cluster_size,
                 ME_diss_thres = ME_diss_thres,
-                plot = plot,
+                qc_plot = qc_plot,
                 n_pc = n_pc,
                 nb_min_varExpl = nb_min_varExpl
             )
-        sum_res <- nb_summary(clust_res = results, plot = plot)
+#         sum_res <- nb_summary(clust_res = results, qc_plot = qc_plot)
+        sum_res <- nb_summary(clust_res = results)
         
         return(sum_res)
     }
@@ -779,8 +780,7 @@ nb_clust <-
 #' Summarize results from a forest. Plot trees together.
 #'
 #' @name nb_summary
-#' @param clust_res Clustering results from cut_trees call.
-#' @param plot Logical. Create plot.
+#' @param clust_res    Clustering results from cut_trees call.
 #' @return List
 #'
 #' @examples
@@ -796,11 +796,12 @@ nb_clust <-
 #'  cores=cores)
 #'  trees <- tree_search(forest)
 #'  results <- cut_trees(trees=trees,datan=datan, forest=forest,
-#'  min_cluster_size=10L, ME_diss_thres=0.25, plot=FALSE)
-#'  sum_res <- nb_summary(clust_res=results, plot=TRUE)
+#'  min_cluster_size=10L, ME_diss_thres=0.25, qc_plot=FALSE)
+#'  sum_res <- nb_summary(clust_res=results)
 #'
 #' @export
-nb_summary <- function(clust_res, plot = TRUE) {
+nb_summary <- function(#qc_plot = TRUE,
+    clust_res) {
     res <- vector("list")
     # res$clust_res <- clust_res
     n_MEs <- 0
@@ -893,7 +894,8 @@ nb_summary <- function(clust_res, plot = TRUE) {
         ## clust_res[[tree]]$svd_PCs}
         if ("var_explained" %in% names(res)) {
             res[["var_explained"]] <-
-                cbind(res[["var_explained"]], clust_res[[tree]][["var_explained"]])
+                cbind(res[["var_explained"]],
+                clust_res[[tree]][["var_explained"]])
         } else {
             res[["var_explained"]] <- clust_res[[tree]][["var_explained"]]
         }
@@ -949,20 +951,21 @@ nb_summary <- function(clust_res, plot = TRUE) {
         "%) were not assigned to modules.\n"
     )
     
-    if (plot == TRUE) {
-        nb_plot_dendro(nb_summary = res, labels = FALSE)
-    }
+#     if (qc_plot == TRUE) {
+#         nb_plot_dendro(nb_summary = res, labels = FALSE)
+#     }
     return(res)
 }
 
 #' Transfer of Netboost clustering to new data.
 #'
 #' @name nb_tranfer
-#' @param nb_summary Netboost results as generated by the nb_summary function.
-#' @param new_data Data frame were rows correspond to samples and columns to
+#' @param nb_summary    Netboost results as generated by the nb_summary 
+#'   function.
+#' @param new_data    Data frame were rows correspond to samples and columns to
 #'   features.
-#' @param scale     Logical. Should data be scaled and centered?
-#' @param only_module_membership     Logical. Should only module memberships be
+#' @param scale    Logical. Should data be scaled and centered?
+#' @param only_module_membership    Logical. Should only module memberships be
 #'   transfered and PCs be newly computed?
 #' @return List
 #'
@@ -970,7 +973,7 @@ nb_summary <- function(clust_res, plot = TRUE) {
 #' data('tcga_aml_meth_rna_chr18',  package='netboost')
 #' results <- netboost(datan = tcga_aml_meth_rna_chr18, stepno = 20L,
 #'     soft_power = 3L, min_cluster_size = 10L, n_pc = 2, scale=TRUE,
-#'     ME_diss_thres = 0.25, plot=FALSE)
+#'     ME_diss_thres = 0.25, qc_plot=FALSE)
 #' ME_transfer <- nb_transfer(nb_summary = results,
 #'     new_data = tcga_aml_meth_rna_chr18,
 #'     scale = TRUE)
@@ -1013,8 +1016,7 @@ nb_transfer <-
         } else {
             MEs <- netboost::nb_moduleEigengenes(expr = new_data,
                                                  colors = nb_summary[["colors"]])[["nb_eigengenes"]]
-            colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"), FUN = length) >
-                              1] <-
+            colnames(MEs)[lapply(strsplit(x = colnames(MEs), split = "-"), FUN = length) > 1] <-
                 paste0("ME0_", substring(text = colnames(MEs)[lapply(strsplit(x = colnames(MEs),
                                                                               split = "-"), FUN = length) > 1], first = 4))
         }
@@ -1032,14 +1034,14 @@ nb_transfer <-
 #' Parallelisation via multicore (via 'parallel'-package). So *nix only atm.
 #'
 #' @name nb_filter
-#' @param datan     Data frame were rows correspond to samples and columns to
+#' @param datan    Data frame were rows correspond to samples and columns to
 #'   features.
 #' @param stepno    Integer amount of boosting steps
-#' @param until     Stop at index/column (if 0: iterate through all columns)
-#' @param progress  Integer. If > 0, print progress after every X steps (mind:
+#' @param until    Stop at index/column (if 0: iterate through all columns)
+#' @param progress    Integer. If > 0, print progress after every X steps (mind:
 #'   parallel!)
-#' @param cores     Integer. Amount of CPU cores used (<=1 : sequential)
-#' @param mode      Integer. Mode (0: x86, 1: FMA, 2: AVX). Features are only
+#' @param cores    Integer. Amount of CPU cores used (<=1 : sequential)
+#' @param mode    Integer. Mode (0: x86, 1: FMA, 2: AVX). Features are only
 #'   available if compiled accordingly and available on the hardware.
 #' @return matrix n times 2 matrix with the indicies of the n unique entrees of
 #'   the filter
@@ -1145,11 +1147,11 @@ nb_filter <-
 #' Plot dendrogram from Netboost output.
 #'
 #' @name nb_plot_dendro
-#' @param nb_summary Netboost results as generated by the nb_summary function.
-#' @param labels TRUE/FALSE indicator of whether labels should be attached to
+#' @param nb_summary    Netboost results as generated by the nb_summary function.
+#' @param labels    Boolean flag whether labels should be attached to
 #'   the leafs.
-#' @param main Plot title.
-#' @param colorsrandom TRUE/FALSE indicator of whether module colors should be
+#' @param main    Plot title.
+#' @param colorsrandom    Boolean flag whether module colors should be
 #'   shuffeled.
 #' @return invisible null
 #'
@@ -1157,7 +1159,7 @@ nb_filter <-
 #' data('tcga_aml_meth_rna_chr18',  package='netboost')
 #' results <- netboost(datan = tcga_aml_meth_rna_chr18, stepno = 20L,
 #' soft_power = 3L, min_cluster_size = 10L, n_pc = 2, scale=TRUE,
-#' ME_diss_thres = 0.25, plot = FALSE)
+#' ME_diss_thres = 0.25, qc_plot = FALSE)
 #' set.seed(1234) # reproducible but shuffled color-module matching
 #' nb_plot_dendro(nb_summary = results, labels = FALSE, main = 'Test',
 #' colorsrandom = TRUE)
@@ -1235,25 +1237,25 @@ nb_plot_dendro <-
 #' WGCNA::moduleEigengenes().
 #'
 #' @name nb_moduleEigengenes
-#' @param expr     Expression data for a single set in the form of a data frame
+#' @param expr    Expression data for a single set in the form of a data frame
 #'   where rows are samples and columns are genes (probes).
 #' @param colors    A vector of the same length as the number of probes in
 #'   ‘expr’, giving module color for all probes (genes). Color ‘'grey'’ is
 #'   reserved for unassigned genes.     Expression
-#' @param n_pc       Number of principal components and variance explained
+#' @param n_pc    Number of principal components and variance explained
 #'   entries to be calculated. The number of returned variance explained entries
 #'   is currently ‘min(n_pc,10)’. If given ‘n_pc’ is greater than 10, a warning is
 #'   issued.
-#' @param align     Controls whether eigengenes, whose orientation is
+#' @param align    Controls whether eigengenes, whose orientation is
 #'   undetermined, should be aligned with average expression (‘align = 'along
 #'   average'’, the default) or left as they are (‘align = ''’). Any other value
 #'   will trigger an error.
-#' @param exclude_grey   Should the improper module consisting of 'grey' genes be
+#' @param exclude_grey    Should the improper module consisting of 'grey' genes be
 #'   excluded from the eigengenes?
-#' @param grey          Value of ‘colors’ designating the improper module. Note
+#' @param grey    Value of ‘colors’ designating the improper module. Note
 #'   that if ‘colors’ is a factor of numbers, the default value will be
 #'   incorrect.
-#' @param subHubs       Controls whether hub genes should be substituted for
+#' @param subHubs    Controls whether hub genes should be substituted for
 #'   missing eigengenes. If ‘TRUE’, each missing eigengene (i.e., eigengene
 #'   whose calculation failed and the error was trapped) will be replaced by a
 #'   weighted average of the most connected hub genes in the corresponding
@@ -1267,17 +1269,17 @@ nb_plot_dendro <-
 #'   precedence in the sense that if ‘subHubs==TRUE’ and ‘trapErrors==FALSE’, an
 #'   error will be issued only if both the principal component and the hubgene
 #'   calculations have failed.
-#' @param return_valid_only   logical; controls whether the returned data frame of
+#' @param return_valid_only    logical; controls whether the returned data frame of
 #'   module eigengenes contains columns corresponding only to modules whose
 #'   eigengenes or hub genes could be calculated correctly (‘TRUE’), or whether
 #'   the data frame should have columns for each of the input color labels
 #'   (‘FALSE’).
-#' @param soft_power     The power used in soft-thresholding the adjacency
+#' @param soft_power    The power used in soft-thresholding the adjacency
 #'   matrix. Only used when the hubgene approximation is necessary because the
 #'   principal component calculation failed. It must be non-negative. The
 #'   default value should only be changed if there is a clear indication that it
 #'   leads to incorrect results.
-#' @param scale         logical; can be used to turn off scaling of the
+#' @param scale    logical; can be used to turn off scaling of the
 #'   expression data before calculating the singular value decomposition. The
 #'   scaling should only be turned off if the data has been scaled previously,
 #'   in which case the function can run a bit faster. Note however that the
@@ -1285,15 +1287,15 @@ nb_plot_dendro <-
 #'   the expression contain missing data, scaling outside of the function and
 #'   letting the function impute missing data may lead to slightly different
 #'   results than if the data is scaled within the function.
-#' @param verbose       Controls verbosity of printed progress messages. 0 means
+#' @param verbose    Controls verbosity of printed progress messages. 0 means
 #'   silent, up to (about) 5 the verbosity gradually increases.
-#' @param indent        A single non-negative integer controlling indentation of
+#' @param indent    A single non-negative integer controlling indentation of
 #'   printed messages. 0 means no indentation, each unit above that adds two
 #'   spaces.
-#' @param nb_min_varExpl        Minimum proportion of variance explained for
+#' @param nb_min_varExpl    Minimum proportion of variance explained for
 #'   returned module eigengenes. Is capped at n_pc.
 #'
-#' @return eigengenes   Module eigengenes in a dataframe, with each column
+#' @return eigengenes    Module eigengenes in a dataframe, with each column
 #'   corresponding to one eigengene. The columns are named by the corresponding
 #'   color with an ‘'ME'’ prepended, e.g., ‘MEturquoise’ etc. If
 #'   ‘return_valid_only==FALSE’, module eigengenes whose calculation failed have
@@ -1686,72 +1688,72 @@ nb_moduleEigengenes <-
 ##     print(sapply(files, basename, USE.NAMES = FALSE))
 ## }
 
-#' Test/example code. Applies netboost to the TCGA-AML CHR18 DNA methylation and
-#' gene expression data supplied with the package.
-#'
-#' @param cores Integer. CPU cores to use.
-#' @param keep Logical. Keep mcupgma intermediate files.
-#' @return Netboost result
-#'
-#' @examples
-#' nb_example()
-#'
-#' @export
-nb_example <-
-    function(cores = getOption("mc.cores", 2L),
-             keep = FALSE) {
-        # Keep data local.
-        exa_env <- new.env()
-        
-        # load data methylation and RNA data 180 patients x 5283 features
-        data("tcga_aml_meth_rna_chr18",
-             package = "netboost",
-             envir = exa_env)
-        
-        pdfFile <- file.path(tempdir(), "results_netboost.pdf")
-        
-        # pdf(file=file.path(getwd(), 'results_netboost.pdf'), width = 30)
-        pdf(file = pdfFile, width = 30)
-        results <-
-            netboost(
-                datan = exa_env[["tcga_aml_meth_rna_chr18"]],
-                stepno = 20L,
-                soft_power = 3L,
-                min_cluster_size = 10L,
-                n_pc = 2,
-                scale = TRUE,
-                ME_diss_thres = 0.25
-            )
-        # set.seed(1234)
-        nb_plot_dendro(nb_summary = results,
-                       labels = TRUE,
-                       colorsrandom = TRUE)
-        dev.off()
-        
-        if (file.exists(pdfFile)) {
-            message(paste0("PDF created:", pdfFile))
-            
-            # If default PDF viewer is assigned, try to show PDF.
-            if (!is.null(getOption("pdfviewer"))) {
-      #          system2(getOption("pdfviewer"), pdfFile)
-            }
-        }
-        
-        ### Transfer results to the same data (bug check)
-        ME_transfer <-
-            nb_transfer(
-                nb_summary = results,
-                new_data = exa_env[["tcga_aml_meth_rna_chr18"]],
-                scale = TRUE
-            )
-        
-        all(round(results[["MEs"]], 12) == round(ME_transfer, 12))
-        
-        # Cleanup all produced temporary filed (esp. clustering/iteration_*)
-        if (!keep)
-            netboostTmpCleanup()
-        else
-            message(paste("Kept MCUPGMA temporary files in:", netboostTmpPath()))
-        
-        invisible(results)
-    }
+## #' Test/example code. Applies netboost to the TCGA-AML CHR18 DNA methylation and
+## #' gene expression data supplied with the package.
+## #'
+## #' @param cores Integer. CPU cores to use.
+## #' @param keep Logical. Keep mcupgma intermediate files.
+## #' @return Netboost result
+## #'
+## #' @examples
+## #' nb_example()
+## #'
+## #' @export
+# nb_example <-
+#     function(cores = getOption("mc.cores", 2L),
+#              keep = FALSE) {
+#         # Keep data local.
+#         exa_env <- new.env()
+#         
+#         # load data methylation and RNA data 180 patients x 5283 features
+#         data("tcga_aml_meth_rna_chr18",
+#              package = "netboost",
+#              envir = exa_env)
+#         
+#         pdfFile <- file.path(tempdir(), "results_netboost.pdf")
+#         
+#         # pdf(file=file.path(getwd(), 'results_netboost.pdf'), width = 30)
+#         pdf(file = pdfFile, width = 30)
+#         results <-
+#             netboost(
+#                 datan = exa_env[["tcga_aml_meth_rna_chr18"]],
+#                 stepno = 20L,
+#                 soft_power = 3L,
+#                 min_cluster_size = 10L,
+#                 n_pc = 2,
+#                 scale = TRUE,
+#                 ME_diss_thres = 0.25
+#             )
+#         # set.seed(1234)
+#         nb_plot_dendro(nb_summary = results,
+#                        labels = TRUE,
+#                        colorsrandom = TRUE)
+#         dev.off()
+#         
+#         if (file.exists(pdfFile)) {
+#             message(paste0("PDF created:", pdfFile))
+#             
+#             # If default PDF viewer is assigned, try to show PDF.
+#             if (!is.null(getOption("pdfviewer"))) {
+#       #          system2(getOption("pdfviewer"), pdfFile)
+#             }
+#         }
+#         
+#         ### Transfer results to the same data (bug check)
+#         ME_transfer <-
+#             nb_transfer(
+#                 nb_summary = results,
+#                 new_data = exa_env[["tcga_aml_meth_rna_chr18"]],
+#                 scale = TRUE
+#             )
+#         
+#         all(round(results[["MEs"]], 12) == round(ME_transfer, 12))
+#         
+#         # Cleanup all produced temporary filed (esp. clustering/iteration_*)
+#         if (!keep)
+#             netboostTmpCleanup()
+#         else
+#             message(paste("Kept MCUPGMA temporary files in:", netboostTmpPath()))
+#         
+#         invisible(results)
+#     }

@@ -27,20 +27,13 @@ instead of the original data.
 
 # Loading an example dataset 
 
-The package comes with an example dataset included and a complete Netboost run 
-on this data is performed by `nb_example()`. 
-
-```{r netboost}
-require("netboost")
-nb_example
-```
-
-Let's perform this analysis step by step. First, we import the acute myeloid 
+The package comes with an example dataset included. We import the acute myeloid 
 leukemia patient data from The Cancer Genome Atlas public domain database. 
-The dataset consists of DNA methylation sites and gene expression on 
-chromosome 18 for 80 patients.   
+The dataset consists of one thousand DNA methylation sites and gene expression levels on 
+chromosome 18 for 80 patients.
 
 ```{r load_data}
+require("netboost")
 data("tcga_aml_meth_rna_chr18", package = "netboost")
 dim(tcga_aml_meth_rna_chr18)
 ```
@@ -64,19 +57,15 @@ computed principal components
 Schlosser et al. 2019 (under review).
 
 ```{r netboost_run}
-pdfFile = file.path(tempdir(), "results_netboost.pdf")
-pdf(file = pdfFile, width = 30)
 results <- netboost(datan = tcga_aml_meth_rna_chr18, stepno = 20L, 
 soft_power = 3L, min_cluster_size = 10L, n_pc = 2, scale = TRUE, ME_diss_thres = 0.25) 
-dev.off()
 ```
 
-Let's open the graphical representation of the results. For each detected 
+For each detected 
 independent tree in the dataset (here one) the first graph shows a dendrogram of 
 initial modules and at which level they are merged, the second graph a module 
 dendrogram after merging and the third the dendrogram of features including the 
-module-color-code. After all trees are plotted an assembly of all feature 
-dendrograms is plotted.
+module-color-code.
 
 `results` contains the dendrograms (dendros), feature identifier (names) matched 
 to module assignment (colors), the aggregated dataset (MEs), the rotation matrix 
@@ -109,15 +98,15 @@ name. To list features of module ME10 we can extract them by:
 results$names[results$colors==10]
 ```
 
-The final dendrogram can also be plotted including labels (`results$names`) for 
+The final dendrogram including all trees can be plotted including labels (`results$names`) for 
 individual features. `colorsrandom` controls if module-color matching should be 
 randomized to get a clearly differentiable pattern of the potentially many 
 modules. Labels are only suitable in applications with few features or with a 
 appropriately large pdf device.
 
 ```{r plot}
-nb_plot_dendro(nb_summary = results, labels = FALSE, colorsrandom = TRUE,
-seed = 123)
+set.seed(123)
+nb_plot_dendro(nb_summary = results, labels = FALSE, colorsrandom = TRUE)
 ```
 
 Next the primary analysis on the aggregated dataset (`results$MEs`) can be 
