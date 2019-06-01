@@ -1,3 +1,8 @@
+# Netboost was moved to Bioconductor
+Please go to 
+http://www.bioconductor.org/packages/devel/bioc/html/netboost.html
+for the most up to date version.
+
 # Netboost
 Boosting supported network analysis for high-dimensional omics applications.
 
